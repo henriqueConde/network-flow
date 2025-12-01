@@ -1,6 +1,6 @@
-import { HomePageContainer } from '@/features/home';
+import { TodayPageContainer } from '@/features/home';
 
-export default function HomePage() {
-  return <HomePageContainer />;
+export default function TodayPage() {
+  return <TodayPageContainer />;
 }
 

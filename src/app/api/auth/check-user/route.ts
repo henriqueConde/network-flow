@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/backend/core/db/prisma';
+import { signupQuerySchema } from '@/backend/features/auth/http/auth.schemas';
+import { checkUserExists } from '@/backend/features/auth';
 
 /**
- * Check if a user exists by email.
+ * Check if a user exists by email (thin controller).
  * Returns { exists: boolean }
- * 
- * Note: This checks the Prisma database, not Supabase Auth directly.
- * For a more accurate check, you may want to use Supabase Admin API
- * (requires service role key, should only be used in Edge Functions/cron).
+ * Delegates to auth use-case.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -17,13 +15,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Email parameter is required' }, { status: 400 });
     }
 
-    // Check if user exists in Prisma database
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    });
-
-    return NextResponse.json({ exists: !!user });
+    const result = await checkUserExists(email);
+    return NextResponse.json(result);
   } catch (error) {
     // On error, assume user doesn't exist to allow signup attempt
     console.error('[auth/check-user] Error:', error);

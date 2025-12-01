@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServerMutable } from '@/backend/core/db/supabase-server-mutable';
-import { prisma } from '@/backend/core/db/prisma';
+import { ensureUserAfterOAuth } from '@/backend/features/auth';
 
 /**
- * OAuth callback handler for Supabase authentication.
+ * OAuth callback handler for Supabase authentication (thin controller).
  * This route handles the redirect from OAuth providers (e.g., Google) after authentication.
  */
 export async function GET(req: NextRequest) {
@@ -29,18 +29,14 @@ export async function GET(req: NextRequest) {
       if (data?.user) {
         // Ensure user exists in Prisma database
         try {
-          await prisma.user.upsert({
-            where: { id: data.user.id },
-            update: {},
-            create: {
-              id: data.user.id,
-              email: data.user.email || '',
-              name:
-                data.user.user_metadata?.full_name ||
-                data.user.user_metadata?.name ||
-                data.user.user_metadata?.display_name ||
-                null,
-            },
+          await ensureUserAfterOAuth({
+            userId: data.user.id,
+            email: data.user.email || '',
+            name:
+              data.user.user_metadata?.full_name ||
+              data.user.user_metadata?.name ||
+              data.user.user_metadata?.display_name ||
+              null,
           });
         } catch (userError) {
           // Log but don't fail - user exists in Supabase Auth

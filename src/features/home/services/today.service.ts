@@ -1,0 +1,85 @@
+import { client } from '@/shared/services/http/client';
+import { z } from 'zod';
+import type {
+  TodayPageMetrics,
+  TodayAction,
+  NewMessage,
+  OverdueItem,
+} from '../components/today-page/today-page.types';
+import {
+  toTodayAction,
+  toNewMessage,
+  toOverdueItem,
+} from './today.mappers';
+
+/**
+ * Response schemas matching backend DTOs
+ */
+const todayMetricsResponseSchema = z.object({
+  activeOpportunities: z.number(),
+  interviewsInProgress: z.number(),
+  overdueFollowUps: z.number(),
+});
+
+const todayActionResponseSchema = z.object({
+  id: z.string(),
+  type: z.enum(['reply', 'follow_up', 'outreach']),
+  title: z.string(),
+  description: z.string().optional(),
+  conversationId: z.string().optional(),
+  contactName: z.string(),
+  contactCompany: z.string().optional(),
+  dueAt: z.string().datetime(),
+  priority: z.enum(['high', 'medium', 'low']),
+  category: z.string().optional(),
+  stage: z.string().optional(),
+});
+
+const newMessageResponseSchema = z.object({
+  id: z.string(),
+  conversationId: z.string(),
+  contactName: z.string(),
+  contactCompany: z.string().optional(),
+  snippet: z.string(),
+  receivedAt: z.string().datetime(),
+  channel: z.enum(['linkedin', 'email', 'twitter', 'other']),
+  isOutOfSync: z.boolean(),
+});
+
+const overdueItemResponseSchema = z.object({
+  id: z.string(),
+  conversationId: z.string(),
+  contactName: z.string(),
+  contactCompany: z.string().optional(),
+  actionType: z.string(),
+  dueDate: z.string().datetime(),
+  daysOverdue: z.number(),
+});
+
+/**
+ * Service functions for Today page data.
+ * Calls API endpoints following the service layer pattern.
+ * Maps DTOs (with ISO string dates) to domain types (with Date objects).
+ */
+export async function getTodayMetrics(): Promise<TodayPageMetrics> {
+  const res = await client.get('/api/today', { params: { type: 'metrics' } });
+  return todayMetricsResponseSchema.parse(res.data);
+}
+
+export async function getTodayActions(): Promise<TodayAction[]> {
+  const res = await client.get('/api/today', { params: { type: 'actions' } });
+  const dtos = z.array(todayActionResponseSchema).parse(res.data);
+  return dtos.map(toTodayAction);
+}
+
+export async function getNewMessages(): Promise<NewMessage[]> {
+  const res = await client.get('/api/today', { params: { type: 'messages' } });
+  const dtos = z.array(newMessageResponseSchema).parse(res.data);
+  return dtos.map(toNewMessage);
+}
+
+export async function getOverdueItems(): Promise<OverdueItem[]> {
+  const res = await client.get('/api/today', { params: { type: 'overdue' } });
+  const dtos = z.array(overdueItemResponseSchema).parse(res.data);
+  return dtos.map(toOverdueItem);
+}

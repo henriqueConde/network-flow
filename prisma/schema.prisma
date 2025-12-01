@@ -16,6 +16,155 @@ model User {
   name      String?
   createdAt DateTime @default(now())
 
+  // Relations
+  contacts           Contact[]
+  conversations      Conversation[]
+  linkedInEmailEvents LinkedInEmailEvent[]
+  syncStatus         SyncStatus?
+  categories         Category[]
+  stages             Stage[]
+
   @@map("users")
+}
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+model Stage {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  name        String
+  description String?
+  order       Int      // For sorting stages in the funnel
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@unique([userId, name])
+  @@map("stages")
+}
+
+model Contact {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  name            String
+  headlineOrRole  String?  @map("headline_or_role")
+  company         String?
+  primaryPlatform String?  @map("primary_platform")
+  profileLinks    Json?    @map("profile_links") // { linkedin: "url", twitter: "handle" }
+  tags            String[] // Array of tags
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@map("contacts")
+}
+
+model Conversation {
+  id                  String    @id @default(uuid()) @db.Uuid
+  userId              String    @db.Uuid
+  contactId           String    @db.Uuid
+  channel             String    // e.g., "linkedin", "email", "twitter"
+  lastMessageAt       DateTime? @map("last_message_at")
+  lastMessageSide     String?   @map("last_message_side") // "user" or "contact"
+  lastMessageSnippet  String?   @map("last_message_snippet")
+  categoryId          String?   @db.Uuid
+  stageId             String?   @db.Uuid
+  nextActionType      String?   @map("next_action_type")
+  nextActionDueAt     DateTime? @map("next_action_due_at")
+  priority            String    @default("medium") // "low", "medium", "high"
+  isOutOfSync         Boolean   @default(false) @map("is_out_of_sync")
+  summary             String?   // AI-generated summary
+  notes               String?   // User's personal notes
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact           Contact            @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  category          Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  stage             Stage?             @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  messages          Message[]
+  linkedInEmailEvents LinkedInEmailEvent[]
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([userId, channel])
+  @@index([userId, stageId])
+  @@index([nextActionDueAt])
+  @@map("conversations")
+}
+
+model Message {
+  id            String   @id @default(uuid()) @db.Uuid
+  conversationId String  @db.Uuid
+  sender        String   // "user" or "contact"
+  body          String   @db.Text
+  sentAt        DateTime @map("sent_at")
+  source        String   // "linkedin_export", "email_notification", "other"
+  rawMetadata   Json?    @map("raw_metadata")
+  createdAt     DateTime @default(now())
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([sentAt])
+  @@map("messages")
+}
+
+model LinkedInEmailEvent {
+  id                   String    @id @default(uuid()) @db.Uuid
+  userId               String    @db.Uuid
+  senderName           String    @map("sender_name")
+  senderProfileUrl     String?   @map("sender_profile_url")
+  subject              String
+  snippet              String?   @db.Text
+  emailReceivedAt      DateTime  @map("email_received_at")
+  matchedConversationId String?  @map("matched_conversation_id") @db.Uuid
+  createdAt            DateTime  @default(now())
+
+  // Relations
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchedConversation Conversation? @relation(fields: [matchedConversationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([emailReceivedAt])
+  @@index([matchedConversationId])
+  @@map("linkedin_email_events")
+}
+
+model SyncStatus {
+  id                              String    @id @default(uuid()) @db.Uuid
+  userId                          String    @unique @db.Uuid
+  lastLinkedInImportAt            DateTime? @map("last_linkedin_import_at")
+  latestMessageTimestampFromExport DateTime? @map("latest_message_timestamp_from_export")
+  latestLinkedInEmailTimestamp    DateTime? @map("latest_linkedin_email_timestamp")
+  createdAt                       DateTime  @default(now())
+  updatedAt                       DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sync_status")
 }
 
