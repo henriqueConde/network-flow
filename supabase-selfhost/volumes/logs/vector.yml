@@ -1,0 +1,15 @@
+sources:
+  docker_logs:
+    type: docker_logs
+
+sinks:
+  logflare:
+    type: http
+    inputs:
+      - docker_logs
+    uri: http://analytics:4000/api/logs
+    encoding:
+      codec: json
+    healthcheck:
+      enabled: true
+
