@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useExchangeCodeForSessionMutation, useSyncServerSessionMutation } from '@/features/auth/services/auth.mutations';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const exchangeCodeMutation = useExchangeCodeForSessionMutation();
@@ -61,6 +61,32 @@ export default function AuthCallbackPage() {
         Completing authentication...
       </Typography>
     </Box>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <CircularProgress />
+          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            Loading...
+          </Typography>
+        </Box>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
 

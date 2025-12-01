@@ -9,7 +9,7 @@ export function useAuthFormState() {
   const [error, setErrorState] = useState<string | null>(null);
   const [successMessage, setSuccessMessageState] = useState<string | null>(null);
 
-  const setError = useCallback((message: string) => {
+  const setError = useCallback((message: string | null) => {
     setErrorState(message);
     setSuccessMessageState(null);
   }, []);
