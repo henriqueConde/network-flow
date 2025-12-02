@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { conversationChannelSchema, prioritySchema } from '@/shared/types';
 
 /**
  * Response DTOs for Today page data
@@ -21,7 +22,7 @@ export const todayActionDto = z.object({
   contactName: z.string(),
   contactCompany: z.string().optional(),
   dueAt: z.string().datetime(), // ISO string
-  priority: z.enum(['high', 'medium', 'low']),
+  priority: prioritySchema,
   category: z.string().optional(),
   stage: z.string().optional(),
 });
@@ -37,7 +38,7 @@ export const newMessageDto = z.object({
   contactCompany: z.string().optional(),
   snippet: z.string(),
   receivedAt: z.string().datetime(), // ISO string
-  channel: z.enum(['linkedin', 'email', 'twitter', 'other']),
+  channel: conversationChannelSchema,
   isOutOfSync: z.boolean(),
 });
 

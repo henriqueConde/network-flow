@@ -5,3 +5,4 @@ export interface AppHeaderViewProps {
   onSignOut: () => Promise<void>;
   config: typeof APP_HEADER_CONFIG;
 }
+

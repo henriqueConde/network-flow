@@ -1,4 +1,5 @@
 import type { TODAY_PAGE_CONFIG } from './today-page.config';
+import type { ConversationChannelType } from '@/shared/types';
 
 export type TodayPageMetrics = {
     activeOpportunities: number;
@@ -27,7 +28,7 @@ export type NewMessage = {
     contactCompany?: string;
     snippet: string;
     receivedAt: Date;
-    channel: 'linkedin' | 'email' | 'twitter' | 'other';
+    channel: ConversationChannelType;
     isOutOfSync: boolean;
 };
 

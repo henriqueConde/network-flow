@@ -1,5 +1,6 @@
 import { client } from '@/shared/services/http/client';
 import { z } from 'zod';
+import { conversationChannelSchema, prioritySchema } from '@/shared/types';
 import type {
   TodayPageMetrics,
   TodayAction,
@@ -30,7 +31,7 @@ const todayActionResponseSchema = z.object({
   contactName: z.string(),
   contactCompany: z.string().optional(),
   dueAt: z.string().datetime(),
-  priority: z.enum(['high', 'medium', 'low']),
+  priority: prioritySchema,
   category: z.string().optional(),
   stage: z.string().optional(),
 });
@@ -42,7 +43,7 @@ const newMessageResponseSchema = z.object({
   contactCompany: z.string().optional(),
   snippet: z.string(),
   receivedAt: z.string().datetime(),
-  channel: z.enum(['linkedin', 'email', 'twitter', 'other']),
+  channel: conversationChannelSchema,
   isOutOfSync: z.boolean(),
 });
 

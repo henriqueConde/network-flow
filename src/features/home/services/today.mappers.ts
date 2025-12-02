@@ -4,6 +4,7 @@ import type {
   NewMessage,
   OverdueItem,
 } from '../components/today-page/today-page.types';
+import type { ConversationChannelType } from '@/shared/types';
 
 /**
  * Mappers to convert API DTOs (with ISO string dates) to domain types (with Date objects).
@@ -31,7 +32,7 @@ type NewMessageDto = {
   contactCompany?: string;
   snippet: string;
   receivedAt: string; // ISO string
-  channel: 'linkedin' | 'email' | 'twitter' | 'other';
+  channel: ConversationChannelType;
   isOutOfSync: boolean;
 };
 
