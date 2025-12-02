@@ -53,7 +53,9 @@ export async function GET(req: NextRequest) {
     const loginUrl = new URL('/login', requestUrl.origin);
     return NextResponse.redirect(loginUrl);
   } catch (error) {
-    console.error('[auth/callback] Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('[auth/callback] Unexpected error:', errorMessage, errorStack || '');
     const requestUrl = new URL(req.url);
     const loginUrl = new URL('/login', requestUrl.origin);
     loginUrl.searchParams.set('error', 'unexpected_error');

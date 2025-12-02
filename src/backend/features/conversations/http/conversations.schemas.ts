@@ -60,4 +60,91 @@ export const createConversationBody = z.object({
 
 export type CreateConversationBody = z.infer<typeof createConversationBody>;
 
+/**
+ * Response DTO for creating a conversation.
+ */
+export const createConversationResponseDto = z.object({
+  id: z.string().uuid(),
+});
+
+export type CreateConversationResponseDto = z.infer<typeof createConversationResponseDto>;
+
+/**
+ * Message DTO for conversation detail.
+ */
+export const messageDto = z.object({
+  id: z.string().uuid(),
+  sender: messageSideSchema,
+  body: z.string(),
+  sentAt: z.string().datetime(),
+  source: z.string(),
+});
+
+export type MessageDto = z.infer<typeof messageDto>;
+
+/**
+ * LinkedIn email event snippet DTO (for out-of-sync hints).
+ */
+export const linkedInEmailEventDto = z.object({
+  id: z.string().uuid(),
+  senderName: z.string(),
+  snippet: z.string().nullable(),
+  emailReceivedAt: z.string().datetime(),
+});
+
+export type LinkedInEmailEventDto = z.infer<typeof linkedInEmailEventDto>;
+
+/**
+ * Response DTO for conversation detail.
+ * Includes full conversation data, messages, and optional email event hint.
+ */
+export const conversationDetailDto = z.object({
+  id: z.string().uuid(),
+  contactId: z.string().uuid(),
+  contactName: z.string(),
+  contactCompany: z.string().nullable(),
+  channel: z.string(),
+  categoryId: z.string().uuid().nullable(),
+  categoryName: z.string().nullable(),
+  stageId: z.string().uuid().nullable(),
+  stageName: z.string().nullable(),
+  nextActionType: z.string().nullable(),
+  nextActionDueAt: z.string().datetime().nullable(),
+  priority: prioritySchema,
+  isOutOfSync: z.boolean(),
+  summary: z.string().nullable(),
+  notes: z.string().nullable(),
+  lastMessageAt: z.string().datetime().nullable(),
+  lastMessageSide: messageSideSchema.nullable(),
+  messages: z.array(messageDto),
+  latestEmailEvent: linkedInEmailEventDto.nullable(),
+});
+
+export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
+
+/**
+ * Body schema for updating a conversation.
+ */
+export const updateConversationBody = z.object({
+  categoryId: z.string().uuid().nullable().optional(),
+  stageId: z.string().uuid().nullable().optional(),
+  nextActionType: z.string().nullable().optional(),
+  nextActionDueAt: z.string().datetime().nullable().optional(),
+  priority: prioritySchema.optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export type UpdateConversationBody = z.infer<typeof updateConversationBody>;
+
+/**
+ * Body schema for adding a message to a conversation.
+ */
+export const addMessageBody = z.object({
+  body: z.string().min(1, 'Message body is required'),
+  sender: messageSideSchema,
+  sentAt: z.string().datetime(),
+});
+
+export type AddMessageBody = z.infer<typeof addMessageBody>;
+
 

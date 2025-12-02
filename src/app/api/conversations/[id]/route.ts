@@ -1,43 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/backend/core/auth/get-session';
-import { HttpError, UnauthorizedError } from '@/backend/core/errors/http-errors';
+import { HttpError, UnauthorizedError, NotFoundError } from '@/backend/core/errors/http-errors';
 import {
-  createConversation,
-  listConversations,
+  getConversationById,
+  updateConversation,
+  addMessage,
 } from '@/backend/features/conversations';
 import {
-  conversationInboxListDto,
-  createConversationBody,
-  createConversationResponseDto,
-  listConversationsQuery,
+  conversationDetailDto,
+  updateConversationBody,
+  addMessageBody,
 } from '@/backend/features/conversations/http/conversations.schemas';
 
 /**
- * GET /api/conversations
- * List conversations for the Inbox.
+ * GET /api/conversations/[id]
+ * Get a single conversation with full detail (messages, metadata, etc.).
  */
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const user = await getSessionUser();
     if (!user) {
       throw new UnauthorizedError();
     }
 
-    const { searchParams } = new URL(req.url);
-    const rawQuery = Object.fromEntries(searchParams.entries());
-    const query = listConversationsQuery.parse(rawQuery);
-
-    const result = await listConversations({
+    const { id } = await params;
+    const result = await getConversationById({
       userId: user.id,
-      search: query.search,
-      status: query.status,
-      page: query.page,
-      pageSize: query.pageSize,
-      sortBy: query.sortBy,
-      sortDir: query.sortDir,
+      conversationId: id,
     });
 
-    return NextResponse.json(conversationInboxListDto.parse(result));
+    if (!result) {
+      throw new NotFoundError('Conversation not found');
+    }
+
+    return NextResponse.json(conversationDetailDto.parse(result));
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -45,7 +44,7 @@ export async function GET(req: NextRequest) {
 
     const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('[api/conversations] Unexpected error:', errorMessage, errorStack || '');
+    console.error('[api/conversations/[id]] Unexpected error:', errorMessage, errorStack || '');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },
@@ -54,25 +53,34 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * POST /api/conversations
- * Create a new conversation (and contact if needed) from the Inbox.
+ * PATCH /api/conversations/[id]
+ * Update a conversation's metadata (category, stage, next action, notes, etc.).
  */
-export async function POST(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const user = await getSessionUser();
     if (!user) {
       throw new UnauthorizedError();
     }
 
+    const { id } = await params;
     const json = await req.json();
-    const body = createConversationBody.parse(json);
+    const body = updateConversationBody.parse(json);
 
-    const result = await createConversation({
+    const result = await updateConversation({
       userId: user.id,
+      conversationId: id,
       body,
     });
 
-    return NextResponse.json(createConversationResponseDto.parse(result), { status: 201 });
+    if (!result) {
+      throw new NotFoundError('Conversation not found');
+    }
+
+    return NextResponse.json(conversationDetailDto.parse(result));
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -80,12 +88,11 @@ export async function POST(req: NextRequest) {
 
     const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('[api/conversations] Unexpected error:', errorMessage, errorStack || '');
+    console.error('[api/conversations/[id]] Unexpected error:', errorMessage, errorStack || '');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },
     );
   }
 }
-
 

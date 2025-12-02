@@ -1,3 +1,9 @@
-export { listConversations, createConversation } from './application/conversations.use-cases';
+export {
+  listConversations,
+  createConversation,
+  getConversationById,
+  updateConversation,
+  addMessage,
+} from './application/conversations.use-cases';
 
 

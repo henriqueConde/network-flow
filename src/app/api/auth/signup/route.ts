@@ -87,7 +87,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    console.error('[auth/signup] Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('[auth/signup] Unexpected error:', errorMessage, errorStack || '');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

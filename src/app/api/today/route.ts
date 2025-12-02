@@ -68,7 +68,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    console.error('[api/today] Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('[api/today] Unexpected error:', errorMessage, errorStack || '');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },

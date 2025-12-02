@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { ConversationsInboxView } from './conversations-inbox.view';
-import { useConversationsInbox, useCreateConversation } from '../../services/conversations.queries';
+import { useConversationsInbox } from '../../services/conversations.queries';
+import { useCreateConversation } from '../../services/conversations.mutations';
 import { CONVERSATIONS_INBOX_CONFIG } from './conversations-inbox.config';
 import { useConversationsFilters } from './hooks/use-conversations-filters.state';
 import { useCreateConversationDialog } from './hooks/use-create-conversation-dialog.state';

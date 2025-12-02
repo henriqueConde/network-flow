@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  createConversation,
-  listConversations,
-  type CreateConversationPayload,
-} from './conversations.service';
+import { useQuery } from '@tanstack/react-query';
+import { listConversations, getConversationDetail } from './conversations.service';
 import { conversationsKeys } from './conversations.keys';
 
+/**
+ * Query hook for fetching conversations list (inbox).
+ * Defined in services layer for reusability and separation of concerns.
+ */
 export function useConversationsInbox(params: {
   search?: string;
   status?: 'all' | 'needs_attention' | 'waiting_on_them';
@@ -22,14 +22,17 @@ export function useConversationsInbox(params: {
   });
 }
 
-export function useCreateConversation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (payload: CreateConversationPayload) => createConversation(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
-    },
+/**
+ * Query hook for fetching a single conversation detail.
+ * Defined in services layer for reusability and separation of concerns.
+ */
+export function useConversationDetail(id: string) {
+  return useQuery({
+    queryKey: conversationsKeys.detail(id),
+    queryFn: () => getConversationDetail(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
   });
 }
 

@@ -209,6 +209,169 @@ export function makeConversationsRepo() {
 
       return conversation;
     },
+
+    /**
+     * Get a single conversation by ID with all related data.
+     * Includes messages and latest email event if out of sync.
+     */
+    async getConversationById(params: { userId: string; conversationId: string }) {
+      const { userId, conversationId } = params;
+
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+        include: {
+          contact: true,
+          category: true,
+          stage: true,
+          messages: {
+            orderBy: {
+              sentAt: 'asc',
+            },
+          },
+          linkedInEmailEvents: {
+            orderBy: {
+              emailReceivedAt: 'desc',
+            },
+            take: 1,
+          },
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      return {
+        id: conversation.id,
+        contactId: conversation.contactId,
+        contactName: conversation.contact.name,
+        contactCompany: conversation.contact.company ?? null,
+        channel: conversation.channel,
+        categoryId: conversation.categoryId ?? null,
+        categoryName: conversation.category?.name ?? null,
+        stageId: conversation.stageId ?? null,
+        stageName: conversation.stage?.name ?? null,
+        nextActionType: conversation.nextActionType ?? null,
+        nextActionDueAt: conversation.nextActionDueAt,
+        priority: conversation.priority as 'low' | 'medium' | 'high',
+        isOutOfSync: conversation.isOutOfSync,
+        summary: conversation.summary ?? null,
+        notes: conversation.notes ?? null,
+        lastMessageAt: conversation.lastMessageAt,
+        lastMessageSide: conversation.lastMessageSide as 'user' | 'contact' | null,
+        messages: conversation.messages.map((msg) => ({
+          id: msg.id,
+          sender: msg.sender as 'user' | 'contact',
+          body: msg.body,
+          sentAt: msg.sentAt,
+          source: msg.source,
+        })),
+        latestEmailEvent:
+          conversation.linkedInEmailEvents.length > 0
+            ? {
+                id: conversation.linkedInEmailEvents[0].id,
+                senderName: conversation.linkedInEmailEvents[0].senderName,
+                snippet: conversation.linkedInEmailEvents[0].snippet ?? null,
+                emailReceivedAt: conversation.linkedInEmailEvents[0].emailReceivedAt,
+              }
+            : null,
+      };
+    },
+
+    /**
+     * Update a conversation's metadata (category, stage, next action, notes, etc.).
+     */
+    async updateConversation(params: {
+      userId: string;
+      conversationId: string;
+      updates: {
+        categoryId?: string | null;
+        stageId?: string | null;
+        nextActionType?: string | null;
+        nextActionDueAt?: Date | null;
+        priority?: 'low' | 'medium' | 'high';
+        notes?: string | null;
+      };
+    }) {
+      const { userId, conversationId, updates } = params;
+
+      const conversation = await prisma.conversation.updateMany({
+        where: {
+          id: conversationId,
+          userId,
+        },
+        data: {
+          ...(updates.categoryId !== undefined && { categoryId: updates.categoryId }),
+          ...(updates.stageId !== undefined && { stageId: updates.stageId }),
+          ...(updates.nextActionType !== undefined && { nextActionType: updates.nextActionType }),
+          ...(updates.nextActionDueAt !== undefined && {
+            nextActionDueAt: updates.nextActionDueAt,
+          }),
+          ...(updates.priority !== undefined && { priority: updates.priority }),
+          ...(updates.notes !== undefined && { notes: updates.notes }),
+        },
+      });
+
+      if (conversation.count === 0) {
+        return null;
+      }
+
+      // Return updated conversation
+      return this.getConversationById({ userId, conversationId });
+    },
+
+    /**
+     * Add a message to a conversation.
+     * Updates the conversation's lastMessageAt, lastMessageSide, and lastMessageSnippet.
+     */
+    async addMessage(params: {
+      userId: string;
+      conversationId: string;
+      body: string;
+      sender: 'user' | 'contact';
+      sentAt: Date;
+    }) {
+      const { userId, conversationId, body, sender, sentAt } = params;
+
+      // Verify conversation belongs to user
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      // Create the message
+      const message = await prisma.message.create({
+        data: {
+          conversationId,
+          sender,
+          body,
+          sentAt,
+          source: 'manual_reply',
+        },
+      });
+
+      // Update conversation metadata
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: {
+          lastMessageAt: sentAt,
+          lastMessageSide: sender,
+          lastMessageSnippet: body.slice(0, 2000),
+        },
+      });
+
+      // Return updated conversation with all messages
+      return this.getConversationById({ userId, conversationId });
+    },
   };
 }
 

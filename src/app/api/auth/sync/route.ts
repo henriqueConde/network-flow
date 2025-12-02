@@ -36,7 +36,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: authError.message }, { status: 401 });
     }
 
-    console.error('[auth/sync] Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('[auth/sync] Unexpected error:', errorMessage, errorStack || '');
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Internal Error' },
       { status: 500 },

@@ -69,4 +69,173 @@ export async function createConversation(payload: CreateConversationPayload) {
   return res.data as { id: string };
 }
 
+/**
+ * Message DTO for conversation detail.
+ */
+const MessageDto = z.object({
+  id: z.string(),
+  sender: messageSideSchema,
+  body: z.string(),
+  sentAt: z.string().datetime(),
+  source: z.string(),
+});
+
+/**
+ * LinkedIn email event snippet DTO (for out-of-sync hints).
+ */
+const LinkedInEmailEventDto = z.object({
+  id: z.string(),
+  senderName: z.string(),
+  snippet: z.string().nullable(),
+  emailReceivedAt: z.string().datetime(),
+});
+
+/**
+ * Conversation detail DTO.
+ */
+const ConversationDetailDto = z.object({
+  id: z.string(),
+  contactId: z.string(),
+  contactName: z.string(),
+  contactCompany: z.string().nullable(),
+  channel: z.string(),
+  categoryId: z.string().nullable(),
+  categoryName: z.string().nullable(),
+  stageId: z.string().nullable(),
+  stageName: z.string().nullable(),
+  nextActionType: z.string().nullable(),
+  nextActionDueAt: z.string().datetime().nullable(),
+  priority: prioritySchema,
+  isOutOfSync: z.boolean(),
+  summary: z.string().nullable(),
+  notes: z.string().nullable(),
+  lastMessageAt: z.string().datetime().nullable(),
+  lastMessageSide: messageSideSchema.nullable(),
+  messages: z.array(MessageDto),
+  latestEmailEvent: LinkedInEmailEventDto.nullable(),
+});
+
+export type ConversationDetail = Omit<z.infer<typeof ConversationDetailDto>, 'messages' | 'latestEmailEvent'> & {
+  messages: Array<{
+    id: string;
+    sender: 'user' | 'contact';
+    body: string;
+    sentAt: Date;
+    source: string;
+  }>;
+  nextActionDueAtDate: Date | null;
+  lastMessageAtDate: Date | null;
+  latestEmailEvent: {
+    id: string;
+    senderName: string;
+    snippet: string | null;
+    emailReceivedAt: Date;
+  } | null;
+};
+
+/**
+ * Update conversation payload.
+ */
+const UpdateConversationBody = z.object({
+  categoryId: z.string().uuid().nullable().optional(),
+  stageId: z.string().uuid().nullable().optional(),
+  nextActionType: z.string().nullable().optional(),
+  nextActionDueAt: z.string().datetime().nullable().optional(),
+  priority: prioritySchema.optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export type UpdateConversationPayload = z.infer<typeof UpdateConversationBody>;
+
+/**
+ * Add message payload.
+ */
+const AddMessageBody = z.object({
+  body: z.string().min(1),
+  sender: messageSideSchema,
+  sentAt: z.string().datetime(),
+});
+
+export type AddMessagePayload = z.infer<typeof AddMessageBody>;
+
+/**
+ * Add a message (reply) to a conversation.
+ */
+export async function addMessage(
+  conversationId: string,
+  payload: AddMessagePayload,
+): Promise<ConversationDetail> {
+  const body = AddMessageBody.parse(payload);
+  const res = await client.post(`/api/conversations/${conversationId}/messages`, body);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Fetch a single conversation by ID with full detail.
+ */
+export async function getConversationDetail(id: string): Promise<ConversationDetail> {
+  const res = await client.get(`/api/conversations/${id}`);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Update a conversation's metadata.
+ */
+export async function updateConversation(
+  id: string,
+  payload: UpdateConversationPayload,
+): Promise<ConversationDetail> {
+  const body = UpdateConversationBody.parse(payload);
+  const res = await client.patch(`/api/conversations/${id}`, body);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
 
