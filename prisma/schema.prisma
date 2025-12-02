@@ -38,6 +38,7 @@ model Category {
   // Relations
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+  contacts     Contact[]
 
   @@unique([userId, name])
   @@map("categories")
@@ -55,6 +56,7 @@ model Stage {
   // Relations
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+  contacts      Contact[]
 
   @@unique([userId, name])
   @@map("stages")
@@ -69,11 +71,15 @@ model Contact {
   primaryPlatform String?  @map("primary_platform")
   profileLinks    Json?    @map("profile_links") // { linkedin: "url", twitter: "handle" }
   tags            String[] // Array of tags
+  categoryId      String?  @db.Uuid
+  stageId         String?  @db.Uuid
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   // Relations
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  stage         Stage?        @relation(fields: [stageId], references: [id], onDelete: SetNull)
   conversations Conversation[]
 
   @@map("contacts")

@@ -39,6 +39,8 @@ export const contactListItemDto = z.object({
   primaryPlatform: z.string().nullable(),
   profileLinks: z.record(z.string()).nullable(),
   tags: z.array(z.string()),
+  categoryId: z.string().uuid().nullable(),
+  stageId: z.string().uuid().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   latestConversation: contactLatestConversationDto.nullable(),
@@ -86,6 +88,8 @@ export const contactDetailDto = z.object({
   primaryPlatform: z.string().nullable(),
   profileLinks: z.record(z.string()).nullable(),
   tags: z.array(z.string()),
+  categoryId: z.string().uuid().nullable(),
+  stageId: z.string().uuid().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   conversations: z.array(contactConversationSummaryDto),
@@ -103,6 +107,8 @@ export const createContactBody = z.object({
   primaryPlatform: z.string().nullable().optional(),
   profileLinks: z.record(z.string()).nullable().optional(),
   tags: z.array(z.string()).optional(),
+  categoryId: z.string().uuid().nullable().optional(),
+  stageId: z.string().uuid().nullable().optional(),
 });
 
 export type CreateContactBody = z.infer<typeof createContactBody>;
@@ -126,6 +132,8 @@ export const updateContactBody = z.object({
   primaryPlatform: z.string().nullable().optional(),
   profileLinks: z.record(z.string()).nullable().optional(),
   tags: z.array(z.string()).optional(),
+  categoryId: z.string().uuid().nullable().optional(),
+  stageId: z.string().uuid().nullable().optional(),
 });
 
 export type UpdateContactBody = z.infer<typeof updateContactBody>;

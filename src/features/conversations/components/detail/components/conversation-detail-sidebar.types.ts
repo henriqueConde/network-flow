@@ -37,3 +37,4 @@ export type ConversationDetailSidebarProps = {
   onRegenerateReply?: () => void;
 };
 
+

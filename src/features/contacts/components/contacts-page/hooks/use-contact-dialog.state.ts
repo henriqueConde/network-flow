@@ -18,6 +18,8 @@ export function useContactDialog(onSubmit: SubmitHandler) {
     company: '',
     primaryPlatform: '',
     tags: [],
+    categoryId: null,
+    stageId: null,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ContactFormValues, string>>>({});
 
@@ -30,6 +32,8 @@ export function useContactDialog(onSubmit: SubmitHandler) {
         company: contact.company || '',
         primaryPlatform: contact.primaryPlatform || '',
         tags: contact.tags || [],
+        categoryId: contact.categoryId || null,
+        stageId: contact.stageId || null,
       });
     } else {
       setEditingContact(null);
@@ -39,6 +43,8 @@ export function useContactDialog(onSubmit: SubmitHandler) {
         company: '',
         primaryPlatform: '',
         tags: [],
+        categoryId: null,
+        stageId: null,
       });
     }
     setErrors({});

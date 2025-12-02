@@ -56,6 +56,8 @@ export function ContactsPageContainer() {
           company: values.company || null,
           primaryPlatform: values.primaryPlatform || null,
           tags: values.tags || [],
+          categoryId: values.categoryId || null,
+          stageId: values.stageId || null,
         },
       });
     } else {
@@ -66,6 +68,8 @@ export function ContactsPageContainer() {
         company: values.company || null,
         primaryPlatform: values.primaryPlatform || null,
         tags: values.tags || [],
+        categoryId: values.categoryId || null,
+        stageId: values.stageId || null,
       });
     }
     contactDialog.close();

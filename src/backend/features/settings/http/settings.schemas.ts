@@ -22,3 +22,4 @@ export const updateSyncStatusBody = z.object({
 
 export type UpdateSyncStatusBody = z.infer<typeof updateSyncStatusBody>;
 
+

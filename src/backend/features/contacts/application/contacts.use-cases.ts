@@ -38,6 +38,8 @@ export async function listContacts(input: { userId: string } & ListContactsQuery
       primaryPlatform: contact.primaryPlatform,
       profileLinks: contact.profileLinks as Record<string, string> | null,
       tags: contact.tags,
+      categoryId: contact.categoryId,
+      stageId: contact.stageId,
       createdAt: contact.createdAt.toISOString(),
       updatedAt: contact.updatedAt.toISOString(),
       // Summary from latest conversation
@@ -85,6 +87,8 @@ export async function getContactById(input: { userId: string; contactId: string 
     primaryPlatform: contact.primaryPlatform,
     profileLinks: contact.profileLinks as Record<string, string> | null,
     tags: contact.tags,
+    categoryId: contact.categoryId,
+    stageId: contact.stageId,
     createdAt: contact.createdAt.toISOString(),
     updatedAt: contact.updatedAt.toISOString(),
     conversations: contact.conversations.map((conv) => ({
@@ -120,6 +124,8 @@ export async function updateContact(input: {
     primaryPlatform?: string | null;
     profileLinks?: Record<string, string> | null;
     tags?: string[];
+    categoryId?: string | null;
+    stageId?: string | null;
   } = {};
 
   if (input.body.name !== undefined) {
@@ -139,6 +145,12 @@ export async function updateContact(input: {
   }
   if (input.body.tags !== undefined) {
     updates.tags = input.body.tags;
+  }
+  if (input.body.categoryId !== undefined) {
+    updates.categoryId = input.body.categoryId;
+  }
+  if (input.body.stageId !== undefined) {
+    updates.stageId = input.body.stageId;
   }
 
   const updated = await repo.updateContact({
@@ -160,6 +172,8 @@ export async function updateContact(input: {
     primaryPlatform: updated.primaryPlatform,
     profileLinks: updated.profileLinks as Record<string, string> | null,
     tags: updated.tags,
+    categoryId: updated.categoryId,
+    stageId: updated.stageId,
     createdAt: updated.createdAt.toISOString(),
     updatedAt: updated.updatedAt.toISOString(),
     conversations: updated.conversations.map((conv) => ({
@@ -196,6 +210,8 @@ export async function createContact(input: {
       primaryPlatform: input.body.primaryPlatform ?? null,
       profileLinks: input.body.profileLinks ?? null,
       tags: input.body.tags ?? [],
+      categoryId: input.body.categoryId ?? null,
+      stageId: input.body.stageId ?? null,
     },
   });
 

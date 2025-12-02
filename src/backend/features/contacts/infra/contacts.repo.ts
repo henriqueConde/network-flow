@@ -73,20 +73,64 @@ export function makeContactsRepo() {
         where.primaryPlatform = primaryPlatform;
       }
 
-      // Filter by category or stage through conversations
+      // Filter by category or stage - check both contact's own category/stage and conversations
       if (categoryId || stageId) {
-        where.conversations = {
-          some: {
-            ...(categoryId && { categoryId }),
-            ...(stageId && { stageId }),
-          },
-        };
+        const categoryStageFilters: any[] = [];
+        
+        // Contact has both category and stage
+        if (categoryId && stageId) {
+          categoryStageFilters.push({
+            categoryId,
+            stageId,
+          });
+          categoryStageFilters.push({
+            conversations: {
+              some: {
+                categoryId,
+                stageId,
+              },
+            },
+          });
+        } else {
+          // Contact has category or stage (or both separately)
+          if (categoryId) {
+            categoryStageFilters.push({ categoryId });
+            categoryStageFilters.push({
+              conversations: {
+                some: { categoryId },
+              },
+            });
+          }
+          if (stageId) {
+            categoryStageFilters.push({ stageId });
+            categoryStageFilters.push({
+              conversations: {
+                some: { stageId },
+              },
+            });
+          }
+        }
+
+        // If we have both search and category/stage filters, combine them with AND
+        if (where.OR && categoryStageFilters.length > 0) {
+          // Search OR condition exists, combine with category/stage filter using AND
+          where.AND = [
+            { OR: where.OR },
+            { OR: categoryStageFilters },
+          ];
+          delete where.OR;
+        } else if (categoryStageFilters.length > 0) {
+          // No search filter, just use category/stage OR
+          where.OR = categoryStageFilters;
+        }
       }
 
       const [contacts, total] = await Promise.all([
         prisma.contact.findMany({
           where,
           include: {
+            category: true,
+            stage: true,
             conversations: {
               include: {
                 category: true,
@@ -128,6 +172,8 @@ export function makeContactsRepo() {
           userId,
         },
         include: {
+          category: true,
+          stage: true,
           conversations: {
             include: {
               category: true,
@@ -155,6 +201,8 @@ export function makeContactsRepo() {
         primaryPlatform?: string | null;
         profileLinks?: Record<string, string> | null;
         tags?: string[];
+        categoryId?: string | null;
+        stageId?: string | null;
       };
     }) {
       const { userId, data } = params;
@@ -173,8 +221,12 @@ export function makeContactsRepo() {
           primaryPlatform: data.primaryPlatform ?? null,
           profileLinks: profileLinksValue,
           tags: data.tags ?? [],
+          categoryId: data.categoryId ?? null,
+          stageId: data.stageId ?? null,
         },
         include: {
+          category: true,
+          stage: true,
           conversations: {
             include: {
               category: true,
@@ -203,6 +255,8 @@ export function makeContactsRepo() {
         primaryPlatform?: string | null;
         profileLinks?: Record<string, string> | null;
         tags?: string[];
+        categoryId?: string | null;
+        stageId?: string | null;
       };
     }) {
       const { userId, contactId, updates } = params;
@@ -237,6 +291,8 @@ export function makeContactsRepo() {
           userId,
         },
         include: {
+          category: true,
+          stage: true,
           conversations: {
             include: {
               category: true,

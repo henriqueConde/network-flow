@@ -8,3 +8,4 @@ export interface SettingsPageViewProps {
   config: typeof SETTINGS_PAGE_CONFIG;
 }
 
+

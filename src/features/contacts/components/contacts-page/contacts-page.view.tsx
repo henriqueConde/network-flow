@@ -369,6 +369,36 @@ export function ContactsPageView({
             <MenuItem value="email">Email</MenuItem>
             <MenuItem value="twitter">Twitter</MenuItem>
           </TextField>
+          <TextField
+            select
+            label="Category"
+            fullWidth
+            size="small"
+            value={dialogValues.categoryId || ''}
+            onChange={(e) => onChangeDialogField('categoryId', e.target.value || null)}
+          >
+            <MenuItem value="">None</MenuItem>
+            {availableCategories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label="Stage"
+            fullWidth
+            size="small"
+            value={dialogValues.stageId || ''}
+            onChange={(e) => onChangeDialogField('stageId', e.target.value || null)}
+          >
+            <MenuItem value="">None</MenuItem>
+            {availableStages.map((stage) => (
+              <MenuItem key={stage.id} value={stage.id}>
+                {stage.name}
+              </MenuItem>
+            ))}
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={onCloseDialog} disabled={isSubmitting}>

@@ -5,3 +5,4 @@ export type SummaryCardProps = {
   config: typeof CONVERSATION_DETAIL_CONFIG;
 };
 
+
