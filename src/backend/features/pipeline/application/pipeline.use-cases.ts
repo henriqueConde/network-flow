@@ -3,14 +3,15 @@ import {
   pipelineBoardDto,
   type MoveOpportunityBody,
   moveOpportunityResponseDto,
+  type GetPipelineBoardQuery,
 } from '../http/pipeline.schemas';
 
 /**
  * Use case: Get the pipeline board with all stages and their opportunities.
  */
-export async function getPipelineBoard(userId: string) {
+export async function getPipelineBoard(userId: string, filters?: GetPipelineBoardQuery) {
   const repo = makePipelineRepo();
-  const board = await repo.getPipelineBoard(userId);
+  const board = await repo.getPipelineBoard(userId, filters);
 
   // Normalize Dates to ISO strings for DTO
   const dto = {

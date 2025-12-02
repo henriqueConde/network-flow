@@ -20,6 +20,8 @@ export async function listConversations(
     userId: input.userId,
     search: input.search,
     status: input.status,
+    categoryId: input.categoryId,
+    stageId: input.stageId,
     page: input.page,
     pageSize: input.pageSize,
     sortBy: input.sortBy,

@@ -9,6 +9,8 @@ import { conversationsKeys } from './conversations.keys';
 export function useConversationsInbox(params: {
   search?: string;
   status?: 'all' | 'needs_attention' | 'waiting_on_them';
+  categoryId?: string;
+  stageId?: string;
   page: number;
   pageSize: number;
   sortBy: 'updatedAt' | 'lastMessageAt' | 'priority';

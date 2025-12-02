@@ -9,6 +9,14 @@ export const CONVERSATIONS_INBOX_CONFIG = {
       needs_attention: 'Needs attention',
       waiting_on_them: 'Waiting on them',
     },
+    categoryFilter: {
+      label: 'Category',
+      all: 'All categories',
+    },
+    stageFilter: {
+      label: 'Stage',
+      all: 'All stages',
+    },
     table: {
       contact: 'Contact',
       stage: 'Stage',

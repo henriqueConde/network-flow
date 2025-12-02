@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/backend/core/auth/get-session';
-import { HttpError, UnauthorizedError, NotFoundError } from '@/backend/core/errors/http-errors';
-import { getPipelineBoard } from '@/backend/features/pipeline';
+import { HttpError, UnauthorizedError } from '@/backend/core/errors/http-errors';
+import { listCategories, ensureDefaultCategories } from '@/backend/features/categories';
 import {
-  pipelineBoardDto,
-  getPipelineBoardQuery,
-} from '@/backend/features/pipeline/http/pipeline.schemas';
+  categoriesListDto,
+  listCategoriesQuery,
+} from '@/backend/features/categories/http/categories.schemas';
 
 /**
- * GET /api/pipeline
- * Get the pipeline board with all stages and their opportunities.
+ * GET /api/categories
+ * Get all categories for the current user.
+ * Optionally ensures default categories exist if none are found.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -20,11 +21,16 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const rawQuery = Object.fromEntries(searchParams.entries());
-    const query = getPipelineBoardQuery.parse(rawQuery);
+    const query = listCategoriesQuery.parse(rawQuery);
 
-    const result = await getPipelineBoard(user.id, query);
+    let result;
+    if (query.ensureDefaults) {
+      result = await ensureDefaultCategories(user.id);
+    } else {
+      result = await listCategories(user.id);
+    }
 
-    return NextResponse.json(pipelineBoardDto.parse(result));
+    return NextResponse.json(categoriesListDto.parse(result));
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -32,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('[api/pipeline] Unexpected error:', errorMessage, errorStack || '');
+    console.error('[api/categories] Unexpected error:', errorMessage, errorStack || '');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },

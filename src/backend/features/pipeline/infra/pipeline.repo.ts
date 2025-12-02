@@ -10,7 +10,7 @@ export function makePipelineRepo() {
      * Get all stages with their opportunities for the pipeline board.
      * Returns stages ordered by their `order` field, with conversations as opportunities.
      */
-    async getPipelineBoard(userId: string) {
+    async getPipelineBoard(userId: string, filters?: { categoryId?: string; stageId?: string }) {
       // Fetch all stages for the user, ordered by their order field
       const stages = await prisma.stage.findMany({
         where: {
@@ -21,11 +21,22 @@ export function makePipelineRepo() {
         },
       });
 
+      // Build where clause for conversations
+      const conversationWhere: any = {
+        userId,
+      };
+
+      if (filters?.categoryId) {
+        conversationWhere.categoryId = filters.categoryId;
+      }
+
+      if (filters?.stageId) {
+        conversationWhere.stageId = filters.stageId;
+      }
+
       // Fetch all conversations with their related data
       const conversations = await prisma.conversation.findMany({
-        where: {
-          userId,
-        },
+        where: conversationWhere,
         include: {
           contact: true,
           category: true,

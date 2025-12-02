@@ -46,6 +46,7 @@ export function ConversationDetailView({
   onChangeAddReplyField,
   onSubmitAddReply,
   availableStages,
+  availableCategories,
 }: ConversationDetailViewProps) {
   const formatDate = (date: Date | null) => {
     if (!date) return '—';
@@ -238,11 +239,11 @@ export function ConversationDetailView({
                   disabled={isSaving}
                 >
                   <MenuItem value="">None</MenuItem>
-                  {conversation.categoryName && (
-                    <MenuItem value={conversation.categoryId || ''}>
-                      {conversation.categoryName}
+                  {availableCategories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
                     </MenuItem>
-                  )}
+                  ))}
                 </TextField>
 
                 <TextField

@@ -42,8 +42,11 @@ export type PipelineBoard = {
 /**
  * Fetch the pipeline board with all stages and their opportunities.
  */
-export async function getPipelineBoard(): Promise<PipelineBoard> {
-  const res = await client.get('/api/pipeline');
+export async function getPipelineBoard(params?: {
+  categoryId?: string;
+  stageId?: string;
+}): Promise<PipelineBoard> {
+  const res = await client.get('/api/pipeline', { params });
   const data = PipelineBoardDto.parse(res.data);
 
   return {

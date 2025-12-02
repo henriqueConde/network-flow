@@ -17,6 +17,8 @@ export function makeConversationsRepo() {
       userId: string;
       search?: string;
       status?: 'all' | 'needs_attention' | 'waiting_on_them';
+      categoryId?: string;
+      stageId?: string;
       page: number;
       pageSize: number;
       sortBy: 'updatedAt' | 'lastMessageAt' | 'priority';
@@ -26,6 +28,8 @@ export function makeConversationsRepo() {
         userId,
         search,
         status = 'all',
+        categoryId,
+        stageId,
         page,
         pageSize,
         sortBy,
@@ -55,6 +59,14 @@ export function makeConversationsRepo() {
             },
           },
         ];
+      }
+
+      if (categoryId) {
+        where.categoryId = categoryId;
+      }
+
+      if (stageId) {
+        where.stageId = stageId;
       }
 
       if (status === 'needs_attention') {

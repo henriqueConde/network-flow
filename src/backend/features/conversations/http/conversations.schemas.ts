@@ -4,6 +4,8 @@ import { conversationChannelSchema, prioritySchema, messageSideSchema } from '@/
 export const listConversationsQuery = z.object({
   search: z.string().trim().optional(),
   status: z.enum(['all', 'needs_attention', 'waiting_on_them']).optional().default('all'),
+  categoryId: z.string().uuid().optional(),
+  stageId: z.string().uuid().optional(),
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
   sortBy: z

@@ -8,6 +8,8 @@ import { useListQueryControls } from '@/shared/hooks';
  */
 export function useConversationsFilters() {
     const [status, setStatus] = useState<ConversationsInboxFilterStatus>('all');
+    const [categoryId, setCategoryId] = useState<string | null>(null);
+    const [stageId, setStageId] = useState<string | null>(null);
 
     const {
         search,
@@ -35,6 +37,16 @@ export function useConversationsFilters() {
         setPage(1);
     };
 
+    const handleCategoryChange = (value: string | null) => {
+        setCategoryId(value);
+        setPage(1);
+    };
+
+    const handleStageChange = (value: string | null) => {
+        setStageId(value);
+        setPage(1);
+    };
+
     const handlePageChange = (nextPage: number) => {
         setPage(nextPage);
     };
@@ -49,12 +61,16 @@ export function useConversationsFilters() {
     return {
         search,
         status,
+        categoryId,
+        stageId,
         page,
         pageSize,
         sortBy,
         sortDir,
         handleSearchChange,
         handleStatusChange,
+        handleCategoryChange,
+        handleStageChange,
         handlePageChange,
         handleSortChange,
     };

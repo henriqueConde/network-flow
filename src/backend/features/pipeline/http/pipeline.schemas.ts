@@ -61,3 +61,13 @@ export const moveOpportunityResponseDto = z.object({
 
 export type MoveOpportunityResponseDto = z.infer<typeof moveOpportunityResponseDto>;
 
+/**
+ * Query schema for getting the pipeline board.
+ */
+export const getPipelineBoardQuery = z.object({
+  categoryId: z.string().uuid().optional(),
+  stageId: z.string().uuid().optional(),
+});
+
+export type GetPipelineBoardQuery = z.infer<typeof getPipelineBoardQuery>;
+

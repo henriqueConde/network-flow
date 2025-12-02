@@ -7,6 +7,8 @@ import { useCreateConversation } from '../../services/conversations.mutations';
 import { CONVERSATIONS_INBOX_CONFIG } from './conversations-inbox.config';
 import { useConversationsFilters } from './hooks/use-conversations-filters.state';
 import { useCreateConversationDialog } from './hooks/use-create-conversation-dialog.state';
+import { useCategories } from '@/features/categories';
+import { useStages } from '@/features/stages';
 
 export function ConversationsInboxContainer() {
   const router = useRouter();
@@ -15,15 +17,22 @@ export function ConversationsInboxContainer() {
   const {
     search,
     status,
+    categoryId,
+    stageId,
     page,
     pageSize,
     sortBy,
     sortDir,
     handleSearchChange,
     handleStatusChange,
+    handleCategoryChange,
+    handleStageChange,
     handlePageChange,
     handleSortChange,
   } = useConversationsFilters();
+
+  const { data: categories = [] } = useCategories();
+  const { data: stages = [] } = useStages();
 
   const createMutation = useCreateConversation();
 
@@ -41,6 +50,8 @@ export function ConversationsInboxContainer() {
   const { data = [], isLoading, error } = useConversationsInbox({
     search: search || undefined,
     status,
+    categoryId: categoryId || undefined,
+    stageId: stageId || undefined,
     page,
     pageSize,
     sortBy,
@@ -69,6 +80,12 @@ export function ConversationsInboxContainer() {
       config={CONVERSATIONS_INBOX_CONFIG}
       onSearchChange={handleSearchChange}
       onStatusChange={handleStatusChange}
+      categoryId={categoryId}
+      stageId={stageId}
+      availableCategories={categories}
+      availableStages={stages}
+      onCategoryChange={handleCategoryChange}
+      onStageChange={handleStageChange}
       onPageChange={handlePageChange}
       onSortChange={handleSortChange}
       onRowClick={handleRowClick}

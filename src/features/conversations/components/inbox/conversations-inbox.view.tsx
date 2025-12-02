@@ -36,9 +36,15 @@ export function ConversationsInboxView({
   sortBy,
   sortDir,
   status,
+  categoryId,
+  stageId,
+  availableCategories,
+  availableStages,
   config,
   onSearchChange,
   onStatusChange,
+  onCategoryChange,
+  onStageChange,
   onPageChange,
   onSortChange,
   onRowClick,
@@ -91,6 +97,36 @@ export function ConversationsInboxView({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
+        <TextField
+          select
+          size="small"
+          label={config.copy.categoryFilter.label}
+          value={categoryId || ''}
+          onChange={(e) => onCategoryChange(e.target.value || null)}
+          sx={{ minWidth: 150 }}
+        >
+          <MenuItem value="">{config.copy.categoryFilter.all}</MenuItem>
+          {availableCategories.map((category) => (
+            <MenuItem key={category.id} value={category.id}>
+              {category.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          size="small"
+          label={config.copy.stageFilter.label}
+          value={stageId || ''}
+          onChange={(e) => onStageChange(e.target.value || null)}
+          sx={{ minWidth: 150 }}
+        >
+          <MenuItem value="">{config.copy.stageFilter.all}</MenuItem>
+          {availableStages.map((stage) => (
+            <MenuItem key={stage.id} value={stage.id}>
+              {stage.name}
+            </MenuItem>
+          ))}
+        </TextField>
         <ToggleButtonGroup
           size="small"
           value={status}

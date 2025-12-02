@@ -8,6 +8,7 @@ import {
   Menu,
   MenuItem,
   ListItemText,
+  TextField,
 } from '@mui/material';
 import { useState } from 'react';
 import {
@@ -64,6 +65,11 @@ export function PipelinePageView({
   onOpportunityClick,
   onMoveOpportunity,
   availableStages,
+  availableCategories,
+  categoryId,
+  stageId,
+  onCategoryChange,
+  onStageChange,
 }: PipelinePageViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -203,6 +209,38 @@ export function PipelinePageView({
           <Typography variant="body1" sx={styles.subtitle()}>
             {config.copy.subtitle}
           </Typography>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <TextField
+              select
+              size="small"
+              label={config.copy.categoryFilter.label}
+              value={categoryId || ''}
+              onChange={(e) => onCategoryChange(e.target.value || null)}
+              sx={{ minWidth: 150 }}
+            >
+              <MenuItem value="">{config.copy.categoryFilter.all}</MenuItem>
+              {availableCategories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              size="small"
+              label={config.copy.stageFilter.label}
+              value={stageId || ''}
+              onChange={(e) => onStageChange(e.target.value || null)}
+              sx={{ minWidth: 150 }}
+            >
+              <MenuItem value="">{config.copy.stageFilter.all}</MenuItem>
+              {availableStages.map((stage) => (
+                <MenuItem key={stage.id} value={stage.id}>
+                  {stage.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
         </Box>
 
         <SortableContext items={allOpportunityIds} strategy={verticalListSortingStrategy}>

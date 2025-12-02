@@ -2,6 +2,14 @@ export const PIPELINE_PAGE_CONFIG = {
   copy: {
     title: 'Pipeline',
     subtitle: 'Your networking and interview funnel',
+    categoryFilter: {
+      label: 'Category',
+      all: 'All categories',
+    },
+    stageFilter: {
+      label: 'Stage',
+      all: 'All stages',
+    },
     empty: {
       noStages: 'No stages configured yet. Create stages in Settings to organize your opportunities, or assign stages to conversations from the Conversations page.',
       noOpportunities: 'No opportunities in this stage',
