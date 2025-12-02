@@ -11,7 +11,7 @@ export const PIPELINE_PAGE_CONFIG = {
       all: 'All stages',
     },
     empty: {
-      noStages: 'No stages configured yet. Create stages in Settings to organize your opportunities, or assign stages to conversations from the Conversations page.',
+      noStages: 'No stages configured yet. Create stages to organize your opportunities, or assign stages to conversations from the Conversations page.',
       noOpportunities: 'No opportunities in this stage',
       noData: 'No conversations yet. Start by creating a conversation from the Conversations page.',
     },

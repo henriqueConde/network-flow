@@ -7,7 +7,6 @@ export const APP_HEADER_CONFIG = {
       conversations: 'Conversations',
       pipeline: 'Pipeline',
       contacts: 'Contacts',
-      settings: 'Settings',
     },
   },
   ui: {
@@ -18,7 +17,6 @@ export const APP_HEADER_CONFIG = {
     conversations: '/conversations',
     pipeline: '/pipeline',
     contacts: '/contacts',
-    settings: '/settings',
   },
 } as const;
 

@@ -84,21 +84,6 @@ export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewPro
               {config.copy.navigation.contacts}
             </Typography>
           </Link>
-          <Link
-            href={config.routes.settings}
-            style={{ textDecoration: 'none' }}
-            className={isActive(config.routes.settings) ? 'active' : ''}
-          >
-            <Typography
-              component="span"
-              sx={[
-                styles.navLink(),
-                isActive(config.routes.settings) && styles.navLinkActive(),
-              ]}
-            >
-              {config.copy.navigation.settings}
-            </Typography>
-          </Link>
         </Box>
         <Box sx={styles.rightSection()}>
           {userEmail && (

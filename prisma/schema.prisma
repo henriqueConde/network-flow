@@ -20,7 +20,6 @@ model User {
   contacts           Contact[]
   conversations      Conversation[]
   linkedInEmailEvents LinkedInEmailEvent[]
-  syncStatus         SyncStatus?
   categories         Category[]
   stages             Stage[]
 
@@ -158,20 +157,5 @@ model LinkedInEmailEvent {
   @@index([emailReceivedAt])
   @@index([matchedConversationId])
   @@map("linkedin_email_events")
-}
-
-model SyncStatus {
-  id                              String    @id @default(uuid()) @db.Uuid
-  userId                          String    @unique @db.Uuid
-  lastLinkedInImportAt            DateTime? @map("last_linkedin_import_at")
-  latestMessageTimestampFromExport DateTime? @map("latest_message_timestamp_from_export")
-  latestLinkedInEmailTimestamp    DateTime? @map("latest_linkedin_email_timestamp")
-  createdAt                       DateTime  @default(now())
-  updatedAt                       DateTime  @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sync_status")
 }
 
