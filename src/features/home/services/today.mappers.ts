@@ -20,7 +20,7 @@ type TodayActionDto = {
   contactName: string;
   contactCompany?: string;
   dueAt: string; // ISO string
-  priority: 'high' | 'medium' | 'low';
+  priority: 'high' | 'medium' | 'low' | null;
   category?: string;
   stage?: string;
 };

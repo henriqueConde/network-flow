@@ -12,7 +12,7 @@ const ConversationInboxItemDto = z.object({
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSnippet: z.string().nullable(),
   lastMessageSide: messageSideSchema.nullable(),
-  priority: prioritySchema,
+  priority: prioritySchema.nullable(),
   isOutOfSync: z.boolean(),
   needsAttention: z.boolean(),
 });

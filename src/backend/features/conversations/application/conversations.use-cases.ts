@@ -124,7 +124,7 @@ export async function updateConversation(input: {
     stageId?: string | null;
     nextActionType?: string | null;
     nextActionDueAt?: Date | null;
-    priority?: 'low' | 'medium' | 'high';
+    priority?: 'low' | 'medium' | 'high' | null;
     notes?: string | null;
     originalUrl?: string | null;
   } = {};
@@ -153,6 +153,7 @@ export async function updateConversation(input: {
     updates.originalUrl = input.body.originalUrl;
   }
 
+  // Repository will handle checking if stage is closed and setting priority/nextAction to null
   const updated = await repo.updateConversation({
     userId: input.userId,
     conversationId: input.conversationId,

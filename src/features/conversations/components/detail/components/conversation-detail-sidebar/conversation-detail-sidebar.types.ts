@@ -10,7 +10,7 @@ export type ConversationDetailSidebarProps = {
     stageId: string | null;
     nextActionType: string | null;
     nextActionDueAt: string | null;
-    priority: 'low' | 'medium' | 'high';
+    priority: 'low' | 'medium' | 'high' | null;
     notes: string | null;
     originalUrl: string | null;
   };

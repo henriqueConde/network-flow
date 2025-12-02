@@ -123,11 +123,13 @@ export function TodayPageView({
                     <Typography sx={styles.actionTitle()}>
                       {action.title}
                     </Typography>
-                    <Chip
-                      label={action.priority}
-                      size="small"
-                      sx={styles.priorityBadge(action.priority)}
-                    />
+                    {action.priority && (
+                      <Chip
+                        label={action.priority}
+                        size="small"
+                        sx={styles.priorityBadge(action.priority)}
+                      />
+                    )}
                   </Box>
                   <Typography sx={styles.actionMeta()}>
                     {action.contactName}

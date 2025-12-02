@@ -139,7 +139,7 @@ export function makeConversationsRepo() {
           lastMessageAt: conv.lastMessageAt,
           lastMessageSnippet: conv.lastMessageSnippet ?? null,
           lastMessageSide: conv.lastMessageSide as 'user' | 'contact' | null,
-          priority: (conv.priority as 'low' | 'medium' | 'high') ?? 'medium',
+          priority: (conv.priority as 'low' | 'medium' | 'high' | null) ?? null,
           isOutOfSync: conv.isOutOfSync,
           needsAttention,
         };
@@ -158,7 +158,7 @@ export function makeConversationsRepo() {
       pastedText: string;
       categoryId?: string;
       stageId?: string;
-      priority: 'low' | 'medium' | 'high';
+      priority: 'low' | 'medium' | 'high' | null;
       firstMessageSender: 'user' | 'contact';
     }) {
       const {
@@ -204,7 +204,7 @@ export function makeConversationsRepo() {
           channel,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
-          priority,
+          priority: (priority ?? null) as any,
           lastMessageAt: now,
           lastMessageSide: firstMessageSender,
           lastMessageSnippet: pastedText.slice(0, 2000),
@@ -297,7 +297,32 @@ export function makeConversationsRepo() {
     },
 
     /**
+     * Helper: Check if a stage is a closed stage by its ID.
+     * A stage is considered closed if its name starts with "Closed".
+     */
+    async isClosedStage(userId: string, stageId: string | null): Promise<boolean> {
+      if (!stageId) {
+        return false;
+      }
+
+      const stage = await prisma.stage.findFirst({
+        where: {
+          id: stageId,
+          userId,
+        },
+      });
+
+      if (!stage) {
+        return false;
+      }
+
+      // Check if the stage name starts with "Closed" (e.g., "Closed (positive)", "Closed (negative)")
+      return stage.name.toLowerCase().startsWith('closed');
+    },
+
+    /**
      * Update a conversation's metadata (category, stage, next action, notes, etc.).
+     * If moving to a closed stage, automatically sets priority and next action to null.
      */
     async updateConversation(params: {
       userId: string;
@@ -307,28 +332,56 @@ export function makeConversationsRepo() {
         stageId?: string | null;
         nextActionType?: string | null;
         nextActionDueAt?: Date | null;
-        priority?: 'low' | 'medium' | 'high';
+        priority?: 'low' | 'medium' | 'high' | null;
         notes?: string | null;
         originalUrl?: string | null;
       };
     }) {
       const { userId, conversationId, updates } = params;
 
+      // Check if we're moving to a closed stage
+      let isMovingToClosedStage = false;
+      if (updates.stageId !== undefined) {
+        isMovingToClosedStage = await this.isClosedStage(userId, updates.stageId);
+      }
+
+      // Build update data object, only including defined fields
+      const updateData: any = {};
+      if (updates.categoryId !== undefined) {
+        updateData.categoryId = updates.categoryId;
+      }
+      if (updates.stageId !== undefined) {
+        updateData.stageId = updates.stageId;
+      }
+      if (updates.nextActionType !== undefined) {
+        updateData.nextActionType = updates.nextActionType;
+      }
+      if (updates.nextActionDueAt !== undefined) {
+        updateData.nextActionDueAt = updates.nextActionDueAt;
+      }
+      if (updates.priority !== undefined) {
+        updateData.priority = updates.priority;
+      }
+      if (updates.notes !== undefined) {
+        updateData.notes = updates.notes;
+      }
+      if (updates.originalUrl !== undefined) {
+        updateData.originalUrl = updates.originalUrl;
+      }
+
+      // If moving to a closed stage, set priority and next action to null
+      if (isMovingToClosedStage) {
+        updateData.priority = null;
+        updateData.nextActionType = null;
+        updateData.nextActionDueAt = null;
+      }
+
       const conversation = await prisma.conversation.updateMany({
         where: {
           id: conversationId,
           userId,
         },
-        data: {
-          ...(updates.categoryId !== undefined && { categoryId: updates.categoryId }),
-          ...(updates.stageId !== undefined && { stageId: updates.stageId }),
-          ...(updates.nextActionType !== undefined && { nextActionType: updates.nextActionType }),
-          ...(updates.nextActionDueAt !== undefined && {
-            nextActionDueAt: updates.nextActionDueAt,
-          }),
-          ...(updates.priority !== undefined && { priority: updates.priority }),
-          ...(updates.notes !== undefined && { notes: updates.notes }),
-        },
+        data: updateData,
       });
 
       if (conversation.count === 0) {

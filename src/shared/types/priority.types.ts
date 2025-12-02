@@ -18,6 +18,7 @@ export type PriorityType =
 /**
  * Zod schema for priority validation.
  * Use this in Zod schemas instead of manually defining the enum.
+ * Allows null for closed conversations.
  */
-export const prioritySchema = z.enum([Priority.LOW, Priority.MEDIUM, Priority.HIGH]);
+export const prioritySchema = z.enum([Priority.LOW, Priority.MEDIUM, Priority.HIGH]).nullable();
 

@@ -112,7 +112,7 @@ export const styles = {
         alignItems: 'center',
         gap: theme.spacing(1),
     }),
-    priorityBadge: (priority: 'high' | 'medium' | 'low') => (theme: Theme) => ({
+    priorityBadge: (priority: 'high' | 'medium' | 'low' | null) => (theme: Theme) => ({
         display: 'inline-block',
         padding: '2px 8px',
         borderRadius: 4,
@@ -129,6 +129,10 @@ export const styles = {
         ...(priority === 'low' && {
             backgroundColor: 'rgba(148, 163, 184, 0.15)',
             color: 'rgba(203, 213, 225, 0.8)',
+        }),
+        ...(priority === null && {
+            backgroundColor: 'rgba(148, 163, 184, 0.1)',
+            color: 'rgba(148, 163, 184, 0.6)',
         }),
     }),
     messageItem: () => (theme: Theme) => ({

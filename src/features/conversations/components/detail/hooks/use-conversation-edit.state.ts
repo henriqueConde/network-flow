@@ -6,7 +6,7 @@ type EditValues = {
   stageId: string | null;
   nextActionType: string | null;
   nextActionDueAt: string | null;
-  priority: 'low' | 'medium' | 'high';
+  priority: 'low' | 'medium' | 'high' | null | null;
   notes: string | null;
   originalUrl: string | null;
 };
@@ -20,7 +20,7 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
     stageId: null,
     nextActionType: null,
     nextActionDueAt: null,
-    priority: 'medium',
+    priority: 'medium' as 'low' | 'medium' | 'high' | null,
     notes: null,
     originalUrl: null,
   });

@@ -31,7 +31,7 @@ const todayActionResponseSchema = z.object({
   contactName: z.string(),
   contactCompany: z.string().optional(),
   dueAt: z.string().datetime(),
-  priority: prioritySchema,
+  priority: prioritySchema.nullable(),
   category: z.string().optional(),
   stage: z.string().optional(),
 });

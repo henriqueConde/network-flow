@@ -61,7 +61,7 @@ export function makePipelineRepo() {
               lastMessageAt: Date | null;
               nextActionType: string | null;
               nextActionDueAt: Date | null;
-              priority: 'low' | 'medium' | 'high';
+              priority: 'low' | 'medium' | 'high' | null;
               isOutOfSync: boolean;
             }>,
           },
@@ -82,7 +82,7 @@ export function makePipelineRepo() {
           lastMessageAt: Date | null;
           nextActionType: string | null;
           nextActionDueAt: Date | null;
-          priority: 'low' | 'medium' | 'high';
+          priority: 'low' | 'medium' | 'high' | null;
           isOutOfSync: boolean;
         }>,
       };
@@ -97,7 +97,7 @@ export function makePipelineRepo() {
           lastMessageAt: conv.lastMessageAt,
           nextActionType: conv.nextActionType,
           nextActionDueAt: conv.nextActionDueAt,
-          priority: conv.priority as 'low' | 'medium' | 'high',
+          priority: conv.priority as 'low' | 'medium' | 'high' | null,
           isOutOfSync: conv.isOutOfSync,
         };
 
@@ -143,7 +143,8 @@ export function makePipelineRepo() {
         return null;
       }
 
-      // If stageId is provided, verify it belongs to the user
+      // If stageId is provided, verify it belongs to the user and check if it's a closed stage
+      let isClosedStage = false;
       if (input.stageId) {
         const stage = await prisma.stage.findFirst({
           where: {
@@ -155,16 +156,29 @@ export function makePipelineRepo() {
         if (!stage) {
           return null;
         }
+
+        // Check if the stage name starts with "Closed" (e.g., "Closed (positive)", "Closed (negative)")
+        isClosedStage = stage.name.toLowerCase().startsWith('closed');
       }
 
-      // Update the conversation's stage
+      // Prepare update data
+      const updateData: any = {
+        stageId: input.stageId,
+      };
+
+      // If moving to a closed stage, set priority and next action to null
+      if (isClosedStage) {
+        updateData.priority = null;
+        updateData.nextActionType = null;
+        updateData.nextActionDueAt = null;
+      }
+
+      // Update the conversation's stage (and priority/nextAction if moving to closed)
       const updated = await prisma.conversation.update({
         where: {
           id: input.conversationId,
         },
-        data: {
-          stageId: input.stageId,
-        },
+        data: updateData,
       });
 
       return updated;

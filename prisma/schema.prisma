@@ -96,7 +96,7 @@ model Conversation {
   stageId             String?   @db.Uuid
   nextActionType      String?   @map("next_action_type")
   nextActionDueAt     DateTime? @map("next_action_due_at")
-  priority            String    @default("medium") // "low", "medium", "high"
+  priority            String?   @default("medium") // "low", "medium", "high", or null for closed conversations
   isOutOfSync         Boolean   @default(false) @map("is_out_of_sync")
   summary             String?   // AI-generated summary
   notes               String?   // User's personal notes

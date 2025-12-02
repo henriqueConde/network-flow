@@ -16,7 +16,7 @@ export type TodayAction = {
     contactName: string;
     contactCompany?: string;
     dueAt: Date;
-    priority: 'high' | 'medium' | 'low';
+    priority: 'high' | 'medium' | 'low' | null;
     category?: string;
     stage?: string;
 };

@@ -1,33 +1,15 @@
 'use client';
 
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  ToggleButtonGroup,
-  ToggleButton,
-  CircularProgress,
-  Alert,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  TableSortLabel,
-  Pagination,
-  IconButton,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import type { ConversationsInboxViewProps, CreateConversationFormValues } from './conversations-inbox.types';
+import { Box, CircularProgress, Alert, Pagination } from '@mui/material';
+import type { ConversationsInboxViewProps } from './conversations-inbox.types';
 import { styles } from './conversations-inbox.styles';
+import {
+  ConversationsInboxHeader,
+  ConversationsInboxFilters,
+  ConversationsTable,
+  CreateConversationDialog,
+  DeleteConversationDialog,
+} from './components';
 
 export function ConversationsInboxView({
   conversations,
@@ -65,97 +47,23 @@ export function ConversationsInboxView({
   onConfirmDelete,
   isDeleting,
 }: ConversationsInboxViewProps) {
-  const formatTimeAgo = (date: Date | null) => {
-    if (!date) return '—';
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
-
   return (
     <Box sx={styles.container()}>
-      <Box sx={styles.header()}>
-        <Box sx={styles.titleBlock()}>
-          <Typography variant="h4" sx={styles.title()}>
-            {config.copy.title}
-          </Typography>
-          <Typography variant="body2" sx={styles.subtitle()}>
-            {config.copy.subtitle}
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={onOpenCreate}
-        >
-          {config.copy.createButton}
-        </Button>
-      </Box>
+      <ConversationsInboxHeader config={config} onOpenCreate={onOpenCreate} />
 
-      <Box sx={styles.filtersRow()}>
-        <TextField
-          size="small"
-          placeholder={config.copy.searchPlaceholder}
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-        <TextField
-          select
-          size="small"
-          label={config.copy.categoryFilter.label}
-          value={categoryId || ''}
-          onChange={(e) => onCategoryChange(e.target.value || null)}
-          sx={{ minWidth: 150 }}
-        >
-          <MenuItem value="">{config.copy.categoryFilter.all}</MenuItem>
-          {availableCategories.map((category) => (
-            <MenuItem key={category.id} value={category.id}>
-              {category.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label={config.copy.stageFilter.label}
-          value={stageId || ''}
-          onChange={(e) => onStageChange(e.target.value || null)}
-          sx={{ minWidth: 150 }}
-        >
-          <MenuItem value="">{config.copy.stageFilter.all}</MenuItem>
-          {availableStages.map((stage) => (
-            <MenuItem key={stage.id} value={stage.id}>
-              {stage.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <ToggleButtonGroup
-          size="small"
-          value={status}
-          exclusive
-          onChange={(_, value) => {
-            if (value) {
-              onStatusChange(value);
-            }
-          }}
-        >
-          <ToggleButton value="all">
-            {config.copy.statusFilter.all}
-          </ToggleButton>
-          <ToggleButton value="needs_attention">
-            {config.copy.statusFilter.needs_attention}
-          </ToggleButton>
-          <ToggleButton value="waiting_on_them">
-            {config.copy.statusFilter.waiting_on_them}
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
+      <ConversationsInboxFilters
+        search={search}
+        status={status}
+        categoryId={categoryId}
+        stageId={stageId}
+        availableCategories={availableCategories}
+        availableStages={availableStages}
+        config={config}
+        onSearchChange={onSearchChange}
+        onStatusChange={onStatusChange}
+        onCategoryChange={onCategoryChange}
+        onStageChange={onStageChange}
+      />
 
       {isLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', padding: 4 }}>
@@ -171,135 +79,18 @@ export function ConversationsInboxView({
 
       {!isLoading && !error && (
         <Box sx={styles.tableCard()}>
-          {conversations.length === 0 ? (
-            <Box sx={styles.emptyState()}>
-              <Typography variant="body2">
-                {config.copy.emptyState}
-              </Typography>
-            </Box>
-          ) : (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{config.copy.table.contact}</TableCell>
-                  <TableCell>{config.copy.table.stage}</TableCell>
-                  <TableCell>{config.copy.table.category}</TableCell>
-                  <TableCell>{config.copy.table.channel}</TableCell>
-                  <TableCell sortDirection={sortBy === 'lastMessageAt' ? sortDir : false}>
-                    <TableSortLabel
-                      active={sortBy === 'lastMessageAt'}
-                      direction={sortBy === 'lastMessageAt' ? sortDir : 'desc'}
-                      onClick={() =>
-                        onSortChange(
-                          'lastMessageAt',
-                          sortBy === 'lastMessageAt' && sortDir === 'desc' ? 'asc' : 'desc',
-                        )
-                      }
-                    >
-                      {config.copy.table.lastMessage}
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sortDirection={sortBy === 'priority' ? sortDir : false}>
-                    <TableSortLabel
-                      active={sortBy === 'priority'}
-                      direction={sortBy === 'priority' ? sortDir : 'desc'}
-                      onClick={() =>
-                        onSortChange(
-                          'priority',
-                          sortBy === 'priority' && sortDir === 'desc' ? 'asc' : 'desc',
-                        )
-                      }
-                    >
-                      {config.copy.table.priority}
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>{config.copy.table.status}</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {conversations.map((conv) => (
-                  <TableRow
-                    key={conv.id}
-                    hover
-                    sx={styles.tableRow(true)}
-                    onClick={() => onRowClick(conv.id)}
-                  >
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {conv.contactName}
-                      </Typography>
-                      {conv.contactCompany && (
-                        <Typography variant="caption" color="text.secondary">
-                          {conv.contactCompany}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>{conv.stage ?? '—'}</TableCell>
-                    <TableCell>{conv.category ?? '—'}</TableCell>
-                    <TableCell>{conv.channel}</TableCell>
-                    <TableCell>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        {formatTimeAgo(conv.lastMessageAtDate)}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          maxWidth: 260,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {conv.lastMessageSnippet ?? '—'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{conv.priority}</TableCell>
-                    <TableCell>
-                      {conv.needsAttention ? (
-                        <Chip
-                          size="small"
-                          label="Needs attention"
-                          sx={styles.chipNeedsAttention()}
-                        />
-                      ) : (
-                        <Chip
-                          size="small"
-                          label="Waiting on them"
-                          sx={styles.chipWaiting()}
-                        />
-                      )}
-                      {conv.isOutOfSync && (
-                        <Chip
-                          size="small"
-                          label="Out of sync"
-                          variant="outlined"
-                          sx={styles.chipOutOfSync()}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenDelete(conv.id, conv.contactName);
-                        }}
-                        aria-label="Delete conversation"
-                        color="error"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <ConversationsTable
+            conversations={conversations}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            config={config}
+            onSortChange={onSortChange}
+            onRowClick={onRowClick}
+            onOpenDelete={onOpenDelete}
+          />
         </Box>
       )}
 
-      {/* Simple pagination (page count is approximate; backend currently only returns current page) */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
         <Pagination
           page={page}
@@ -309,100 +100,23 @@ export function ConversationsInboxView({
         />
       </Box>
 
-      {/* Create Conversation Dialog */}
-      <Dialog open={isCreateOpen} onClose={onCloseCreate} fullWidth maxWidth="sm">
-        <DialogTitle>New Conversation</DialogTitle>
-        <DialogContent sx={styles.createDialogContent()}>
-          <TextField
-            label="Contact name"
-            fullWidth
-            required
-            size="small"
-            value={createValues.contactName}
-            onChange={(e) => onChangeCreateField('contactName', e.target.value)}
-            error={!!createErrors.contactName}
-            helperText={createErrors.contactName}
-          />
-          <TextField
-            label="Company (optional)"
-            fullWidth
-            size="small"
-            value={createValues.contactCompany}
-            onChange={(e) => onChangeCreateField('contactCompany', e.target.value)}
-            error={!!createErrors.contactCompany}
-            helperText={createErrors.contactCompany}
-          />
-          <TextField
-            select
-            label="Channel"
-            fullWidth
-            size="small"
-            value={createValues.channel}
-            onChange={(e) =>
-              onChangeCreateField('channel', e.target.value as CreateConversationFormValues['channel'])
-            }
-          >
-            <MenuItem value="linkedin">LinkedIn</MenuItem>
-            <MenuItem value="email">Email</MenuItem>
-            <MenuItem value="twitter">Twitter</MenuItem>
-            <MenuItem value="other">Other</MenuItem>
-          </TextField>
-          <TextField
-            select
-            label="First message from"
-            fullWidth
-            size="small"
-            value={createValues.firstMessageSender}
-            onChange={(e) =>
-              onChangeCreateField('firstMessageSender', e.target.value as CreateConversationFormValues['firstMessageSender'])
-            }
-          >
-            <MenuItem value="contact">Contact</MenuItem>
-            <MenuItem value="user">You</MenuItem>
-          </TextField>
-          <TextField
-            label="Pasted conversation text"
-            fullWidth
-            required
-            size="small"
-            multiline
-            minRows={4}
-            value={createValues.pastedText}
-            onChange={(e) => onChangeCreateField('pastedText', e.target.value)}
-            error={!!createErrors.pastedText}
-            helperText={createErrors.pastedText}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onCloseCreate}>Cancel</Button>
-          <Button disabled={isCreating} variant="contained" onClick={onSubmitCreate}>
-            {isCreating ? 'Creating…' : 'Create'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CreateConversationDialog
+        isOpen={isCreateOpen}
+        onClose={onCloseCreate}
+        values={createValues}
+        errors={createErrors}
+        onChangeField={onChangeCreateField}
+        onSubmit={onSubmitCreate}
+        isCreating={isCreating}
+      />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onClose={onCloseDeleteDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Delete Conversation</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the conversation with <strong>{deleteConversationContactName}</strong>? This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onCloseDeleteDialog} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={onConfirmDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Deleting…' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteConversationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={onCloseDeleteDialog}
+        contactName={deleteConversationContactName}
+        onConfirm={onConfirmDelete}
+        isDeleting={isDeleting}
+      />
     </Box>
   );
 }

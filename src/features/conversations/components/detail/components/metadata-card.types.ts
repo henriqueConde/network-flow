@@ -8,7 +8,7 @@ export type MetadataCardProps = {
     stageId: string | null;
     nextActionType: string | null;
     nextActionDueAt: string | null;
-    priority: 'low' | 'medium' | 'high';
+    priority: 'low' | 'medium' | 'high' | null;
   };
   editErrors: Partial<Record<keyof MetadataCardProps['editValues'], string>>;
   isEditing: boolean;
