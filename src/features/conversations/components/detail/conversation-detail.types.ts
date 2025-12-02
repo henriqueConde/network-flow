@@ -1,5 +1,6 @@
 import type { ConversationDetail } from '../../services/conversations.service';
 import type { CONVERSATION_DETAIL_CONFIG } from './conversation-detail.config';
+import type { Stage } from '@/features/stages';
 
 export type ConversationDetailViewProps = {
   conversation: ConversationDetail | null;
@@ -36,5 +37,6 @@ export type ConversationDetailViewProps = {
   onCloseAddReply: () => void;
   onChangeAddReplyField: (field: 'body' | 'sender' | 'sentAt', value: string | 'user' | 'contact') => void;
   onSubmitAddReply: () => void;
+  availableStages: Stage[];
 };
 

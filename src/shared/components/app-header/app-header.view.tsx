@@ -1,18 +1,105 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import type { AppHeaderViewProps } from './app-header.types';
 import { styles } from './app-header.styles';
 
 export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewProps) {
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
+
   return (
     <AppBar position="sticky" sx={styles.appBar()}>
       <Toolbar sx={styles.toolbar()}>
         <Typography component={Link} href="/" sx={styles.title()}>
           {config.copy.title}
         </Typography>
+        <Box sx={styles.navLinks()}>
+          <Link
+            href={config.routes.today}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.today) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.today) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.today}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes.conversations}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.conversations) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.conversations) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.conversations}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes.pipeline}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.pipeline) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.pipeline) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.pipeline}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes.contacts}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.contacts) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.contacts) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.contacts}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes.settings}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.settings) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.settings) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.settings}
+            </Typography>
+          </Link>
+        </Box>
         <Box sx={styles.rightSection()}>
           {userEmail && (
             <Typography sx={styles.userEmail()} component="span">

@@ -7,6 +7,7 @@ import { useConversationDetail } from '../../services/conversations.queries';
 import { useUpdateConversation, useAddMessage } from '../../services/conversations.mutations';
 import { useConversationEdit } from './hooks/use-conversation-edit.state';
 import { useAddReplyDialog } from './hooks/use-add-reply-dialog.state';
+import { useStages } from '@/features/stages';
 
 export function ConversationDetailContainer() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function ConversationDetailContainer() {
   const conversationId = params?.id as string;
 
   const { data: conversation, isLoading, error } = useConversationDetail(conversationId);
+  const { data: stages = [] } = useStages();
   const updateMutation = useUpdateConversation();
   const addMessageMutation = useAddMessage();
 
@@ -91,6 +93,7 @@ export function ConversationDetailContainer() {
       onCloseAddReply={addReplyDialog.close}
       onChangeAddReplyField={addReplyDialog.changeField}
       onSubmitAddReply={addReplyDialog.submit}
+      availableStages={stages}
     />
   );
 }

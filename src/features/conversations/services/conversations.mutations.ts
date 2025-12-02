@@ -8,6 +8,7 @@ import {
   type AddMessagePayload,
 } from './conversations.service';
 import { conversationsKeys } from './conversations.keys';
+import { pipelineKeys } from '@/features/pipeline/services/pipeline.keys';
 
 /**
  * Mutation hook for creating a new conversation.
@@ -35,9 +36,10 @@ export function useUpdateConversation() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdateConversationPayload }) =>
       updateConversation(id, payload),
     onSuccess: (data) => {
-      // Invalidate both the detail and list queries
+      // Invalidate both the detail and list queries, and pipeline
       queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
     },
   });
 }

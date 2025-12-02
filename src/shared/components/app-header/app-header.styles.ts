@@ -37,5 +37,28 @@ export const styles = {
   signOutButton: () => () => ({
     minWidth: 100,
   }),
+  navLinks: () => (theme: Theme) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    ml: 4,
+  }),
+  navLink: () => (theme: Theme) => ({
+    color: theme.palette.text.secondary,
+    textDecoration: 'none',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    padding: theme.spacing(0.75, 1.5),
+    borderRadius: 1,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      color: theme.palette.text.primary,
+      bgcolor: theme.palette.action.hover,
+    },
+  }),
+  navLinkActive: () => (theme: Theme) => ({
+    color: theme.palette.primary.main,
+    bgcolor: theme.palette.action.selected,
+  }),
 };
 

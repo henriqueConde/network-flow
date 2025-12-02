@@ -7,10 +7,10 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { LoginFormSchema, type LoginFormValues } from './login-form.schema';
 import type { LoginFormViewProps } from './login-form.types';
 import { styles } from './login-form.styles';
-import { LOGIN_FORM_CONFIG } from './login-form.config';
 import { AUTH_ROUTES } from '@/features/auth/constants/auth.constants';
 
 export function LoginFormView({
+  config,
   onSubmit,
   onGoogleSignIn,
   isLoading,
@@ -24,8 +24,8 @@ export function LoginFormView({
   } = useForm<LoginFormValues>({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: {
-      [LOGIN_FORM_CONFIG.fields.email.name]: '',
-      [LOGIN_FORM_CONFIG.fields.password.name]: '',
+      [config.fields.email.name]: '',
+      [config.fields.password.name]: '',
     },
   });
 
@@ -34,26 +34,26 @@ export function LoginFormView({
       <Box sx={styles.root()}>
         <Box sx={styles.header()}>
           <Typography
-            variant={LOGIN_FORM_CONFIG.ui.title.variant}
-            component={LOGIN_FORM_CONFIG.ui.title.component}
+            variant={config.ui.title.variant}
+            component={config.ui.title.component}
             sx={styles.title()}
           >
-            {LOGIN_FORM_CONFIG.copy.title}
+            {config.copy.title}
           </Typography>
-          <Typography variant={LOGIN_FORM_CONFIG.ui.subtitle.variant} sx={styles.subtitle()}>
-            {LOGIN_FORM_CONFIG.copy.subtitle}
+          <Typography variant={config.ui.subtitle.variant} sx={styles.subtitle()}>
+            {config.copy.subtitle}
           </Typography>
         </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2} sx={styles.form()}>
             <Controller
-              name={LOGIN_FORM_CONFIG.fields.email.name}
+              name={config.fields.email.name}
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label={LOGIN_FORM_CONFIG.copy.fields.email.label}
-                  type={LOGIN_FORM_CONFIG.fields.email.type}
+                  label={config.copy.fields.email.label}
+                  type={config.fields.email.type}
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   required
@@ -63,13 +63,13 @@ export function LoginFormView({
               )}
             />
             <Controller
-              name={LOGIN_FORM_CONFIG.fields.password.name}
+              name={config.fields.password.name}
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label={LOGIN_FORM_CONFIG.copy.fields.password.label}
-                  type={LOGIN_FORM_CONFIG.fields.password.type}
+                  label={config.copy.fields.password.label}
+                  type={config.fields.password.type}
                   error={!!errors.password}
                   helperText={errors.password?.message}
                   required
@@ -79,18 +79,18 @@ export function LoginFormView({
               )}
             />
             <Button
-              type={LOGIN_FORM_CONFIG.ui.button.type}
-              variant={LOGIN_FORM_CONFIG.ui.button.variant}
+              type={config.ui.button.type}
+              variant={config.ui.button.variant}
               disabled={isLoading || isGoogleLoading}
               fullWidth
               sx={styles.button()}
             >
               {isLoading
-                ? LOGIN_FORM_CONFIG.copy.button.loading
-                : LOGIN_FORM_CONFIG.copy.button.default}
+                ? config.copy.button.loading
+                : config.copy.button.default}
             </Button>
             {error && (
-              <Alert severity={LOGIN_FORM_CONFIG.ui.alert.severity} sx={styles.error()}>
+              <Alert severity={config.ui.alert.severity} sx={styles.error()}>
                 {error}
               </Alert>
             )}
@@ -98,7 +98,7 @@ export function LoginFormView({
         </form>
         <Box sx={styles.divider()}>
           <Typography variant="body2" sx={styles.dividerText()}>
-            {LOGIN_FORM_CONFIG.copy.divider.text}
+            {config.copy.divider.text}
           </Typography>
         </Box>
         <Button
@@ -110,14 +110,14 @@ export function LoginFormView({
           sx={styles.googleButton()}
         >
           {isGoogleLoading
-            ? LOGIN_FORM_CONFIG.copy.googleButton.loading
-            : LOGIN_FORM_CONFIG.copy.googleButton.default}
+            ? config.copy.googleButton.loading
+            : config.copy.googleButton.default}
         </Button>
         <Box sx={styles.linkContainer()}>
-          <Typography variant={LOGIN_FORM_CONFIG.ui.linkText.variant}>
-            {LOGIN_FORM_CONFIG.copy.link.prompt}{' '}
+          <Typography variant={config.ui.linkText.variant}>
+            {config.copy.link.prompt}{' '}
             <Link href={AUTH_ROUTES.SIGNUP} sx={styles.link()}>
-              {LOGIN_FORM_CONFIG.copy.link.text}
+              {config.copy.link.text}
             </Link>
           </Typography>
         </Box>

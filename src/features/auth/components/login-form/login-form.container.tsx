@@ -5,6 +5,7 @@ import { useAuthRedirect } from './hooks/use-auth-redirect.state';
 import { useLoginFormActions } from './hooks/use-login-form-actions.state';
 import { useGoogleSignIn } from './hooks/use-google-sign-in.state';
 import { LoginFormView } from './login-form.view';
+import { LOGIN_FORM_CONFIG } from './login-form.config';
 
 export function LoginFormContainer({ nextPath }: { nextPath?: string }) {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthContext();
@@ -22,6 +23,7 @@ export function LoginFormContainer({ nextPath }: { nextPath?: string }) {
 
   return (
     <LoginFormView
+      config={LOGIN_FORM_CONFIG}
       onSubmit={handleSubmit}
       onGoogleSignIn={handleGoogleSignIn}
       isLoading={isLoading}
