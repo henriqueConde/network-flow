@@ -8,9 +8,14 @@ const analyzeConversationParamsSchema = z.object({
     id: z.string().uuid('Invalid conversation ID'),
 });
 
+const analyzeConversationBodySchema = z.object({
+    userContext: z.string().optional(),
+});
+
 /**
  * POST /api/conversations/[id]/analyze
  * Analyze a conversation and generate AI suggestions (summary, reply, next action).
+ * Accepts optional userContext for additional instructions.
  * Returns a streaming text response with JSON containing the analysis.
  */
 export async function POST(
@@ -26,6 +31,16 @@ export async function POST(
         const rawParams = await params;
         const { id } = analyzeConversationParamsSchema.parse(rawParams);
 
+        // Parse request body for user context
+        let userContext: string | undefined;
+        try {
+            const body = await req.json();
+            const parsed = analyzeConversationBodySchema.parse(body);
+            userContext = parsed.userContext;
+        } catch {
+            // Body is optional, continue without it
+        }
+
         // Create a streaming response
         const stream = new ReadableStream({
             async start(controller) {
@@ -36,6 +51,7 @@ export async function POST(
                     for await (const chunk of analyzeConversation({
                         userId: user.id,
                         conversationId: id,
+                        userContext,
                     })) {
                         controller.enqueue(encoder.encode(chunk));
                     }

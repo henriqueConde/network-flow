@@ -2,6 +2,7 @@ import type { ConversationDetail } from '../../services/conversations.service';
 import type { CONVERSATION_DETAIL_CONFIG } from './conversation-detail.config';
 import type { Stage } from '@/features/stages';
 import type { Category } from '@/features/categories';
+import type { ChatMessage } from './components/ai-assistant-card/ai-assistant-card.types';
 
 export type ConversationDetailViewProps = {
   conversation: ConversationDetail | null;
@@ -41,16 +42,12 @@ export type ConversationDetailViewProps = {
   onSubmitAddReply: () => void;
   availableStages: Stage[];
   availableCategories: Category[];
-  // AI Analysis
-  aiAnalysis?: {
-    summary?: string;
-    suggestedReply?: string;
-    suggestedNextAction?: string;
-    suggestedNextActionDueAt?: string;
-    isLoading?: boolean;
-    error?: string;
-  };
-  onRequestAnalysis?: () => void;
-  onRegenerateReply?: () => void;
+  // AI Assistant props (passed to Add Reply dialog)
+  aiMessages: ChatMessage[];
+  isAiLoading: boolean;
+  aiError?: string;
+  onSendAiMessage: (message: string) => void;
+  onClearAiMessages: () => void;
+  onUseAiSuggestion: (suggestion: string) => void;
 };
 

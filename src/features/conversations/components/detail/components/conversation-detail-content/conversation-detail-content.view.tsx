@@ -15,15 +15,12 @@ export function ConversationDetailContent({
   isSaving,
   availableStages,
   availableCategories,
-  aiAnalysis,
   config,
   onPasteNewMessages,
   onOpenAddReply,
   onChangeEditField,
   onSave,
   onCancel,
-  onRequestAnalysis,
-  onRegenerateReply,
 }: ConversationDetailContentProps) {
   return (
     <Box sx={styles.scrollableContent()}>
@@ -50,13 +47,10 @@ export function ConversationDetailContent({
           isSaving={isSaving}
           availableStages={availableStages}
           availableCategories={availableCategories}
-          aiAnalysis={aiAnalysis}
           config={config}
           onChangeEditField={onChangeEditField}
           onSave={onSave}
           onCancel={onCancel}
-          onRequestAnalysis={onRequestAnalysis}
-          onRegenerateReply={onRegenerateReply}
         />
       </Box>
     </Box>

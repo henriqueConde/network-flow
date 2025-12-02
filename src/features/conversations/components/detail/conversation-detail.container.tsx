@@ -31,7 +31,7 @@ export function ConversationDetailContainer() {
   const conversationOrNull = conversation ?? null;
   const edit = useConversationEdit(conversationOrNull);
   const editActions = useConversationEditActions(conversationOrNull, edit, updateMutation);
-  const aiAnalysis = useConversationAiAnalysis(conversationId, analyzeMutation);
+  const { messages, handleSendMessage, clearMessages, isLoading: isAiLoading, error: aiError } = useConversationAiAnalysis(conversationId, analyzeMutation);
 
   const addReplyDialog = useAddReplyDialog(async (values) => {
     if (!conversation) return;
@@ -44,6 +44,10 @@ export function ConversationDetailContainer() {
       },
     });
   });
+
+  const handleUseAiSuggestion = (suggestion: string) => {
+    addReplyDialog.changeField('body', suggestion);
+  };
 
   const handlePasteNewMessages = () => {
     // TODO: Implement paste new messages dialog/modal
@@ -75,20 +79,12 @@ export function ConversationDetailContainer() {
       onSubmitAddReply={addReplyDialog.submit}
       availableStages={stages}
       availableCategories={categories}
-      aiAnalysis={
-        aiAnalysis.aiAnalysis
-          ? {
-              ...aiAnalysis.aiAnalysis,
-              isLoading: aiAnalysis.isLoading,
-              error: aiAnalysis.error,
-            }
-          : {
-              isLoading: aiAnalysis.isLoading,
-              error: aiAnalysis.error,
-            }
-      }
-      onRequestAnalysis={aiAnalysis.handleRequestAnalysis}
-      onRegenerateReply={aiAnalysis.handleRegenerateReply}
+      aiMessages={messages}
+      isAiLoading={isAiLoading}
+      aiError={aiError}
+      onSendAiMessage={handleSendMessage}
+      onClearAiMessages={clearMessages}
+      onUseAiSuggestion={handleUseAiSuggestion}
     />
   );
 }

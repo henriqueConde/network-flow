@@ -236,6 +236,7 @@ export async function addMessage(input: {
 export async function* analyzeConversation(input: {
   userId: string;
   conversationId: string;
+  userContext?: string;
 }) {
   // First, get the conversation to ensure user has access
   const conversation = await getConversationById({
@@ -248,7 +249,7 @@ export async function* analyzeConversation(input: {
   }
 
   // Stream the AI analysis
-  yield* analyzeConversationInfra(conversation);
+  yield* analyzeConversationInfra(conversation, input.userContext);
 }
 
 /**

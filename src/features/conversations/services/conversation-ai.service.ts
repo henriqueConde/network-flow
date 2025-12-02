@@ -34,6 +34,7 @@ export interface ConversationAnalysisResult {
  */
 export async function analyzeConversation(
     conversationId: string,
+    userContext?: string,
     onChunk?: (chunk: string) => void,
 ): Promise<ConversationAnalysisResult> {
     // Prepare request headers using axios client's auth mechanism
@@ -49,6 +50,7 @@ export async function analyzeConversation(
     const res = await fetch(`/api/conversations/${conversationId}/analyze`, {
         method: 'POST',
         headers,
+        body: JSON.stringify({ userContext }),
     });
 
     if (!res.ok) {

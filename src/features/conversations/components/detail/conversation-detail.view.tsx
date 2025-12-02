@@ -35,9 +35,12 @@ export function ConversationDetailView({
   onSubmitAddReply,
   availableStages,
   availableCategories,
-  aiAnalysis,
-  onRequestAnalysis,
-  onRegenerateReply,
+  aiMessages,
+  isAiLoading,
+  aiError,
+  onSendAiMessage,
+  onClearAiMessages,
+  onUseAiSuggestion,
 }: ConversationDetailViewProps) {
   if (isLoading) {
     return <LoadingView />;
@@ -63,17 +66,14 @@ export function ConversationDetailView({
         editErrors={editErrors}
         isEditing={isEditing}
         isSaving={isSaving}
-        availableStages={availableStages}
-        availableCategories={availableCategories}
-        aiAnalysis={aiAnalysis}
-        config={config}
-        onPasteNewMessages={onPasteNewMessages}
-        onOpenAddReply={onOpenAddReply}
-        onChangeEditField={onChangeEditField}
-        onSave={onSave}
-        onCancel={onCancel}
-        onRequestAnalysis={onRequestAnalysis}
-        onRegenerateReply={onRegenerateReply}
+      availableStages={availableStages}
+      availableCategories={availableCategories}
+      config={config}
+      onPasteNewMessages={onPasteNewMessages}
+      onOpenAddReply={onOpenAddReply}
+      onChangeEditField={onChangeEditField}
+      onSave={onSave}
+      onCancel={onCancel}
       />
 
       <AddReplyDialog
@@ -86,6 +86,12 @@ export function ConversationDetailView({
         onClose={onCloseAddReply}
         onChangeField={onChangeAddReplyField}
         onSubmit={onSubmitAddReply}
+        aiMessages={aiMessages}
+        isAiLoading={isAiLoading}
+        aiError={aiError}
+        onSendAiMessage={onSendAiMessage}
+        onClearAiMessages={onClearAiMessages}
+        onUseAiSuggestion={onUseAiSuggestion}
       />
     </Box>
   );

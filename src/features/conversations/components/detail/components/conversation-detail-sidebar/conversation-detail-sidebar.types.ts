@@ -19,14 +19,6 @@ export type ConversationDetailSidebarProps = {
   isSaving: boolean;
   availableStages: Stage[];
   availableCategories: Category[];
-  aiAnalysis?: {
-    summary?: string;
-    suggestedReply?: string;
-    suggestedNextAction?: string;
-    suggestedNextActionDueAt?: string;
-    isLoading?: boolean;
-    error?: string;
-  };
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onChangeEditField: (
     field: keyof ConversationDetailSidebarProps['editValues'],
@@ -34,7 +26,5 @@ export type ConversationDetailSidebarProps = {
   ) => void;
   onSave: () => void;
   onCancel: () => void;
-  onRequestAnalysis?: () => void;
-  onRegenerateReply?: () => void;
 };
 

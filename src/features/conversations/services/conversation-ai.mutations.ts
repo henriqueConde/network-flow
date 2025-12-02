@@ -4,6 +4,7 @@ import { conversationsKeys } from './conversations.keys';
 
 export interface AnalyzeConversationMutationVariables {
     conversationId: string;
+    userContext?: string;
     onChunk?: (chunk: string) => void;
 }
 
@@ -23,8 +24,8 @@ export function useAnalyzeConversationMutation() {
         AnalyzeConversationMutationVariables
     >({
         mutationFn: async (variables: AnalyzeConversationMutationVariables): Promise<ConversationAnalysisResult> => {
-            const { onChunk, conversationId } = variables;
-            return analyzeConversation(conversationId, onChunk);
+            const { onChunk, conversationId, userContext } = variables;
+            return analyzeConversation(conversationId, userContext, onChunk);
         },
         // Note: Streaming mutations typically don't need retries
         retry: false,

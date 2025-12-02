@@ -77,10 +77,12 @@ function formatMessages(conversation: ConversationDetailDto): string {
  * Generates: summary, suggested reply, and next action suggestions.
  * 
  * @param conversation - The conversation detail with messages and context
+ * @param userContext - Optional user-provided context or instructions
  * @returns Async generator that yields text chunks
  */
 export async function* analyzeConversation(
     conversation: ConversationDetailDto,
+    userContext?: string,
 ): AsyncGenerator<string, void, unknown> {
     if (!conversation || !conversation.messages || conversation.messages.length === 0) {
         throw new Error('Conversation with messages is required');
@@ -96,7 +98,8 @@ export async function* analyzeConversation(
     const systemMessage = createSystemMessage(conversation);
     const messagesText = formatMessages(conversation);
 
-    const prompt = `Analyze this conversation and provide:
+    // Build the prompt with optional user context
+    let prompt = `Analyze this conversation and provide:
 
 1. **Summary**: A concise 2-3 sentence summary of what's happening in this conversation, the tone, and current status.
 
@@ -107,9 +110,14 @@ export async function* analyzeConversation(
    - Is appropriate for the category and stage
    - Is concise but warm
    - Acknowledges previous messages if this is a follow-up
-   - Is clear about intent if this is initial outreach
+   - Is clear about intent if this is initial outreach`;
 
-Format your response as JSON:
+    // Add user context if provided
+    if (userContext && userContext.trim()) {
+        prompt += `\n\n**User Instructions/Context**: ${userContext}\n\nPlease incorporate these instructions when generating your suggestions, especially the reply.`;
+    }
+
+    prompt += `\n\nFormat your response as JSON:
 {
   "summary": "Your summary here",
   "suggestedNextAction": {
