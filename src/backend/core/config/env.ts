@@ -6,6 +6,7 @@ const Env = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(), // only Edge/cron
   DATABASE_URL: z.string().min(1),
   DIRECT_URL: z.string().min(1).optional(),
+  OPENAI_API_KEY: z.string().min(1),
 });
 
 export const env = Env.parse(process.env);

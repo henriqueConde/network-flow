@@ -1,0 +1,9 @@
+import type { ConversationDetail } from '../../../../services/conversations.service';
+import type { CONVERSATION_DETAIL_CONFIG } from '../../conversation-detail.config';
+
+export type MessagesCardProps = {
+  messages: ConversationDetail['messages'];
+  config: typeof CONVERSATION_DETAIL_CONFIG;
+  onOpenAddReply: () => void;
+};
+

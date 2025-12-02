@@ -7,6 +7,7 @@ import {
   type UpdateConversationBody,
   type AddMessageBody,
 } from '../http/conversations.schemas';
+import { analyzeConversation as analyzeConversationInfra } from '../infra/openai.service';
 
 /**
  * Use case: list conversations for the Inbox.
@@ -220,4 +221,26 @@ export async function addMessage(input: {
   };
 
   return conversationDetailDto.parse(dto);
+}
+
+/**
+ * Use case: analyze a conversation with AI to generate suggestions.
+ * Returns an async generator that yields text chunks from the AI stream.
+ */
+export async function* analyzeConversation(input: {
+  userId: string;
+  conversationId: string;
+}) {
+  // First, get the conversation to ensure user has access
+  const conversation = await getConversationById({
+    userId: input.userId,
+    conversationId: input.conversationId,
+  });
+
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+
+  // Stream the AI analysis
+  yield* analyzeConversationInfra(conversation);
 }

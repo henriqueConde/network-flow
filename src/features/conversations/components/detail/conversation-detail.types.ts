@@ -40,5 +40,16 @@ export type ConversationDetailViewProps = {
   onSubmitAddReply: () => void;
   availableStages: Stage[];
   availableCategories: Category[];
+  // AI Analysis
+  aiAnalysis?: {
+    summary?: string;
+    suggestedReply?: string;
+    suggestedNextAction?: string;
+    suggestedNextActionDueAt?: string;
+    isLoading?: boolean;
+    error?: string;
+  };
+  onRequestAnalysis?: () => void;
+  onRegenerateReply?: () => void;
 };
 

@@ -1,56 +1,37 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
 import { ConversationDetailView } from './conversation-detail.view';
 import { CONVERSATION_DETAIL_CONFIG } from './conversation-detail.config';
 import { useConversationDetail } from '../../services/conversations.queries';
 import { useUpdateConversation, useAddMessage } from '../../services/conversations.mutations';
+import { useAnalyzeConversationMutation } from '../../services/conversation-ai.mutations';
 import { useConversationEdit } from './hooks/use-conversation-edit.state';
 import { useAddReplyDialog } from './hooks/use-add-reply-dialog.state';
+import { useConversationDetailNavigation } from './hooks/use-conversation-detail-navigation.state';
+import { useConversationEditActions } from './hooks/use-conversation-edit-actions.state';
+import { useConversationAiAnalysis } from './hooks/use-conversation-ai-analysis.state';
 import { useStages } from '@/features/stages';
 import { useCategories } from '@/features/categories';
 
 export function ConversationDetailContainer() {
-  const router = useRouter();
-  const params = useParams();
-  const conversationId = params?.id as string;
+  // Navigation
+  const { conversationId, handleBack } = useConversationDetailNavigation();
 
+  // Data fetching
   const { data: conversation, isLoading, error } = useConversationDetail(conversationId);
   const { data: stages = [] } = useStages();
   const { data: categories = [] } = useCategories();
+
+  // Mutations
   const updateMutation = useUpdateConversation();
   const addMessageMutation = useAddMessage();
+  const analyzeMutation = useAnalyzeConversationMutation();
 
-  const edit = useConversationEdit(conversation ?? null);
-
-  const handleBack = () => {
-    router.push('/conversations');
-  };
-
-  const handleSave = async () => {
-    if (!conversation) return;
-
-    const payload = edit.getUpdatePayload();
-    try {
-      await updateMutation.mutateAsync({
-        id: conversation.id,
-        payload,
-      });
-      edit.setIsEditing(false);
-    } catch (err) {
-      // Error handling is done by React Query
-      console.error('Failed to update conversation:', err);
-    }
-  };
-
-  const handleCancel = () => {
-    edit.cancelEditing();
-  };
-
-  const handlePasteNewMessages = () => {
-    // TODO: Implement paste new messages dialog/modal
-    console.log('Paste new messages - to be implemented');
-  };
+  // UI state hooks
+  const conversationOrNull = conversation ?? null;
+  const edit = useConversationEdit(conversationOrNull);
+  const editActions = useConversationEditActions(conversationOrNull, edit, updateMutation);
+  const aiAnalysis = useConversationAiAnalysis(conversationId, analyzeMutation);
 
   const addReplyDialog = useAddReplyDialog(async (values) => {
     if (!conversation) return;
@@ -64,12 +45,9 @@ export function ConversationDetailContainer() {
     });
   });
 
-  // Make fields always editable - start editing mode when any field changes
-  const handleFieldChange = (field: keyof typeof edit.values, value: string | null) => {
-    if (!edit.isEditing) {
-      edit.startEditing();
-    }
-    edit.changeField(field, value);
+  const handlePasteNewMessages = () => {
+    // TODO: Implement paste new messages dialog/modal
+    console.log('Paste new messages - to be implemented');
   };
 
   return (
@@ -83,9 +61,9 @@ export function ConversationDetailContainer() {
       isEditing={edit.isEditing}
       isSaving={updateMutation.isPending}
       onBack={handleBack}
-      onChangeEditField={handleFieldChange}
-      onSave={handleSave}
-      onCancel={handleCancel}
+      onChangeEditField={editActions.handleFieldChange}
+      onSave={editActions.handleSave}
+      onCancel={editActions.handleCancel}
       onPasteNewMessages={handlePasteNewMessages}
       isAddReplyOpen={addReplyDialog.isOpen}
       addReplyValues={addReplyDialog.values}
@@ -97,6 +75,20 @@ export function ConversationDetailContainer() {
       onSubmitAddReply={addReplyDialog.submit}
       availableStages={stages}
       availableCategories={categories}
+      aiAnalysis={
+        aiAnalysis.aiAnalysis
+          ? {
+              ...aiAnalysis.aiAnalysis,
+              isLoading: aiAnalysis.isLoading,
+              error: aiAnalysis.error,
+            }
+          : {
+              isLoading: aiAnalysis.isLoading,
+              error: aiAnalysis.error,
+            }
+      }
+      onRequestAnalysis={aiAnalysis.handleRequestAnalysis}
+      onRegenerateReply={aiAnalysis.handleRegenerateReply}
     />
   );
 }

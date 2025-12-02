@@ -55,6 +55,24 @@ export const CONVERSATION_DETAIL_CONFIG = {
       medium: 'Medium',
       high: 'High',
     },
+    aiAssistant: {
+      title: 'AI Assistant',
+      suggestedReply: {
+        title: 'Suggested Reply',
+        copy: 'Copy',
+        regenerate: 'Regenerate',
+      },
+      suggestedNextAction: {
+        title: 'Suggested Next Action',
+      },
+      summary: {
+        title: 'Conversation Summary',
+      },
+      button: {
+        reanalyze: 'Re-analyze Conversation',
+        getSuggestions: 'Get AI Suggestions',
+      },
+    },
   },
 } as const;
 
