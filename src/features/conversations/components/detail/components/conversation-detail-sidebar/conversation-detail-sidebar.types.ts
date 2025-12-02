@@ -12,6 +12,7 @@ export type ConversationDetailSidebarProps = {
     nextActionDueAt: string | null;
     priority: 'low' | 'medium' | 'high';
     notes: string | null;
+    originalUrl: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailSidebarProps['editValues'], string>>;
   isEditing: boolean;

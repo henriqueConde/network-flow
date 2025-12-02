@@ -1,9 +1,10 @@
 'use client';
 
-import { Card, CardContent, Typography, Box, TextField, MenuItem, Button, CircularProgress } from '@mui/material';
+import { Card, CardContent, Typography, Box, TextField, MenuItem, Button, CircularProgress, Link } from '@mui/material';
 import { Priority } from '@/shared/types';
 import type { MetadataCardProps } from './metadata-card.types';
 import { styles } from './metadata-card.styles';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export function MetadataCard({
   editValues,
@@ -112,6 +113,41 @@ export function MetadataCard({
             disabled={isSaving}
             InputLabelProps={{ shrink: true }}
           />
+
+          {isEditing ? (
+            <TextField
+              label="Original URL"
+              size="small"
+              fullWidth
+              value={editValues.originalUrl || ''}
+              onChange={(e) => onChangeEditField('originalUrl', e.target.value || null)}
+              error={!!editErrors.originalUrl}
+              helperText={editErrors.originalUrl || 'Link to the original conversation (e.g., LinkedIn)'}
+              disabled={isSaving}
+              placeholder="https://..."
+            />
+          ) : (
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                Original URL
+              </Typography>
+              {editValues.originalUrl ? (
+                <Link
+                  href={editValues.originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                >
+                  {editValues.originalUrl}
+                  <OpenInNewIcon fontSize="small" />
+                </Link>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No URL set
+                </Typography>
+              )}
+            </Box>
+          )}
         </Box>
 
         {isEditing && (

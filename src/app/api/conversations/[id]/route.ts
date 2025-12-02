@@ -5,6 +5,7 @@ import {
   getConversationById,
   updateConversation,
   addMessage,
+  deleteConversation,
 } from '@/backend/features/conversations';
 import {
   conversationDetailDto,
@@ -96,3 +97,42 @@ export async function PATCH(
   }
 }
 
+/**
+ * DELETE /api/conversations/[id]
+ * Delete a conversation.
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      throw new UnauthorizedError();
+    }
+
+    const { id } = await params;
+    const result = await deleteConversation({
+      userId: user.id,
+      conversationId: id,
+    });
+
+    if (!result) {
+      throw new NotFoundError('Conversation not found');
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const errorMessage = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('[api/conversations/[id]] DELETE Unexpected error:', errorMessage, errorStack || '');
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
+  }
+}

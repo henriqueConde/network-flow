@@ -8,6 +8,7 @@ type EditValues = {
   nextActionDueAt: string | null;
   priority: 'low' | 'medium' | 'high';
   notes: string | null;
+  originalUrl: string | null;
 };
 
 type EditErrors = Partial<Record<keyof EditValues, string>>;
@@ -21,6 +22,7 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
     nextActionDueAt: null,
     priority: 'medium',
     notes: null,
+    originalUrl: null,
   });
   const [errors, setErrors] = useState<EditErrors>({});
 
@@ -36,6 +38,7 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
           : null,
         priority: conversation.priority,
         notes: conversation.notes,
+        originalUrl: conversation.originalUrl,
       });
       setErrors({});
     }
@@ -68,6 +71,7 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
           : null,
         priority: conversation.priority,
         notes: conversation.notes,
+        originalUrl: conversation.originalUrl,
       });
     }
     setErrors({});
@@ -82,6 +86,7 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
       nextActionDueAt: values.nextActionDueAt,
       priority: values.priority,
       notes: values.notes,
+      originalUrl: values.originalUrl,
     };
   };
 

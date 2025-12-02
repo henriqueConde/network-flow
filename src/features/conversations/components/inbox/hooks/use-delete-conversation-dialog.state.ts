@@ -1,33 +1,33 @@
 import { useState } from 'react';
 
 /**
- * UI state hook for the delete contact confirmation dialog.
+ * UI state hook for the "Delete Conversation" confirmation dialog.
+ * Owns open/close state and the conversation ID/name to delete.
  */
-export function useDeleteContactDialog() {
+export function useDeleteConversationDialog() {
   const [isOpen, setIsOpen] = useState(false);
-  const [contactId, setContactId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [contactName, setContactName] = useState<string>('');
 
   const open = (id: string, name: string) => {
-    setContactId(id);
+    setConversationId(id);
     setContactName(name);
     setIsOpen(true);
   };
 
   const close = () => {
     setIsOpen(false);
-    setContactId(null);
+    setConversationId(null);
     setContactName('');
   };
 
   return {
     isOpen,
-    contactId,
+    conversationId,
     contactName,
     open,
     close,
   };
 }
-
 
 

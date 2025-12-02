@@ -59,6 +59,7 @@ export async function createConversation(input: {
     categoryId: parsed.categoryId,
     stageId: parsed.stageId,
     priority: parsed.priority,
+    firstMessageSender: parsed.firstMessageSender ?? 'contact',
   });
 
   return {
@@ -98,9 +99,9 @@ export async function getConversationById(input: {
     })),
     latestEmailEvent: conversation.latestEmailEvent
       ? {
-          ...conversation.latestEmailEvent,
-          emailReceivedAt: conversation.latestEmailEvent.emailReceivedAt.toISOString(),
-        }
+        ...conversation.latestEmailEvent,
+        emailReceivedAt: conversation.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
       : null,
   };
 
@@ -125,6 +126,7 @@ export async function updateConversation(input: {
     nextActionDueAt?: Date | null;
     priority?: 'low' | 'medium' | 'high';
     notes?: string | null;
+    originalUrl?: string | null;
   } = {};
 
   if (input.body.categoryId !== undefined) {
@@ -146,6 +148,9 @@ export async function updateConversation(input: {
   }
   if (input.body.notes !== undefined) {
     updates.notes = input.body.notes;
+  }
+  if (input.body.originalUrl !== undefined) {
+    updates.originalUrl = input.body.originalUrl;
   }
 
   const updated = await repo.updateConversation({
@@ -169,9 +174,9 @@ export async function updateConversation(input: {
     })),
     latestEmailEvent: updated.latestEmailEvent
       ? {
-          ...updated.latestEmailEvent,
-          emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
-        }
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
       : null,
   };
 
@@ -214,9 +219,9 @@ export async function addMessage(input: {
     })),
     latestEmailEvent: updated.latestEmailEvent
       ? {
-          ...updated.latestEmailEvent,
-          emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
-        }
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
       : null,
   };
 
@@ -243,4 +248,24 @@ export async function* analyzeConversation(input: {
 
   // Stream the AI analysis
   yield* analyzeConversationInfra(conversation);
+}
+
+/**
+ * Use case: delete a conversation.
+ */
+export async function deleteConversation(input: {
+  userId: string;
+  conversationId: string;
+}) {
+  const repo = makeConversationsRepo();
+  const deleted = await repo.deleteConversation({
+    userId: input.userId,
+    conversationId: input.conversationId,
+  });
+
+  if (!deleted) {
+    return null;
+  }
+
+  return { success: true };
 }

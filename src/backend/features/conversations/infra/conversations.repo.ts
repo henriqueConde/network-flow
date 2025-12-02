@@ -159,6 +159,7 @@ export function makeConversationsRepo() {
       categoryId?: string;
       stageId?: string;
       priority: 'low' | 'medium' | 'high';
+      firstMessageSender: 'user' | 'contact';
     }) {
       const {
         userId,
@@ -170,6 +171,7 @@ export function makeConversationsRepo() {
         categoryId,
         stageId,
         priority,
+        firstMessageSender,
       } = params;
 
       const now = new Date();
@@ -178,11 +180,11 @@ export function makeConversationsRepo() {
       const contact =
         contactId != null
           ? await prisma.contact.findFirst({
-              where: {
-                id: contactId,
-                userId,
-              },
-            })
+            where: {
+              id: contactId,
+              userId,
+            },
+          })
           : null;
 
       const ensuredContact =
@@ -204,7 +206,7 @@ export function makeConversationsRepo() {
           stageId: stageId ?? null,
           priority,
           lastMessageAt: now,
-          lastMessageSide: 'contact',
+          lastMessageSide: firstMessageSender,
           lastMessageSnippet: pastedText.slice(0, 2000),
         },
       });
@@ -212,7 +214,7 @@ export function makeConversationsRepo() {
       await prisma.message.create({
         data: {
           conversationId: conversation.id,
-          sender: 'contact',
+          sender: firstMessageSender,
           body: pastedText,
           sentAt: now,
           source: 'manual_paste',
@@ -272,6 +274,7 @@ export function makeConversationsRepo() {
         isOutOfSync: conversation.isOutOfSync,
         summary: conversation.summary ?? null,
         notes: conversation.notes ?? null,
+        originalUrl: conversation.originalUrl ?? null,
         lastMessageAt: conversation.lastMessageAt,
         lastMessageSide: conversation.lastMessageSide as 'user' | 'contact' | null,
         messages: conversation.messages.map((msg) => ({
@@ -284,11 +287,11 @@ export function makeConversationsRepo() {
         latestEmailEvent:
           conversation.linkedInEmailEvents.length > 0
             ? {
-                id: conversation.linkedInEmailEvents[0].id,
-                senderName: conversation.linkedInEmailEvents[0].senderName,
-                snippet: conversation.linkedInEmailEvents[0].snippet ?? null,
-                emailReceivedAt: conversation.linkedInEmailEvents[0].emailReceivedAt,
-              }
+              id: conversation.linkedInEmailEvents[0].id,
+              senderName: conversation.linkedInEmailEvents[0].senderName,
+              snippet: conversation.linkedInEmailEvents[0].snippet ?? null,
+              emailReceivedAt: conversation.linkedInEmailEvents[0].emailReceivedAt,
+            }
             : null,
       };
     },
@@ -306,6 +309,7 @@ export function makeConversationsRepo() {
         nextActionDueAt?: Date | null;
         priority?: 'low' | 'medium' | 'high';
         notes?: string | null;
+        originalUrl?: string | null;
       };
     }) {
       const { userId, conversationId, updates } = params;
@@ -383,6 +387,38 @@ export function makeConversationsRepo() {
 
       // Return updated conversation with all messages
       return this.getConversationById({ userId, conversationId });
+    },
+
+    /**
+     * Delete a conversation.
+     * This will cascade delete all associated messages
+     * due to the onDelete: Cascade relationship in the schema.
+     */
+    async deleteConversation(params: { userId: string; conversationId: string }) {
+      const { userId, conversationId } = params;
+
+      // First verify the conversation exists and belongs to the user
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+      });
+
+      if (!conversation) {
+        return false;
+      }
+
+      // Use delete (not deleteMany) to ensure cascade deletes work properly
+      // The cascade will automatically delete:
+      // - All messages in this conversation (via message's cascade)
+      await prisma.conversation.delete({
+        where: {
+          id: conversationId,
+        },
+      });
+
+      return true;
     },
   };
 }

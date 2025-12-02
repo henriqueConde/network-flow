@@ -58,6 +58,7 @@ export const createConversationBody = z.object({
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
   priority: prioritySchema.optional().default('medium'),
+  firstMessageSender: messageSideSchema.optional().default('contact'),
 });
 
 export type CreateConversationBody = z.infer<typeof createConversationBody>;
@@ -116,6 +117,7 @@ export const conversationDetailDto = z.object({
   isOutOfSync: z.boolean(),
   summary: z.string().nullable(),
   notes: z.string().nullable(),
+  originalUrl: z.string().url().nullable(),
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSide: messageSideSchema.nullable(),
   messages: z.array(messageDto),
@@ -134,6 +136,7 @@ export const updateConversationBody = z.object({
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),
   notes: z.string().nullable().optional(),
+  originalUrl: z.string().url().nullable().optional(),
 });
 
 export type UpdateConversationBody = z.infer<typeof updateConversationBody>;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CreateConversationFormSchema } from '../conversations-inbox.schema';
 import type { CreateConversationFormValues } from '../conversations-inbox.types';
-import { ConversationChannel } from '@/shared/types';
+import { ConversationChannel, MessageSide } from '@/shared/types';
 
 type SubmitHandler = (values: CreateConversationFormValues) => Promise<void> | void;
 
@@ -17,6 +17,7 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
     contactCompany: '',
     channel: ConversationChannel.LINKEDIN,
     pastedText: '',
+    firstMessageSender: MessageSide.CONTACT,
   });
   const [errors, setErrors] = useState<
     Partial<Record<keyof CreateConversationFormValues, string>>
@@ -28,6 +29,7 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
       contactCompany: '',
       channel: ConversationChannel.LINKEDIN,
       pastedText: '',
+      firstMessageSender: MessageSide.CONTACT,
     });
     setErrors({});
     setIsOpen(true);

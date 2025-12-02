@@ -3,6 +3,7 @@ import {
   createConversation,
   updateConversation,
   addMessage,
+  deleteConversation,
   type CreateConversationPayload,
   type UpdateConversationPayload,
   type AddMessagePayload,
@@ -65,6 +66,25 @@ export function useAddMessage() {
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Mutation hook for deleting a conversation.
+ */
+export function useDeleteConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteConversation(id),
+    onSuccess: () => {
+      // Invalidate conversations list to remove the deleted conversation
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+      // Invalidate pipeline board
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
     },
   });
 }

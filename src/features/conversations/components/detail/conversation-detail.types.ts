@@ -16,6 +16,7 @@ export type ConversationDetailViewProps = {
     nextActionDueAt: string | null;
     priority: 'low' | 'medium' | 'high';
     notes: string | null;
+    originalUrl: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailViewProps['editValues'], string>>;
   isEditing: boolean;

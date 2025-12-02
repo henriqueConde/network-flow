@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { ConversationsInboxView } from './conversations-inbox.view';
 import { useConversationsInbox } from '../../services/conversations.queries';
-import { useCreateConversation } from '../../services/conversations.mutations';
+import { useCreateConversation, useDeleteConversation } from '../../services/conversations.mutations';
 import { CONVERSATIONS_INBOX_CONFIG } from './conversations-inbox.config';
 import { useConversationsFilters } from './hooks/use-conversations-filters.state';
 import { useCreateConversationDialog } from './hooks/use-create-conversation-dialog.state';
+import { useDeleteConversationDialog } from './hooks/use-delete-conversation-dialog.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
 
@@ -35,6 +36,7 @@ export function ConversationsInboxContainer() {
   const { data: stages = [] } = useStages();
 
   const createMutation = useCreateConversation();
+  const deleteMutation = useDeleteConversation();
 
   const createDialog = useCreateConversationDialog(async (values) => {
     await createMutation.mutateAsync({
@@ -43,10 +45,21 @@ export function ConversationsInboxContainer() {
       channel: values.channel,
       pastedText: values.pastedText,
       priority: 'medium',
+      firstMessageSender: values.firstMessageSender,
     });
     // Close the dialog after successful creation
     createDialog.close();
   });
+
+  // Delete dialog
+  const deleteDialog = useDeleteConversationDialog();
+
+  const handleConfirmDelete = async () => {
+    if (deleteDialog.conversationId) {
+      await deleteMutation.mutateAsync(deleteDialog.conversationId);
+      deleteDialog.close();
+    }
+  };
 
   // Data fetching
   const { data = [], isLoading, error } = useConversationsInbox({
@@ -99,6 +112,12 @@ export function ConversationsInboxContainer() {
       onChangeCreateField={createDialog.changeField}
       onSubmitCreate={createDialog.submit}
       isCreating={createMutation.isPending}
+      onOpenDelete={deleteDialog.open}
+      isDeleteDialogOpen={deleteDialog.isOpen}
+      deleteConversationContactName={deleteDialog.contactName}
+      onCloseDeleteDialog={deleteDialog.close}
+      onConfirmDelete={handleConfirmDelete}
+      isDeleting={deleteMutation.isPending}
     />
   );
 }

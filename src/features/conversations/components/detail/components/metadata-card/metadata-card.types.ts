@@ -9,6 +9,7 @@ export type MetadataCardProps = {
     nextActionType: string | null;
     nextActionDueAt: string | null;
     priority: 'low' | 'medium' | 'high';
+    originalUrl: string | null;
   };
   editErrors: Partial<Record<keyof MetadataCardProps['editValues'], string>>;
   isEditing: boolean;

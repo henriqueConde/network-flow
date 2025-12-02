@@ -41,6 +41,13 @@ export interface ConversationsInboxViewProps {
   ) => void;
   onSubmitCreate: () => void;
   isCreating: boolean;
+  // Delete dialog
+  onOpenDelete: (conversationId: string, contactName: string) => void;
+  isDeleteDialogOpen: boolean;
+  deleteConversationContactName: string;
+  onCloseDeleteDialog: () => void;
+  onConfirmDelete: () => void;
+  isDeleting: boolean;
 }
 
 

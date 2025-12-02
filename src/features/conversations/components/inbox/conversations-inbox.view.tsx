@@ -22,8 +22,10 @@ import {
   TableBody,
   TableSortLabel,
   Pagination,
+  IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import type { ConversationsInboxViewProps, CreateConversationFormValues } from './conversations-inbox.types';
 import { styles } from './conversations-inbox.styles';
 
@@ -56,6 +58,12 @@ export function ConversationsInboxView({
   createErrors,
   onChangeCreateField,
   isCreating,
+  onOpenDelete,
+  isDeleteDialogOpen,
+  deleteConversationContactName,
+  onCloseDeleteDialog,
+  onConfirmDelete,
+  isDeleting,
 }: ConversationsInboxViewProps) {
   const formatTimeAgo = (date: Date | null) => {
     if (!date) return '—';
@@ -206,6 +214,7 @@ export function ConversationsInboxView({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>{config.copy.table.status}</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -269,6 +278,19 @@ export function ConversationsInboxView({
                         />
                       )}
                     </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenDelete(conv.id, conv.contactName);
+                        }}
+                        aria-label="Delete conversation"
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -326,6 +348,19 @@ export function ConversationsInboxView({
             <MenuItem value="other">Other</MenuItem>
           </TextField>
           <TextField
+            select
+            label="First message from"
+            fullWidth
+            size="small"
+            value={createValues.firstMessageSender}
+            onChange={(e) =>
+              onChangeCreateField('firstMessageSender', e.target.value as CreateConversationFormValues['firstMessageSender'])
+            }
+          >
+            <MenuItem value="contact">Contact</MenuItem>
+            <MenuItem value="user">You</MenuItem>
+          </TextField>
+          <TextField
             label="Pasted conversation text"
             fullWidth
             required
@@ -342,6 +377,29 @@ export function ConversationsInboxView({
           <Button onClick={onCloseCreate}>Cancel</Button>
           <Button disabled={isCreating} variant="contained" onClick={onSubmitCreate}>
             {isCreating ? 'Creating…' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onClose={onCloseDeleteDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Delete Conversation</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete the conversation with <strong>{deleteConversationContactName}</strong>? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onCloseDeleteDialog} disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={onConfirmDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting…' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

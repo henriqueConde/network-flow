@@ -30,6 +30,7 @@ export const CreateConversationBody = z.object({
   categoryId: z.string().optional(),
   stageId: z.string().optional(),
   priority: prioritySchema.default('medium'),
+  firstMessageSender: messageSideSchema.default('contact'),
 });
 
 export type CreateConversationPayload = z.infer<typeof CreateConversationBody>;
@@ -72,6 +73,13 @@ export async function createConversation(payload: CreateConversationPayload) {
 }
 
 /**
+ * Delete a conversation.
+ */
+export async function deleteConversation(id: string): Promise<void> {
+  await client.delete(`/api/conversations/${id}`);
+}
+
+/**
  * Message DTO for conversation detail.
  */
 const MessageDto = z.object({
@@ -111,6 +119,7 @@ const ConversationDetailDto = z.object({
   isOutOfSync: z.boolean(),
   summary: z.string().nullable(),
   notes: z.string().nullable(),
+  originalUrl: z.string().url().nullable(),
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSide: messageSideSchema.nullable(),
   messages: z.array(MessageDto),
@@ -145,6 +154,7 @@ const UpdateConversationBody = z.object({
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),
   notes: z.string().nullable().optional(),
+  originalUrl: z.string().url().nullable().optional(),
 });
 
 export type UpdateConversationPayload = z.infer<typeof UpdateConversationBody>;
