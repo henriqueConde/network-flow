@@ -44,6 +44,8 @@ export function ConversationsInboxContainer() {
       pastedText: values.pastedText,
       priority: 'medium',
     });
+    // Close the dialog after successful creation
+    createDialog.close();
   });
 
   // Data fetching

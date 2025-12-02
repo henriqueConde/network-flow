@@ -9,6 +9,7 @@ import {
 } from './conversations.service';
 import { conversationsKeys } from './conversations.keys';
 import { pipelineKeys } from '@/features/pipeline/services/pipeline.keys';
+import { contactsKeys } from '@/features/contacts/services/contacts.keys';
 
 /**
  * Mutation hook for creating a new conversation.
@@ -21,6 +22,8 @@ export function useCreateConversation() {
     mutationFn: (payload: CreateConversationPayload) => createConversation(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
   });
 }
@@ -40,6 +43,8 @@ export function useUpdateConversation() {
       queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
   });
 }
@@ -58,6 +63,8 @@ export function useAddMessage() {
       // Invalidate both the detail and list queries
       queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
   });
 }
