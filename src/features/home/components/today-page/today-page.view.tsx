@@ -204,7 +204,7 @@ export function TodayPageView({
                   onClick={() => onOverdueClick(item.id, item.conversationId)}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography sx={styles.actionTitle()}>
                         {item.contactName}
                         {item.contactCompany && ` • ${item.contactCompany}`}
@@ -212,6 +212,14 @@ export function TodayPageView({
                       <Typography sx={styles.actionMeta()}>
                         {item.actionType}
                       </Typography>
+                      {item.messagePreview && (
+                        <Typography 
+                          sx={styles.messagePreview()}
+                          title={item.messagePreview}
+                        >
+                          {item.messagePreview}
+                        </Typography>
+                      )}
                     </Box>
                     <Chip
                       label={`${item.daysOverdue}d overdue`}

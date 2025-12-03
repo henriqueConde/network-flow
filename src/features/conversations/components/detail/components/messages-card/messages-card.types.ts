@@ -5,5 +5,8 @@ export type MessagesCardProps = {
   messages: ConversationDetail['messages'];
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onOpenAddReply: () => void;
+  onConfirmMessage?: (messageId: string) => void;
+  onEditMessage?: (messageId: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
 };
 

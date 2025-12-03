@@ -54,6 +54,7 @@ export const overdueItemDto = z.object({
   actionType: z.string(),
   dueDate: z.string().datetime(), // ISO string
   daysOverdue: z.number(),
+  messagePreview: z.string().optional(), // Preview of pending message if applicable
 });
 
 export type OverdueItemDto = z.infer<typeof overdueItemDto>;

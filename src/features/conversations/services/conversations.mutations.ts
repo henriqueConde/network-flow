@@ -3,6 +3,9 @@ import {
   createConversation,
   updateConversation,
   addMessage,
+  updateMessage,
+  deleteMessage,
+  toggleMessageStatus,
   deleteConversation,
   type CreateConversationPayload,
   type UpdateConversationPayload,
@@ -64,6 +67,74 @@ export function useAddMessage() {
       // Invalidate both the detail and list queries
       queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Mutation hook for updating a message.
+ */
+export function useUpdateMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ 
+      conversationId, 
+      messageId, 
+      payload 
+    }: { 
+      conversationId: string; 
+      messageId: string; 
+      payload: { body?: string; sentAt?: string } 
+    }) =>
+      updateMessage(conversationId, messageId, payload),
+    onSuccess: (data) => {
+      // Invalidate both the detail and list queries, and today page
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['today'] });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Mutation hook for deleting a message.
+ */
+export function useDeleteMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ conversationId, messageId }: { conversationId: string; messageId: string }) =>
+      deleteMessage(conversationId, messageId),
+    onSuccess: (data) => {
+      // Invalidate both the detail and list queries, and today page
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['today'] });
+      // Invalidate contacts list to refresh latest conversation info
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Mutation hook for toggling message status.
+ */
+export function useToggleMessageStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ conversationId, messageId }: { conversationId: string; messageId: string }) =>
+      toggleMessageStatus(conversationId, messageId),
+    onSuccess: (data) => {
+      // Invalidate both the detail and list queries, and today page
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['today'] });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
     },

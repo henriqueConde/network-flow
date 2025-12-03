@@ -55,6 +55,7 @@ const overdueItemResponseSchema = z.object({
   actionType: z.string(),
   dueDate: z.string().datetime(),
   daysOverdue: z.number(),
+  messagePreview: z.string().optional(),
 });
 
 /**

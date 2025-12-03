@@ -81,6 +81,7 @@ export const messageDto = z.object({
   body: z.string(),
   sentAt: z.string().datetime(),
   source: z.string(),
+  status: z.enum(['pending', 'confirmed']),
 });
 
 export type MessageDto = z.infer<typeof messageDto>;
@@ -151,5 +152,15 @@ export const addMessageBody = z.object({
 });
 
 export type AddMessageBody = z.infer<typeof addMessageBody>;
+
+/**
+ * Body schema for updating a message.
+ */
+export const updateMessageBody = z.object({
+  body: z.string().min(1, 'Message body is required').optional(),
+  sentAt: z.string().datetime().optional(),
+});
+
+export type UpdateMessageBody = z.infer<typeof updateMessageBody>;
 
 

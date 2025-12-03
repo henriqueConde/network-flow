@@ -218,6 +218,7 @@ export function makeConversationsRepo() {
           body: pastedText,
           sentAt: now,
           source: 'manual_paste',
+          status: 'confirmed', // Pasted messages are from existing conversations, so they're confirmed
         },
       });
 
@@ -283,6 +284,7 @@ export function makeConversationsRepo() {
           body: msg.body,
           sentAt: msg.sentAt,
           source: msg.source,
+          status: msg.status as 'pending' | 'confirmed',
         })),
         latestEmailEvent:
           conversation.linkedInEmailEvents.length > 0
@@ -418,6 +420,10 @@ export function makeConversationsRepo() {
       }
 
       // Create the message
+      // Default is 'pending', but we set 'confirmed' for contact messages (they already exist in the original platform)
+      // User messages stay 'pending' until they confirm they sent it
+      const status = sender === 'contact' ? 'confirmed' : 'pending';
+
       const message = await prisma.message.create({
         data: {
           conversationId,
@@ -425,6 +431,7 @@ export function makeConversationsRepo() {
           body,
           sentAt,
           source: 'manual_reply',
+          status,
         },
       });
 
@@ -440,6 +447,205 @@ export function makeConversationsRepo() {
 
       // Return updated conversation with all messages
       return this.getConversationById({ userId, conversationId });
+    },
+
+    /**
+     * Update a message's body and/or sentAt.
+     * All messages can be updated.
+     */
+    async updateMessage(params: {
+      userId: string;
+      messageId: string;
+      body?: string;
+      sentAt?: Date;
+    }) {
+      const { userId, messageId, body, sentAt } = params;
+
+      // First, verify the message exists and belongs to a conversation owned by the user
+      const message = await prisma.message.findFirst({
+        where: {
+          id: messageId,
+          conversation: {
+            userId,
+          },
+        },
+        include: {
+          conversation: true,
+        },
+      });
+
+      if (!message) {
+        return null;
+      }
+
+      // Build update data
+      const updateData: any = {};
+      if (body !== undefined) {
+        updateData.body = body;
+      }
+      if (sentAt !== undefined) {
+        updateData.sentAt = sentAt;
+      }
+
+      // Update message
+      await prisma.message.update({
+        where: { id: messageId },
+        data: updateData,
+      });
+
+      // If body or sentAt was updated, check if we need to update conversation metadata
+      if (body !== undefined || sentAt !== undefined) {
+        const allMessages = await prisma.message.findMany({
+          where: { conversationId: message.conversationId },
+          orderBy: { sentAt: 'desc' },
+          take: 1,
+        });
+
+        if (allMessages.length > 0 && allMessages[0].id === messageId) {
+          const updatedMessage = await prisma.message.findUnique({
+            where: { id: messageId },
+          });
+          
+          if (updatedMessage) {
+            await prisma.conversation.update({
+              where: { id: message.conversationId },
+              data: {
+                lastMessageAt: updatedMessage.sentAt,
+                lastMessageSide: updatedMessage.sender,
+                lastMessageSnippet: updatedMessage.body.slice(0, 2000),
+              },
+            });
+          }
+        }
+      }
+
+      // Return updated conversation
+      return this.getConversationById({
+        userId,
+        conversationId: message.conversationId,
+      });
+    },
+
+    /**
+     * Delete a message.
+     * All messages can be deleted.
+     * Updates conversation metadata if the deleted message was the last one.
+     */
+    async deleteMessage(params: {
+      userId: string;
+      messageId: string;
+    }) {
+      const { userId, messageId } = params;
+
+      // First, verify the message exists and belongs to a conversation owned by the user
+      const message = await prisma.message.findFirst({
+        where: {
+          id: messageId,
+          conversation: {
+            userId,
+          },
+        },
+        include: {
+          conversation: true,
+        },
+      });
+
+      if (!message) {
+        return null;
+      }
+
+      const conversationId = message.conversationId;
+
+      // Delete the message
+      await prisma.message.delete({
+        where: { id: messageId },
+      });
+
+      // Update conversation metadata if needed
+      const remainingMessages = await prisma.message.findMany({
+        where: { conversationId },
+        orderBy: { sentAt: 'desc' },
+        take: 1,
+      });
+
+      if (remainingMessages.length > 0) {
+        const lastMessage = remainingMessages[0];
+        await prisma.conversation.update({
+          where: { id: conversationId },
+          data: {
+            lastMessageAt: lastMessage.sentAt,
+            lastMessageSide: lastMessage.sender,
+            lastMessageSnippet: lastMessage.body.slice(0, 2000),
+          },
+        });
+      } else {
+        // No messages left, clear conversation metadata
+        await prisma.conversation.update({
+          where: { id: conversationId },
+          data: {
+            lastMessageAt: null,
+            lastMessageSide: null,
+            lastMessageSnippet: null,
+          },
+        });
+      }
+
+      // Return updated conversation
+      return this.getConversationById({
+        userId,
+        conversationId,
+      });
+    },
+
+    /**
+     * Toggle message status between pending and confirmed.
+     * Only user-created messages can have their status toggled.
+     */
+    async toggleMessageStatus(params: {
+      userId: string;
+      messageId: string;
+    }) {
+      const { userId, messageId } = params;
+
+      // First, verify the message exists and belongs to a conversation owned by the user
+      const message = await prisma.message.findFirst({
+        where: {
+          id: messageId,
+          conversation: {
+            userId,
+          },
+        },
+        include: {
+          conversation: true,
+        },
+      });
+
+      if (!message) {
+        return null;
+      }
+
+      // Only allow toggling status for user messages
+      if (message.sender !== 'user') {
+        return this.getConversationById({
+          userId,
+          conversationId: message.conversationId,
+        });
+      }
+
+      // Toggle status: pending -> confirmed, confirmed -> pending
+      const newStatus = message.status === 'pending' ? 'confirmed' : 'pending';
+
+      // Update message status
+      await prisma.message.update({
+        where: { id: messageId },
+        data: { status: newStatus },
+      });
+
+      // Return updated conversation
+      return this.getConversationById({
+        userId,
+        conversationId: message.conversationId,
+      });
     },
 
     /**

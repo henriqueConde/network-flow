@@ -200,6 +200,18 @@ export const styles = {
         color: '#FCA5A5',
         marginLeft: 8,
     }),
+    messagePreview: () => (theme: Theme) => ({
+        color: theme.palette.text.secondary,
+        fontSize: '0.8125rem',
+        marginTop: theme.spacing(0.75),
+        fontStyle: 'italic',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        lineHeight: 1.4,
+    }),
     loadingContainer: () => (theme: Theme) => ({
         display: 'flex',
         alignItems: 'center',

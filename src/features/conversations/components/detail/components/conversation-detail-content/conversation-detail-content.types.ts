@@ -28,5 +28,8 @@ export type ConversationDetailContentProps = {
   ) => void;
   onSave: () => void;
   onCancel: () => void;
+  onConfirmMessage?: (messageId: string) => void;
+  onEditMessage?: (messageId: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
 };
 

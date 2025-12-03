@@ -88,6 +88,7 @@ const MessageDto = z.object({
   body: z.string(),
   sentAt: z.string().datetime(),
   source: z.string(),
+  status: z.enum(['pending', 'confirmed']),
 });
 
 /**
@@ -133,6 +134,7 @@ export type ConversationDetail = Omit<z.infer<typeof ConversationDetailDto>, 'me
     body: string;
     sentAt: Date;
     source: string;
+    status: 'pending' | 'confirmed';
   }>;
   nextActionDueAtDate: Date | null;
   lastMessageAtDate: Date | null;
@@ -231,6 +233,88 @@ export async function updateConversation(
 ): Promise<ConversationDetail> {
   const body = UpdateConversationBody.parse(payload);
   const res = await client.patch(`/api/conversations/${id}`, body);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Update a message's body and/or sentAt.
+ */
+export async function updateMessage(
+  conversationId: string,
+  messageId: string,
+  payload: { body?: string; sentAt?: string },
+): Promise<ConversationDetail> {
+  const res = await client.patch(`/api/conversations/${conversationId}/messages/${messageId}`, payload);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Delete a message.
+ */
+export async function deleteMessage(
+  conversationId: string,
+  messageId: string,
+): Promise<ConversationDetail> {
+  const res = await client.delete(`/api/conversations/${conversationId}/messages/${messageId}`);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Toggle message status between pending and confirmed.
+ */
+export async function toggleMessageStatus(
+  conversationId: string,
+  messageId: string,
+): Promise<ConversationDetail> {
+  const res = await client.post(`/api/conversations/${conversationId}/messages/${messageId}/toggle-status`);
   const data = ConversationDetailDto.parse(res.data);
 
   return {

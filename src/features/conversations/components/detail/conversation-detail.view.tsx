@@ -9,6 +9,7 @@ import {
   ConversationDetailHeader,
   ConversationDetailContent,
   AddReplyDialog,
+  EditMessageDialog,
 } from './components';
 
 export function ConversationDetailView({
@@ -16,6 +17,7 @@ export function ConversationDetailView({
   isLoading,
   error,
   config,
+  editMessageDialogConfig,
   editValues,
   editErrors,
   isEditing,
@@ -41,6 +43,16 @@ export function ConversationDetailView({
   onSendAiMessage,
   onClearAiMessages,
   onUseAiSuggestion,
+  onConfirmMessage,
+  onEditMessage,
+  onDeleteMessage,
+  isEditMessageOpen,
+  editMessageValues,
+  editMessageErrors,
+  isUpdatingMessage,
+  onCloseEditMessage,
+  onChangeEditMessageField,
+  onSubmitEditMessage,
 }: ConversationDetailViewProps) {
   if (isLoading) {
     return <LoadingView />;
@@ -66,14 +78,17 @@ export function ConversationDetailView({
         editErrors={editErrors}
         isEditing={isEditing}
         isSaving={isSaving}
-      availableStages={availableStages}
-      availableCategories={availableCategories}
-      config={config}
-      onPasteNewMessages={onPasteNewMessages}
-      onOpenAddReply={onOpenAddReply}
-      onChangeEditField={onChangeEditField}
-      onSave={onSave}
-      onCancel={onCancel}
+        availableStages={availableStages}
+        availableCategories={availableCategories}
+        config={config}
+        onPasteNewMessages={onPasteNewMessages}
+        onOpenAddReply={onOpenAddReply}
+        onChangeEditField={onChangeEditField}
+        onSave={onSave}
+        onCancel={onCancel}
+        onConfirmMessage={onConfirmMessage}
+        onEditMessage={onEditMessage}
+        onDeleteMessage={onDeleteMessage}
       />
 
       <AddReplyDialog
@@ -92,6 +107,17 @@ export function ConversationDetailView({
         onSendAiMessage={onSendAiMessage}
         onClearAiMessages={onClearAiMessages}
         onUseAiSuggestion={onUseAiSuggestion}
+      />
+
+      <EditMessageDialog
+        isOpen={isEditMessageOpen}
+        values={editMessageValues}
+        errors={editMessageErrors}
+        isUpdating={isUpdatingMessage}
+        config={editMessageDialogConfig}
+        onClose={onCloseEditMessage}
+        onChangeField={onChangeEditMessageField}
+        onSubmit={onSubmitEditMessage}
       />
     </Box>
   );

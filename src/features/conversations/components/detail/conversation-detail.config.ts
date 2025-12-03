@@ -29,6 +29,17 @@ export const CONVERSATION_DETAIL_CONFIG = {
       userLabel: 'You',
       contactLabel: 'Contact',
       addReply: 'Add Reply',
+      actions: {
+        edit: 'Edit message',
+        delete: 'Delete message',
+        deleteConfirmation: 'Are you sure you want to delete this message?',
+      },
+      status: {
+        pending: 'Pending',
+        confirmed: 'Confirmed',
+        togglePending: 'Click to mark as pending',
+        toggleConfirmed: 'Click to confirm',
+      },
     },
     addReplyDialog: {
       title: 'Add Reply',

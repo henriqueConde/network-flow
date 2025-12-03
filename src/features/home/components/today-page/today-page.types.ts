@@ -40,6 +40,7 @@ export type OverdueItem = {
     actionType: string;
     dueDate: Date;
     daysOverdue: number;
+    messagePreview?: string; // Preview of pending message if applicable
 };
 
 export interface TodayPageViewProps {

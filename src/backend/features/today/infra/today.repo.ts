@@ -49,8 +49,9 @@ export function makeTodayRepo() {
                 : 0;
 
             // Overdue follow-ups (nextActionDueAt < now and not null)
+            // Also count pending messages as overdue (user needs to confirm they sent them)
             const now = new Date();
-            const overdueFollowUps = await prisma.conversation.count({
+            const overdueConversations = await prisma.conversation.count({
                 where: {
                     userId,
                     nextActionDueAt: {
@@ -59,6 +60,18 @@ export function makeTodayRepo() {
                     },
                 },
             });
+            
+            const pendingMessages = await prisma.message.count({
+                where: {
+                    conversation: {
+                        userId,
+                    },
+                    sender: 'user',
+                    status: 'pending',
+                },
+            });
+            
+            const overdueFollowUps = overdueConversations + pendingMessages;
 
             return {
                 activeOpportunities: activeConversations,
@@ -167,11 +180,13 @@ export function makeTodayRepo() {
 
         /**
          * Get overdue items
+         * Includes conversations with overdue nextActionDueAt and conversations with pending messages
          */
         async getOverdueItems(userId: string) {
             const now = new Date();
 
-            const conversations = await prisma.conversation.findMany({
+            // Get conversations with overdue nextActionDueAt
+            const overdueConversations = await prisma.conversation.findMany({
                 where: {
                     userId,
                     nextActionDueAt: {
@@ -188,12 +203,51 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            return conversations.map((conv) => {
+            // Get conversations with pending messages
+            const conversationsWithPendingMessages = await prisma.conversation.findMany({
+                where: {
+                    userId,
+                    messages: {
+                        some: {
+                            sender: 'user',
+                            status: 'pending',
+                        },
+                    },
+                },
+                include: {
+                    contact: true,
+                    messages: {
+                        where: {
+                            sender: 'user',
+                            status: 'pending',
+                        },
+                        orderBy: {
+                            sentAt: 'asc',
+                        },
+                        take: 1,
+                    },
+                },
+                take: 20,
+            });
+
+            // Combine and deduplicate by conversation ID
+            const allOverdue = new Map<string, {
+                id: string;
+                conversationId: string;
+                contactName: string;
+                contactCompany?: string;
+                actionType: string;
+                dueDate: Date;
+                daysOverdue: number;
+                messagePreview?: string;
+            }>();
+
+            // Add overdue conversations
+            overdueConversations.forEach((conv) => {
                 const daysOverdue = Math.floor(
                     (now.getTime() - conv.nextActionDueAt!.getTime()) / (1000 * 60 * 60 * 24)
                 );
-
-                return {
+                allOverdue.set(conv.id, {
                     id: `overdue-${conv.id}`,
                     conversationId: conv.id,
                     contactName: conv.contact.name,
@@ -201,8 +255,36 @@ export function makeTodayRepo() {
                     actionType: conv.nextActionType || 'Follow up',
                     dueDate: conv.nextActionDueAt!,
                     daysOverdue,
-                };
+                });
             });
+
+            // Add conversations with pending messages (if not already added)
+            conversationsWithPendingMessages.forEach((conv) => {
+                if (!allOverdue.has(conv.id)) {
+                    const oldestPendingMessage = conv.messages[0];
+                    const daysOverdue = oldestPendingMessage
+                        ? Math.floor(
+                              (now.getTime() - oldestPendingMessage.sentAt.getTime()) / (1000 * 60 * 60 * 24)
+                          )
+                        : 0;
+                    // Create a preview of the message (first 150 characters)
+                    const messagePreview = oldestPendingMessage?.body
+                        ? oldestPendingMessage.body.slice(0, 150) + (oldestPendingMessage.body.length > 150 ? '...' : '')
+                        : undefined;
+                    allOverdue.set(conv.id, {
+                        id: `pending-${conv.id}`,
+                        conversationId: conv.id,
+                        contactName: conv.contact.name,
+                        contactCompany: conv.contact.company || undefined,
+                        actionType: 'Confirm message sent',
+                        dueDate: oldestPendingMessage?.sentAt || now,
+                        daysOverdue,
+                        messagePreview,
+                    });
+                }
+            });
+
+            return Array.from(allOverdue.values()).sort((a, b) => a.daysOverdue - b.daysOverdue).slice(0, 20);
         },
     };
 }

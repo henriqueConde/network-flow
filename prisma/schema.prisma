@@ -126,7 +126,8 @@ model Message {
   sender        String   // "user" or "contact"
   body          String   @db.Text
   sentAt        DateTime @map("sent_at")
-  source        String   // "linkedin_export", "email_notification", "other"
+  source        String   // "linkedin_export", "email_notification", "manual_reply", "other"
+  status        String   @default("pending") // "pending" or "confirmed" - tracks if user-created messages were actually sent in the original platform
   rawMetadata   Json?    @map("raw_metadata")
   createdAt     DateTime @default(now())
 
@@ -135,6 +136,7 @@ model Message {
 
   @@index([conversationId])
   @@index([sentAt])
+  @@index([status])
   @@map("messages")
 }
 

@@ -39,3 +39,6 @@ export type { OutOfSyncBannerProps } from './out-of-sync-banner';
 export { AddReplyDialog } from './add-reply-dialog';
 export type { AddReplyDialogProps } from './add-reply-dialog';
 
+export { EditMessageDialog } from './edit-message-dialog';
+export type { EditMessageDialogProps } from './edit-message-dialog';
+

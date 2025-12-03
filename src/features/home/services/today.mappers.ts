@@ -44,6 +44,7 @@ type OverdueItemDto = {
   actionType: string;
   dueDate: string; // ISO string
   daysOverdue: number;
+  messagePreview?: string;
 };
 
 export function toTodayAction(dto: TodayActionDto): TodayAction {

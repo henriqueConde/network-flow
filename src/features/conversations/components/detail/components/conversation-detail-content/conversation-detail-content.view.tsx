@@ -21,6 +21,9 @@ export function ConversationDetailContent({
   onChangeEditField,
   onSave,
   onCancel,
+  onConfirmMessage,
+  onEditMessage,
+  onDeleteMessage,
 }: ConversationDetailContentProps) {
   return (
     <Box sx={styles.scrollableContent()}>
@@ -35,7 +38,14 @@ export function ConversationDetailContent({
       <Box sx={styles.contentGrid()}>
         {/* Main column: Messages */}
         <Box sx={styles.mainColumn()}>
-          <MessagesCard messages={conversation.messages} config={config} onOpenAddReply={onOpenAddReply} />
+          <MessagesCard 
+            messages={conversation.messages} 
+            config={config} 
+            onOpenAddReply={onOpenAddReply}
+            onConfirmMessage={onConfirmMessage}
+            onEditMessage={onEditMessage}
+            onDeleteMessage={onDeleteMessage}
+          />
         </Box>
 
         {/* Sidebar: Metadata, Summary, Notes */}

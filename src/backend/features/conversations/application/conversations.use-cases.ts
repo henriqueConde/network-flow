@@ -6,6 +6,7 @@ import {
   type ListConversationsQuery,
   type UpdateConversationBody,
   type AddMessageBody,
+  type UpdateMessageBody,
 } from '../http/conversations.schemas';
 import { analyzeConversation as analyzeConversationInfra } from '../infra/openai.service';
 
@@ -250,6 +251,123 @@ export async function* analyzeConversation(input: {
 
   // Stream the AI analysis
   yield* analyzeConversationInfra(conversation, input.userContext);
+}
+
+/**
+ * Use case: update a message's body and/or sentAt.
+ */
+export async function updateMessage(input: {
+  userId: string;
+  messageId: string;
+  body: UpdateMessageBody;
+}) {
+  const repo = makeConversationsRepo();
+
+  const updated = await repo.updateMessage({
+    userId: input.userId,
+    messageId: input.messageId,
+    body: input.body.body,
+    sentAt: input.body.sentAt ? new Date(input.body.sentAt) : undefined,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
+}
+
+/**
+ * Use case: delete a message.
+ */
+export async function deleteMessage(input: {
+  userId: string;
+  messageId: string;
+}) {
+  const repo = makeConversationsRepo();
+
+  const updated = await repo.deleteMessage({
+    userId: input.userId,
+    messageId: input.messageId,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
+}
+
+/**
+ * Use case: toggle message status between pending and confirmed.
+ */
+export async function toggleMessageStatus(input: {
+  userId: string;
+  messageId: string;
+}) {
+  const repo = makeConversationsRepo();
+
+  const updated = await repo.toggleMessageStatus({
+    userId: input.userId,
+    messageId: input.messageId,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
 }
 
 /**

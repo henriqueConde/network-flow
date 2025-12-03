@@ -2,14 +2,18 @@
 
 import { ConversationDetailView } from './conversation-detail.view';
 import { CONVERSATION_DETAIL_CONFIG } from './conversation-detail.config';
+import { EDIT_MESSAGE_DIALOG_CONFIG } from './components/edit-message-dialog/edit-message-dialog.config';
 import { useConversationDetail } from '../../services/conversations.queries';
-import { useUpdateConversation, useAddMessage } from '../../services/conversations.mutations';
+import { useUpdateConversation, useAddMessage, useUpdateMessage, useDeleteMessage, useToggleMessageStatus } from '../../services/conversations.mutations';
 import { useAnalyzeConversationMutation } from '../../services/conversation-ai.mutations';
 import { useConversationEdit } from './hooks/use-conversation-edit.state';
-import { useAddReplyDialog } from './hooks/use-add-reply-dialog.state';
 import { useConversationDetailNavigation } from './hooks/use-conversation-detail-navigation.state';
 import { useConversationEditActions } from './hooks/use-conversation-edit-actions.state';
 import { useConversationAiAnalysis } from './hooks/use-conversation-ai-analysis.state';
+import { useAddReplyActions } from './hooks/use-add-reply-actions.state';
+import { useEditMessageActions } from './hooks/use-edit-message-actions.state';
+import { useMessageActions } from './hooks/use-message-actions.state';
+import { usePasteMessages } from './hooks/use-paste-messages.state';
 import { useStages } from '@/features/stages';
 import { useCategories } from '@/features/categories';
 
@@ -25,6 +29,9 @@ export function ConversationDetailContainer() {
   // Mutations
   const updateMutation = useUpdateConversation();
   const addMessageMutation = useAddMessage();
+  const updateMessageMutation = useUpdateMessage();
+  const deleteMessageMutation = useDeleteMessage();
+  const toggleMessageStatusMutation = useToggleMessageStatus();
   const analyzeMutation = useAnalyzeConversationMutation();
 
   // UI state hooks
@@ -33,26 +40,16 @@ export function ConversationDetailContainer() {
   const editActions = useConversationEditActions(conversationOrNull, edit, updateMutation);
   const { messages, handleSendMessage, clearMessages, isLoading: isAiLoading, error: aiError } = useConversationAiAnalysis(conversationId, analyzeMutation);
 
-  const addReplyDialog = useAddReplyDialog(async (values) => {
-    if (!conversation) return;
-    await addMessageMutation.mutateAsync({
-      conversationId: conversation.id,
-      payload: {
-        body: values.body,
-        sender: values.sender,
-        sentAt: values.sentAt,
-      },
-    });
-  });
-
-  const handleUseAiSuggestion = (suggestion: string) => {
-    addReplyDialog.changeField('body', suggestion);
-  };
-
-  const handlePasteNewMessages = () => {
-    // TODO: Implement paste new messages dialog/modal
-    console.log('Paste new messages - to be implemented');
-  };
+  // Action hooks
+  const { addReplyDialog, handleUseAiSuggestion } = useAddReplyActions(conversationOrNull, addMessageMutation);
+  const { editMessageDialog, handleEditMessage } = useEditMessageActions(conversationOrNull, updateMessageMutation);
+  const { handleToggleMessageStatus, handleDeleteMessage } = useMessageActions(
+    conversationOrNull,
+    toggleMessageStatusMutation,
+    deleteMessageMutation,
+    CONVERSATION_DETAIL_CONFIG.copy.messages.actions.deleteConfirmation,
+  );
+  const { handlePasteNewMessages } = usePasteMessages();
 
   return (
     <ConversationDetailView
@@ -60,6 +57,7 @@ export function ConversationDetailContainer() {
       isLoading={isLoading}
       error={error ? 'Failed to load conversation. Please try again.' : null}
       config={CONVERSATION_DETAIL_CONFIG}
+      editMessageDialogConfig={EDIT_MESSAGE_DIALOG_CONFIG}
       editValues={edit.values}
       editErrors={edit.errors}
       isEditing={edit.isEditing}
@@ -85,6 +83,16 @@ export function ConversationDetailContainer() {
       onSendAiMessage={handleSendMessage}
       onClearAiMessages={clearMessages}
       onUseAiSuggestion={handleUseAiSuggestion}
+      onConfirmMessage={handleToggleMessageStatus}
+      onEditMessage={handleEditMessage}
+      onDeleteMessage={handleDeleteMessage}
+      isEditMessageOpen={editMessageDialog.isOpen}
+      editMessageValues={editMessageDialog.values}
+      editMessageErrors={editMessageDialog.errors}
+      isUpdatingMessage={updateMessageMutation.isPending}
+      onCloseEditMessage={editMessageDialog.close}
+      onChangeEditMessageField={editMessageDialog.changeField}
+      onSubmitEditMessage={editMessageDialog.submit}
     />
   );
 }
