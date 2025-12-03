@@ -2,14 +2,20 @@ import { Theme } from '@mui/material/styles';
 
 export const styles = {
     container: () => (theme: Theme) => ({
-        minHeight: '100vh',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
         backgroundColor: theme.palette.background.default,
-        padding: theme.spacing(4),
         maxWidth: 1400,
         margin: '0 auto',
+        overflow: 'hidden',
     }),
     header: () => (theme: Theme) => ({
-        marginBottom: theme.spacing(4),
+        flexShrink: 0,
+        padding: theme.spacing(4),
+        paddingBottom: theme.spacing(2),
+        backgroundColor: theme.palette.background.default,
+        borderBottom: `1px solid ${theme.palette.divider}`,
     }),
     title: () => (theme: Theme) => ({
         color: theme.palette.text.primary,
@@ -20,6 +26,14 @@ export const styles = {
     subtitle: () => (theme: Theme) => ({
         color: theme.palette.text.secondary,
         fontSize: '0.9375rem',
+    }),
+    scrollableContent: () => (theme: Theme) => ({
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        padding: theme.spacing(4),
+        paddingTop: theme.spacing(3),
+        paddingBottom: theme.spacing(8),
     }),
     metricsGrid: () => (theme: Theme) => ({
         display: 'grid',

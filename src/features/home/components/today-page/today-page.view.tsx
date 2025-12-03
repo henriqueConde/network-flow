@@ -20,8 +20,18 @@ export function TodayPageView({
   if (isLoading) {
     return (
       <Box sx={styles.container()}>
-        <Box sx={styles.loadingContainer()}>
-          <CircularProgress />
+        <Box sx={styles.header()}>
+          <Typography variant="h3" sx={styles.title()}>
+            {config.copy.title}
+          </Typography>
+          <Typography variant="body2" sx={styles.subtitle()}>
+            {config.copy.subtitle}
+          </Typography>
+        </Box>
+        <Box sx={styles.scrollableContent()}>
+          <Box sx={styles.loadingContainer()}>
+            <CircularProgress />
+          </Box>
         </Box>
       </Box>
     );
@@ -30,9 +40,19 @@ export function TodayPageView({
   if (error) {
     return (
       <Box sx={styles.container()}>
-        <Alert severity="error" sx={styles.errorContainer()}>
-          {error}
-        </Alert>
+        <Box sx={styles.header()}>
+          <Typography variant="h3" sx={styles.title()}>
+            {config.copy.title}
+          </Typography>
+          <Typography variant="body2" sx={styles.subtitle()}>
+            {config.copy.subtitle}
+          </Typography>
+        </Box>
+        <Box sx={styles.scrollableContent()}>
+          <Alert severity="error" sx={styles.errorContainer()}>
+            {error}
+          </Alert>
+        </Box>
       </Box>
     );
   }
@@ -60,7 +80,7 @@ export function TodayPageView({
 
   return (
     <Box sx={styles.container()}>
-      {/* Header */}
+      {/* Header - Fixed */}
       <Box sx={styles.header()}>
         <Typography variant="h3" sx={styles.title()}>
           {config.copy.title}
@@ -70,8 +90,10 @@ export function TodayPageView({
         </Typography>
       </Box>
 
-      {/* Metrics Snapshot */}
-      <Box sx={styles.metricsGrid()}>
+      {/* Scrollable Content */}
+      <Box sx={styles.scrollableContent()}>
+        {/* Metrics Snapshot */}
+        <Box sx={styles.metricsGrid()}>
         <Box sx={styles.metricCard()}>
           <Typography sx={styles.metricLabel()}>
             {config.copy.metrics.activeOpportunities.label}
@@ -232,6 +254,7 @@ export function TodayPageView({
             </Box>
           </Box>
         )}
+      </Box>
       </Box>
     </Box>
   );
