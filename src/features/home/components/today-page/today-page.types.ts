@@ -63,6 +63,7 @@ export interface TodayPageViewProps {
     config: typeof TODAY_PAGE_CONFIG;
     onActionClick: (actionId: string, conversationId?: string) => void;
     onOverdueClick: (itemId: string, conversationId: string) => void;
+    onInterviewsClick: () => void;
     activeOpportunitiesGoal: number;
     onEditGoalClick: () => void;
     editGoalModal: EditGoalModalState;

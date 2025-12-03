@@ -197,10 +197,48 @@ export function makeConversationsRepo() {
           },
         }));
 
+      // Find or create an opportunity for this contact
+      let opportunity = await prisma.opportunity.findFirst({
+        where: {
+          userId,
+          contactId: ensuredContact.id,
+        },
+        orderBy: {
+          createdAt: 'desc', // Get the most recent one
+        },
+      });
+
+      // If no opportunity exists, create one with metadata from the conversation
+      if (!opportunity) {
+        // Generate opportunity title from contact and company
+        let title: string | null = null;
+        if (contactCompany) {
+          title = contactCompany;
+          if (ensuredContact.headlineOrRole) {
+            title = `${ensuredContact.headlineOrRole} at ${contactCompany}`;
+          }
+        }
+
+        opportunity = await prisma.opportunity.create({
+          data: {
+            userId,
+            contactId: ensuredContact.id,
+            title,
+            categoryId: categoryId ?? null,
+            stageId: stageId ?? null,
+            nextActionType: null,
+            nextActionDueAt: null,
+            priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
+          },
+        });
+      }
+
+      // Create conversation and link it to the opportunity
       const conversation = await prisma.conversation.create({
         data: {
           userId,
           contactId: ensuredContact.id,
+          opportunityId: opportunity.id,
           channel,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
@@ -325,6 +363,7 @@ export function makeConversationsRepo() {
     /**
      * Update a conversation's metadata (category, stage, next action, notes, etc.).
      * If moving to a closed stage, automatically sets priority and next action to null.
+     * If moving to "Interviewing" stage, automatically links to an opportunity for the contact.
      */
     async updateConversation(params: {
       userId: string;
@@ -341,10 +380,63 @@ export function makeConversationsRepo() {
     }) {
       const { userId, conversationId, updates } = params;
 
+      // Get current conversation to check opportunityId and contactId
+      const currentConversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+        select: {
+          opportunityId: true,
+          contactId: true,
+        },
+      });
+
+      if (!currentConversation) {
+        return null;
+      }
+
       // Check if we're moving to a closed stage
       let isMovingToClosedStage = false;
       if (updates.stageId !== undefined) {
         isMovingToClosedStage = await this.isClosedStage(userId, updates.stageId);
+      }
+
+      // Check if we're moving to "Interviewing" stage
+      let opportunityIdToLink: string | null = null;
+      if (updates.stageId !== undefined && updates.stageId !== null && !currentConversation.opportunityId) {
+        const newStage = await prisma.stage.findFirst({
+          where: {
+            id: updates.stageId,
+            userId,
+          },
+        });
+        if (newStage && newStage.name === 'Interviewing') {
+          // Find or create an opportunity for this contact
+          let opportunity = await prisma.opportunity.findFirst({
+            where: {
+              userId,
+              contactId: currentConversation.contactId,
+            },
+            orderBy: {
+              createdAt: 'desc', // Get the most recent one
+            },
+          });
+
+          // If no opportunity exists, create one
+          if (!opportunity) {
+            opportunity = await prisma.opportunity.create({
+              data: {
+                userId,
+                contactId: currentConversation.contactId,
+                categoryId: updates.categoryId ?? null,
+                stageId: updates.stageId ?? null,
+              },
+            });
+          }
+
+          opportunityIdToLink = opportunity.id;
+        }
       }
 
       // Build update data object, only including defined fields
@@ -354,6 +446,9 @@ export function makeConversationsRepo() {
       }
       if (updates.stageId !== undefined) {
         updateData.stageId = updates.stageId;
+      }
+      if (opportunityIdToLink !== null) {
+        updateData.opportunityId = opportunityIdToLink;
       }
       if (updates.nextActionType !== undefined) {
         updateData.nextActionType = updates.nextActionType;

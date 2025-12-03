@@ -76,7 +76,7 @@ export function makeContactsRepo() {
       // Filter by category or stage - check both contact's own category/stage and conversations
       if (categoryId || stageId) {
         const categoryStageFilters: any[] = [];
-        
+
         // Contact has both category and stage
         if (categoryId && stageId) {
           categoryStageFilters.push({
@@ -278,8 +278,8 @@ export function makeContactsRepo() {
       const { userId, data } = params;
 
       // Handle JSON field null values properly for Prisma
-      const profileLinksValue = data.profileLinks === null 
-        ? Prisma.JsonNull 
+      const profileLinksValue = data.profileLinks === null
+        ? Prisma.JsonNull
         : data.profileLinks;
 
       const contact = await prisma.contact.create({
@@ -336,10 +336,10 @@ export function makeContactsRepo() {
         ...updates,
         updatedAt: new Date(),
       };
-      
+
       if ('profileLinks' in updates && updates.profileLinks !== undefined) {
-        updateData.profileLinks = updates.profileLinks === null 
-          ? Prisma.JsonNull 
+        updateData.profileLinks = updates.profileLinks === null
+          ? Prisma.JsonNull
           : updates.profileLinks;
       }
 

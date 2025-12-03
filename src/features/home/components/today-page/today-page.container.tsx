@@ -93,7 +93,7 @@ export function TodayPageContainer() {
   );
 
   // Navigation handlers
-  const { handleActionClick, handleOverdueClick } = useTodayNavigation();
+  const { handleActionClick, handleOverdueClick, handleInterviewsClick } = useTodayNavigation();
 
   // Edit goal modal state
   const editGoalModal = useEditGoalModal({
@@ -114,6 +114,7 @@ export function TodayPageContainer() {
       config={TODAY_PAGE_CONFIG}
       onActionClick={handleActionClick}
       onOverdueClick={handleOverdueClick}
+      onInterviewsClick={handleInterviewsClick}
       activeOpportunitiesGoal={userSettings?.activeOpportunitiesGoal ?? 15}
       onEditGoalClick={editGoalModal.onOpen}
       editGoalModal={editGoalModal}

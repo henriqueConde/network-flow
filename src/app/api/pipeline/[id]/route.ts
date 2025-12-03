@@ -9,7 +9,7 @@ import {
 
 /**
  * PATCH /api/pipeline/[id]
- * Move an opportunity (conversation) to a different stage.
+ * Move an opportunity to a different stage.
  */
 export async function PATCH(
   req: NextRequest,
@@ -21,18 +21,18 @@ export async function PATCH(
       throw new UnauthorizedError();
     }
 
-    const { id: conversationId } = await params;
+    const { id: opportunityId } = await params;
     const json = await req.json();
     const body = moveOpportunityBody.parse(json);
 
     const result = await moveOpportunity({
       userId: user.id,
-      conversationId,
+      opportunityId,
       body,
     });
 
     if (!result) {
-      throw new NotFoundError('Conversation or stage not found');
+      throw new NotFoundError('Opportunity or stage not found');
     }
 
     return NextResponse.json(moveOpportunityResponseDto.parse(result));

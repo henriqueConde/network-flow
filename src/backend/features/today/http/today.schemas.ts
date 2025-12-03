@@ -18,6 +18,7 @@ export const todayActionDto = z.object({
   type: z.enum(['reply', 'follow_up', 'outreach']),
   title: z.string(),
   description: z.string().optional(),
+  opportunityId: z.string(),
   conversationId: z.string().optional(),
   contactName: z.string(),
   contactCompany: z.string().optional(),
@@ -48,7 +49,8 @@ export const newMessagesDto = z.array(newMessageDto);
 
 export const overdueItemDto = z.object({
   id: z.string(),
-  conversationId: z.string(),
+  opportunityId: z.string(),
+  conversationId: z.string().optional(),
   contactName: z.string(),
   contactCompany: z.string().optional(),
   actionType: z.string(),

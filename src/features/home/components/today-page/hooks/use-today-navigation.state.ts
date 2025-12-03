@@ -31,9 +31,14 @@ export function useTodayNavigation() {
     [router],
   );
 
+  const handleInterviewsClick = useCallback(() => {
+    router.push('/interviews');
+  }, [router]);
+
   return {
     handleActionClick,
     handleOverdueClick,
+    handleInterviewsClick,
   };
 }
 

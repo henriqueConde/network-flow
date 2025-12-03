@@ -14,6 +14,8 @@ import {
 import { conversationsKeys } from './conversations.keys';
 import { pipelineKeys } from '@/features/pipeline/services/pipeline.keys';
 import { contactsKeys } from '@/features/contacts/services/contacts.keys';
+import { interviewsKeys } from '@/features/interviews/services/interviews.keys';
+import { opportunitiesKeys } from '@/features/opportunities/services/opportunities.keys';
 
 /**
  * Mutation hook for creating a new conversation.
@@ -49,6 +51,10 @@ export function useUpdateConversation() {
       queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+      // Invalidate interviews lists (conversation might have moved to/from Interviewing stage)
+      queryClient.invalidateQueries({ queryKey: interviewsKeys.lists() });
+      // Invalidate all opportunity details (conversation might be linked to an opportunity or same contact)
+      queryClient.invalidateQueries({ queryKey: opportunitiesKeys.details() });
     },
   });
 }
@@ -156,6 +162,10 @@ export function useDeleteConversation() {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
       // Invalidate pipeline board
       queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
+      // Invalidate interviews lists (deleted conversation might have been an interview)
+      queryClient.invalidateQueries({ queryKey: interviewsKeys.lists() });
+      // Invalidate all opportunity details (deleted conversation might have been linked)
+      queryClient.invalidateQueries({ queryKey: opportunitiesKeys.details() });
     },
   });
 }

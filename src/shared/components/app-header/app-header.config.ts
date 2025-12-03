@@ -5,6 +5,8 @@ export const APP_HEADER_CONFIG = {
     navigation: {
       today: 'Today',
       conversations: 'Conversations',
+      interviews: 'Interviews',
+      opportunities: 'Opportunities',
       pipeline: 'Pipeline',
       contacts: 'Contacts',
     },
@@ -15,6 +17,8 @@ export const APP_HEADER_CONFIG = {
   routes: {
     today: '/',
     conversations: '/conversations',
+    interviews: '/interviews',
+    opportunities: '/opportunities',
     pipeline: '/pipeline',
     contacts: '/contacts',
   },

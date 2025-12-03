@@ -8,6 +8,7 @@ export const pipelineOpportunityDto = z.object({
   id: z.string().uuid(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  title: z.string().nullable(),
   categoryName: z.string().nullable(),
   lastMessageAt: z.string().datetime().nullable(),
   nextActionType: z.string().nullable(),

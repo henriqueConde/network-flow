@@ -6,6 +6,7 @@ const PipelineOpportunityDto = z.object({
   id: z.string(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  title: z.string().nullable(),
   categoryName: z.string().nullable(),
   lastMessageAt: z.string().datetime().nullable(),
   nextActionType: z.string().nullable(),
@@ -64,7 +65,7 @@ export async function getPipelineBoard(params?: {
 /**
  * Move an opportunity to a different stage.
  */
-export async function moveOpportunity(conversationId: string, stageId: string): Promise<void> {
-  await client.patch(`/api/pipeline/${conversationId}`, { stageId });
+export async function moveOpportunity(opportunityId: string, stageId: string): Promise<void> {
+  await client.patch(`/api/pipeline/${opportunityId}`, { stageId });
 }
 

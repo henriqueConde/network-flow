@@ -34,7 +34,7 @@ export async function getPipelineBoard(userId: string, filters?: GetPipelineBoar
  */
 export async function moveOpportunity(input: {
   userId: string;
-  conversationId: string;
+  opportunityId: string;
   body: MoveOpportunityBody;
 }) {
   const repo = makePipelineRepo();
@@ -44,7 +44,7 @@ export async function moveOpportunity(input: {
 
   const updated = await repo.moveOpportunity({
     userId: input.userId,
-    conversationId: input.conversationId,
+    opportunityId: input.opportunityId,
     stageId,
   });
 

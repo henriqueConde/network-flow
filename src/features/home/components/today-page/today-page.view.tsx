@@ -16,6 +16,7 @@ export function TodayPageView({
   config,
   onActionClick,
   onOverdueClick,
+  onInterviewsClick,
   activeOpportunitiesGoal,
   onEditGoalClick,
   editGoalModal,
@@ -115,7 +116,13 @@ export function TodayPageView({
             </Typography>
           )}
         </Box>
-        <Box sx={styles.metricCard()}>
+        <Box 
+          sx={(theme) => ({
+            ...styles.metricCard()(theme),
+            cursor: 'pointer',
+          })}
+          onClick={onInterviewsClick}
+        >
           <Typography sx={styles.metricLabel()}>
             {config.copy.metrics.interviewsInProgress.label}
           </Typography>

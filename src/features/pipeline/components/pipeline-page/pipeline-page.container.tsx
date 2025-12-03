@@ -23,12 +23,12 @@ export function PipelinePageContainer() {
   const moveOpportunityMutation = useMoveOpportunity();
 
   const handleOpportunityClick = (opportunityId: string) => {
-    router.push(`/conversations/${opportunityId}`);
+    router.push(`/opportunities/${opportunityId}`);
   };
 
   const handleMoveOpportunity = (opportunityId: string, stageId: string) => {
     moveOpportunityMutation.mutate(
-      { conversationId: opportunityId, stageId },
+      { opportunityId, stageId },
       {
         onError: (error: unknown) => {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';

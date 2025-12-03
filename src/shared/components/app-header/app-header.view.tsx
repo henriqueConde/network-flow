@@ -55,6 +55,36 @@ export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewPro
             </Typography>
           </Link>
           <Link
+            href={config.routes.interviews}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.interviews) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.interviews) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.interviews}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes.opportunities}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.opportunities) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.opportunities) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.opportunities}
+            </Typography>
+          </Link>
+          <Link
             href={config.routes.pipeline}
             style={{ textDecoration: 'none' }}
             className={isActive(config.routes.pipeline) ? 'active' : ''}

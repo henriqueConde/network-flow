@@ -11,9 +11,8 @@ export function makeTodayRepo() {
          * Get today's metrics for a user
          */
         async getMetrics(userId: string) {
-            // Active opportunities (conversations that have a stage, excluding dormant/closed)
-            // For now, count all conversations with a stage that's not null
-            const allConversations = await prisma.conversation.findMany({
+            // Active opportunities (opportunities that have a stage, excluding dormant/closed)
+            const allOpportunities = await prisma.opportunity.findMany({
                 where: {
                     userId,
                     stageId: {
@@ -25,10 +24,10 @@ export function makeTodayRepo() {
                 },
             });
 
-            const activeConversations = allConversations.filter(
-                (conv) =>
-                    conv.stage &&
-                    !['Dormant', 'Closed (positive)', 'Closed (negative)'].includes(conv.stage.name)
+            const activeOpportunities = allOpportunities.filter(
+                (opp) =>
+                    opp.stage &&
+                    !['Dormant', 'Closed (positive)', 'Closed (negative)'].includes(opp.stage.name)
             ).length;
 
             // Interviews in progress (stage name = "Interviewing")
@@ -40,7 +39,7 @@ export function makeTodayRepo() {
             });
 
             const interviewsInProgress = interviewingStage
-                ? await prisma.conversation.count({
+                ? await prisma.opportunity.count({
                     where: {
                         userId,
                         stageId: interviewingStage.id,
@@ -51,7 +50,7 @@ export function makeTodayRepo() {
             // Overdue follow-ups (nextActionDueAt < now and not null)
             // Also count pending messages as overdue (user needs to confirm they sent them)
             const now = new Date();
-            const overdueConversations = await prisma.conversation.count({
+            const overdueOpportunities = await prisma.opportunity.count({
                 where: {
                     userId,
                     nextActionDueAt: {
@@ -71,10 +70,10 @@ export function makeTodayRepo() {
                 },
             });
             
-            const overdueFollowUps = overdueConversations + pendingMessages;
+            const overdueFollowUps = overdueOpportunities + pendingMessages;
 
             return {
-                activeOpportunities: activeConversations,
+                activeOpportunities,
                 interviewsInProgress,
                 overdueFollowUps,
             };
@@ -82,14 +81,14 @@ export function makeTodayRepo() {
 
         /**
          * Get prioritized actions for today
-         * Includes conversations with nextActionDueAt <= end of today and conversations with pending messages
+         * Includes opportunities with nextActionDueAt <= end of today and conversations with pending messages
          */
         async getTodayActions(userId: string) {
             const now = new Date();
             const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
-            // Get conversations with actions due today
-            const conversationsWithActions = await prisma.conversation.findMany({
+            // Get opportunities with actions due today
+            const opportunitiesWithActions = await prisma.opportunity.findMany({
                 where: {
                     userId,
                     nextActionDueAt: {
@@ -101,6 +100,12 @@ export function makeTodayRepo() {
                     contact: true,
                     category: true,
                     stage: true,
+                    conversations: {
+                        orderBy: {
+                            lastMessageAt: 'desc',
+                        },
+                        take: 1, // Get most recent conversation for snippet
+                    },
                 },
                 orderBy: [
                     {
@@ -114,6 +119,7 @@ export function makeTodayRepo() {
             });
 
             // Get conversations with pending messages (user needs to confirm they sent them)
+            // Include opportunity relation to link actions properly
             const conversationsWithPendingMessages = await prisma.conversation.findMany({
                 where: {
                     userId,
@@ -128,6 +134,12 @@ export function makeTodayRepo() {
                     contact: true,
                     category: true,
                     stage: true,
+                    opportunity: {
+                        include: {
+                            category: true,
+                            stage: true,
+                        },
+                    },
                     messages: {
                         where: {
                             sender: 'user',
@@ -142,13 +154,14 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            // Combine and deduplicate by conversation ID
+            // Combine and deduplicate by opportunity ID
             const allActions = new Map<string, {
                 id: string;
                 type: 'reply' | 'follow_up' | 'outreach';
                 title: string;
                 description?: string;
-                conversationId: string;
+                opportunityId: string;
+                conversationId?: string;
                 contactName: string;
                 contactCompany?: string;
                 dueAt: Date;
@@ -157,41 +170,51 @@ export function makeTodayRepo() {
                 stage?: string;
             }>();
 
-            // Add conversations with actions due today
-            conversationsWithActions.forEach((conv) => {
-                allActions.set(conv.id, {
-                    id: `action-${conv.id}`,
-                    type: inferActionType(conv.nextActionType, conv.lastMessageSide),
-                    title: generateActionTitle(conv.nextActionType, conv.contact.name),
-                    description: conv.lastMessageSnippet || undefined,
-                    conversationId: conv.id,
-                    contactName: conv.contact.name,
-                    contactCompany: conv.contact.company || undefined,
-                    dueAt: conv.nextActionDueAt!,
-                    priority: conv.priority as 'high' | 'medium' | 'low',
-                    category: conv.category?.name || undefined,
-                    stage: conv.stage?.name || undefined,
+            // Add opportunities with actions due today
+            opportunitiesWithActions.forEach((opp) => {
+                const latestConv = opp.conversations[0];
+                allActions.set(opp.id, {
+                    id: `action-${opp.id}`,
+                    type: inferActionType(opp.nextActionType, latestConv?.lastMessageSide || null),
+                    title: generateActionTitle(opp.nextActionType, opp.contact.name),
+                    description: latestConv?.lastMessageSnippet || undefined,
+                    opportunityId: opp.id,
+                    conversationId: latestConv?.id,
+                    contactName: opp.contact.name,
+                    contactCompany: opp.contact.company || undefined,
+                    dueAt: opp.nextActionDueAt!,
+                    priority: opp.priority as 'high' | 'medium' | 'low' | null,
+                    category: opp.category?.name || undefined,
+                    stage: opp.stage?.name || undefined,
                 });
             });
 
-            // Add conversations with pending messages (if not already added)
+            // Add conversations with pending messages (link to opportunity if exists)
             conversationsWithPendingMessages.forEach((conv) => {
-                if (!allActions.has(conv.id)) {
+                const opportunityId = conv.opportunityId || `pending-${conv.id}`;
+                // Use opportunity's priority/stage if linked, otherwise use conversation's
+                const priority = conv.opportunity?.priority as 'high' | 'medium' | 'low' | null || 
+                                (conv.priority as 'high' | 'medium' | 'low' | null) || null;
+                const category = conv.opportunity?.category?.name || conv.category?.name || undefined;
+                const stage = conv.opportunity?.stage?.name || conv.stage?.name || undefined;
+                
+                if (!allActions.has(opportunityId)) {
                     const oldestPendingMessage = conv.messages[0];
-                    allActions.set(conv.id, {
+                    allActions.set(opportunityId, {
                         id: `pending-${conv.id}`,
                         type: 'follow_up',
                         title: `Confirm message sent - ${conv.contact.name}`,
                         description: oldestPendingMessage?.body
                             ? oldestPendingMessage.body.slice(0, 150) + (oldestPendingMessage.body.length > 150 ? '...' : '')
                             : undefined,
+                        opportunityId: conv.opportunityId || conv.id,
                         conversationId: conv.id,
                         contactName: conv.contact.name,
                         contactCompany: conv.contact.company || undefined,
                         dueAt: oldestPendingMessage?.sentAt || now,
-                        priority: conv.priority as 'high' | 'medium' | 'low',
-                        category: conv.category?.name || undefined,
-                        stage: conv.stage?.name || undefined,
+                        priority,
+                        category,
+                        stage,
                     });
                 }
             });
@@ -264,13 +287,13 @@ export function makeTodayRepo() {
 
         /**
          * Get overdue items
-         * Includes conversations with overdue nextActionDueAt and conversations with pending messages
+         * Includes opportunities with overdue nextActionDueAt and conversations with pending messages
          */
         async getOverdueItems(userId: string) {
             const now = new Date();
 
-            // Get conversations with overdue nextActionDueAt
-            const overdueConversations = await prisma.conversation.findMany({
+            // Get opportunities with overdue nextActionDueAt
+            const overdueOpportunities = await prisma.opportunity.findMany({
                 where: {
                     userId,
                     nextActionDueAt: {
@@ -287,7 +310,7 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            // Get conversations with pending messages
+            // Get conversations with pending messages (include opportunity relation)
             const conversationsWithPendingMessages = await prisma.conversation.findMany({
                 where: {
                     userId,
@@ -300,6 +323,7 @@ export function makeTodayRepo() {
                 },
                 include: {
                     contact: true,
+                    opportunity: true,
                     messages: {
                         where: {
                             sender: 'user',
@@ -314,10 +338,11 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            // Combine and deduplicate by conversation ID
+            // Combine and deduplicate by opportunity ID
             const allOverdue = new Map<string, {
                 id: string;
-                conversationId: string;
+                opportunityId: string;
+                conversationId?: string;
                 contactName: string;
                 contactCompany?: string;
                 actionType: string;
@@ -326,25 +351,26 @@ export function makeTodayRepo() {
                 messagePreview?: string;
             }>();
 
-            // Add overdue conversations
-            overdueConversations.forEach((conv) => {
+            // Add overdue opportunities
+            overdueOpportunities.forEach((opp) => {
                 const daysOverdue = Math.floor(
-                    (now.getTime() - conv.nextActionDueAt!.getTime()) / (1000 * 60 * 60 * 24)
+                    (now.getTime() - opp.nextActionDueAt!.getTime()) / (1000 * 60 * 60 * 24)
                 );
-                allOverdue.set(conv.id, {
-                    id: `overdue-${conv.id}`,
-                    conversationId: conv.id,
-                    contactName: conv.contact.name,
-                    contactCompany: conv.contact.company || undefined,
-                    actionType: conv.nextActionType || 'Follow up',
-                    dueDate: conv.nextActionDueAt!,
+                allOverdue.set(opp.id, {
+                    id: `overdue-${opp.id}`,
+                    opportunityId: opp.id,
+                    contactName: opp.contact.name,
+                    contactCompany: opp.contact.company || undefined,
+                    actionType: opp.nextActionType || 'Follow up',
+                    dueDate: opp.nextActionDueAt!,
                     daysOverdue,
                 });
             });
 
-            // Add conversations with pending messages (if not already added)
+            // Add conversations with pending messages (link to opportunity if exists)
             conversationsWithPendingMessages.forEach((conv) => {
-                if (!allOverdue.has(conv.id)) {
+                const opportunityId = conv.opportunityId || `pending-${conv.id}`;
+                if (!allOverdue.has(opportunityId)) {
                     const oldestPendingMessage = conv.messages[0];
                     const daysOverdue = oldestPendingMessage
                         ? Math.floor(
@@ -355,8 +381,9 @@ export function makeTodayRepo() {
                     const messagePreview = oldestPendingMessage?.body
                         ? oldestPendingMessage.body.slice(0, 150) + (oldestPendingMessage.body.length > 150 ? '...' : '')
                         : undefined;
-                    allOverdue.set(conv.id, {
+                    allOverdue.set(opportunityId, {
                         id: `pending-${conv.id}`,
+                        opportunityId: conv.opportunityId || conv.id,
                         conversationId: conv.id,
                         contactName: conv.contact.name,
                         contactCompany: conv.contact.company || undefined,

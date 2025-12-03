@@ -22,6 +22,7 @@ model User {
   linkedInEmailEvents LinkedInEmailEvent[]
   categories         Category[]
   stages             Stage[]
+  opportunities      Opportunity[]
   settings           UserSettings?
 
   @@map("users")
@@ -52,6 +53,7 @@ model Category {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
   contacts     Contact[]
+  opportunities Opportunity[]
 
   @@unique([userId, name])
   @@map("categories")
@@ -70,6 +72,7 @@ model Stage {
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
   contacts      Contact[]
+  opportunities Opportunity[]
 
   @@unique([userId, name])
   @@map("stages")
@@ -94,20 +97,51 @@ model Contact {
   category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stage         Stage?        @relation(fields: [stageId], references: [id], onDelete: SetNull)
   conversations Conversation[]
+  opportunities Opportunity[]
 
   @@map("contacts")
+}
+
+model Opportunity {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @db.Uuid
+  contactId       String    @db.Uuid // Primary contact for this opportunity
+  title           String?   // e.g., "Software Engineer at StartupXYZ" or "Networking with Jane"
+  categoryId      String?   @db.Uuid
+  stageId         String?   @db.Uuid
+  nextActionType  String?   @map("next_action_type")
+  nextActionDueAt DateTime? @map("next_action_due_at")
+  priority        String?   // "low", "medium", "high", or null for closed
+  summary         String?   // AI-generated summary of the overall opportunity
+  notes           String?   // User's personal notes about the opportunity
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact      Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  stage        Stage?        @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  conversations Conversation[]
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([userId, stageId])
+  @@index([nextActionDueAt])
+  @@map("opportunities")
 }
 
 model Conversation {
   id                  String    @id @default(uuid()) @db.Uuid
   userId              String    @db.Uuid
   contactId           String    @db.Uuid
+  opportunityId       String?   @db.Uuid // Links conversation to opportunity (nullable for backwards compatibility)
   channel             String    // e.g., "linkedin", "email", "twitter"
   lastMessageAt       DateTime? @map("last_message_at")
   lastMessageSide     String?   @map("last_message_side") // "user" or "contact"
   lastMessageSnippet  String?   @map("last_message_snippet")
-  categoryId          String?   @db.Uuid
-  stageId             String?   @db.Uuid
+  categoryId          String?   @db.Uuid // Kept for backwards compatibility
+  stageId             String?   @db.Uuid // Kept for backwards compatibility
   nextActionType      String?   @map("next_action_type")
   nextActionDueAt     DateTime? @map("next_action_due_at")
   priority            String?   @default("medium") // "low", "medium", "high", or null for closed conversations
@@ -121,6 +155,7 @@ model Conversation {
   // Relations
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   contact           Contact            @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  opportunity       Opportunity?       @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   category          Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stage             Stage?             @relation(fields: [stageId], references: [id], onDelete: SetNull)
   messages          Message[]
@@ -128,6 +163,7 @@ model Conversation {
 
   @@index([userId])
   @@index([contactId])
+  @@index([opportunityId])
   @@index([userId, channel])
   @@index([userId, stageId])
   @@index([nextActionDueAt])

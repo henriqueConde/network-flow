@@ -27,7 +27,7 @@ export async function getCategoryByName(userId: string, name: string) {
 export async function ensureDefaultCategories(userId: string) {
   const repo = makeCategoriesRepo();
   await repo.ensureDefaultCategories(userId);
-  
+
   // Return all categories after ensuring defaults
   return listCategories(userId);
 }

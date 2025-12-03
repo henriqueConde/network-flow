@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { moveOpportunity } from './pipeline.service';
 import { pipelineKeys } from './pipeline.keys';
-import { conversationsKeys } from '@/features/conversations/services/conversations.keys';
+import { opportunitiesKeys } from '@/features/opportunities/services/opportunities.keys';
 import type { PipelineBoard } from './pipeline.service';
 
 /**
@@ -13,9 +13,9 @@ export function useMoveOpportunity() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ conversationId, stageId }: { conversationId: string; stageId: string }) =>
-      moveOpportunity(conversationId, stageId),
-    onMutate: async ({ conversationId, stageId }) => {
+    mutationFn: ({ opportunityId, stageId }: { opportunityId: string; stageId: string }) =>
+      moveOpportunity(opportunityId, stageId),
+    onMutate: async ({ opportunityId, stageId }) => {
       // Cancel any outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: pipelineKeys.board() });
 
@@ -29,7 +29,7 @@ export function useMoveOpportunity() {
         let sourceStageId: string | null = null;
 
         for (const stage of previousBoard.stages) {
-          const opp = stage.opportunities.find((o) => o.id === conversationId);
+          const opp = stage.opportunities.find((o) => o.id === opportunityId);
           if (opp) {
             opportunityToMove = opp;
             sourceStageId = stage.id;
@@ -51,7 +51,7 @@ export function useMoveOpportunity() {
             if (stage.id === sourceStageId) {
               return {
                 ...stage,
-                opportunities: stage.opportunities.filter((opp) => opp.id !== conversationId),
+                opportunities: stage.opportunities.filter((opp) => opp.id !== opportunityId),
               };
             }
             // Add to target stage
@@ -70,7 +70,7 @@ export function useMoveOpportunity() {
             updatedStages.unshift({
               id: '__unassigned__',
               name: 'Unassigned',
-              description: 'Conversations without a stage',
+              description: 'Opportunities without a stage',
               order: -1,
               opportunities: [opportunityToMove],
             });
@@ -105,8 +105,8 @@ export function useMoveOpportunity() {
     onSettled: (_, __, variables) => {
       // Always refetch after error or success to ensure consistency
       queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
-      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(variables.conversationId) });
+      queryClient.invalidateQueries({ queryKey: opportunitiesKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: opportunitiesKeys.detail(variables.opportunityId) });
     },
   });
 }
