@@ -1,9 +1,11 @@
 'use client';
 
-import { Box, Typography, CircularProgress, Alert, Chip } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Chip, IconButton } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import EditIcon from '@mui/icons-material/Edit';
 import type { TodayPageViewProps } from './today-page.types';
 import { styles } from './today-page.styles';
+import { EditGoalModal } from './components/edit-goal-modal.view';
 
 export function TodayPageView({
   metrics,
@@ -14,6 +16,9 @@ export function TodayPageView({
   config,
   onActionClick,
   onOverdueClick,
+  activeOpportunitiesGoal,
+  onEditGoalClick,
+  editGoalModal,
 }: TodayPageViewProps) {
   if (isLoading) {
     return (
@@ -81,12 +86,34 @@ export function TodayPageView({
         {/* Metrics Snapshot */}
         <Box sx={styles.metricsGrid()}>
         <Box sx={styles.metricCard()}>
-          <Typography sx={styles.metricLabel()}>
-            {config.copy.metrics.activeOpportunities.label}
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 0.5 }}>
+            <Typography sx={styles.metricLabel()}>
+              {config.copy.metrics.activeOpportunities.label}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={onEditGoalClick}
+              sx={{ 
+                padding: 0.5,
+                marginTop: -0.5,
+                marginRight: -0.5,
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'primary.main',
+                },
+              }}
+            >
+              <EditIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
           <Typography sx={styles.metricValue()}>
-            {metrics.activeOpportunities}
+            {metrics.activeOpportunities}/{activeOpportunitiesGoal}
           </Typography>
+          {metrics.activeOpportunities < activeOpportunitiesGoal && (
+            <Typography sx={styles.goalSuggestion()}>
+              Aim to add {Math.min(5, activeOpportunitiesGoal - metrics.activeOpportunities)} more opportunity{activeOpportunitiesGoal - metrics.activeOpportunities !== 1 ? 'ies' : 'y'} today
+            </Typography>
+          )}
         </Box>
         <Box sx={styles.metricCard()}>
           <Typography sx={styles.metricLabel()}>
@@ -139,15 +166,33 @@ export function TodayPageView({
                       />
                     )}
                   </Box>
-                  <Typography sx={styles.actionMeta()}>
-                    {action.contactName}
-                    {action.contactCompany && ` • ${action.contactCompany}`}
-                    {action.category && ` • ${action.category}`}
-                  </Typography>
-                  <Typography sx={styles.actionMeta()}>
-                    <AccessTimeIcon sx={{ fontSize: 14 }} />
-                    Due {formatDate(action.dueAt)}
-                  </Typography>
+                  {action.type === 'seek_opportunities' ? (
+                    <>
+                      {action.description && (
+                        <Typography sx={styles.actionMeta()}>
+                          {action.description}
+                        </Typography>
+                      )}
+                      <Typography sx={styles.actionMeta()}>
+                        <AccessTimeIcon sx={{ fontSize: 14 }} />
+                        Due today
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      {action.contactName && (
+                        <Typography sx={styles.actionMeta()}>
+                          {action.contactName}
+                          {action.contactCompany && ` • ${action.contactCompany}`}
+                          {action.category && ` • ${action.category}`}
+                        </Typography>
+                      )}
+                      <Typography sx={styles.actionMeta()}>
+                        <AccessTimeIcon sx={{ fontSize: 14 }} />
+                        Due {formatDate(action.dueAt)}
+                      </Typography>
+                    </>
+                  )}
                 </Box>
               ))
             )}
@@ -200,6 +245,17 @@ export function TodayPageView({
         )}
       </Box>
       </Box>
+
+      {/* Edit Goal Modal */}
+      <EditGoalModal
+        isOpen={editGoalModal.isOpen}
+        goal={editGoalModal.goal}
+        error={editGoalModal.error}
+        isSaving={editGoalModal.isSaving}
+        onClose={editGoalModal.onClose}
+        onChangeGoal={editGoalModal.onChangeGoal}
+        onSave={editGoalModal.onSave}
+      />
     </Box>
   );
 }

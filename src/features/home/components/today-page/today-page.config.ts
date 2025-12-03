@@ -23,6 +23,11 @@ export const TODAY_PAGE_CONFIG = {
             prioritizedActions: {
                 title: 'Prioritized Actions',
                 empty: 'No actions for today. Great job!',
+                seekOpportunities: {
+                    title: (count: number) => `Seek ${count} new ${count === 1 ? 'opportunity' : 'opportunities'} today`,
+                    description: (current: number, goal: number, toSeek: number) => 
+                        `You have ${current} out of ${goal} active opportunities. Aim to add ${toSeek} more today.`,
+                },
             },
             newMessages: {
                 title: 'New Messages',

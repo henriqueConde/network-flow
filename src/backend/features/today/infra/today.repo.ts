@@ -82,12 +82,14 @@ export function makeTodayRepo() {
 
         /**
          * Get prioritized actions for today
+         * Includes conversations with nextActionDueAt <= end of today and conversations with pending messages
          */
         async getTodayActions(userId: string) {
             const now = new Date();
             const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
-            const conversations = await prisma.conversation.findMany({
+            // Get conversations with actions due today
+            const conversationsWithActions = await prisma.conversation.findMany({
                 where: {
                     userId,
                     nextActionDueAt: {
@@ -111,19 +113,101 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            return conversations.map((conv) => ({
-                id: `action-${conv.id}`,
-                type: inferActionType(conv.nextActionType, conv.lastMessageSide),
-                title: generateActionTitle(conv.nextActionType, conv.contact.name),
-                description: conv.lastMessageSnippet || undefined,
-                conversationId: conv.id,
-                contactName: conv.contact.name,
-                contactCompany: conv.contact.company || undefined,
-                dueAt: conv.nextActionDueAt!,
-                priority: conv.priority as 'high' | 'medium' | 'low',
-                category: conv.category?.name || undefined,
-                stage: conv.stage?.name || undefined,
-            }));
+            // Get conversations with pending messages (user needs to confirm they sent them)
+            const conversationsWithPendingMessages = await prisma.conversation.findMany({
+                where: {
+                    userId,
+                    messages: {
+                        some: {
+                            sender: 'user',
+                            status: 'pending',
+                        },
+                    },
+                },
+                include: {
+                    contact: true,
+                    category: true,
+                    stage: true,
+                    messages: {
+                        where: {
+                            sender: 'user',
+                            status: 'pending',
+                        },
+                        orderBy: {
+                            sentAt: 'asc',
+                        },
+                        take: 1,
+                    },
+                },
+                take: 20,
+            });
+
+            // Combine and deduplicate by conversation ID
+            const allActions = new Map<string, {
+                id: string;
+                type: 'reply' | 'follow_up' | 'outreach';
+                title: string;
+                description?: string;
+                conversationId: string;
+                contactName: string;
+                contactCompany?: string;
+                dueAt: Date;
+                priority: 'high' | 'medium' | 'low' | null;
+                category?: string;
+                stage?: string;
+            }>();
+
+            // Add conversations with actions due today
+            conversationsWithActions.forEach((conv) => {
+                allActions.set(conv.id, {
+                    id: `action-${conv.id}`,
+                    type: inferActionType(conv.nextActionType, conv.lastMessageSide),
+                    title: generateActionTitle(conv.nextActionType, conv.contact.name),
+                    description: conv.lastMessageSnippet || undefined,
+                    conversationId: conv.id,
+                    contactName: conv.contact.name,
+                    contactCompany: conv.contact.company || undefined,
+                    dueAt: conv.nextActionDueAt!,
+                    priority: conv.priority as 'high' | 'medium' | 'low',
+                    category: conv.category?.name || undefined,
+                    stage: conv.stage?.name || undefined,
+                });
+            });
+
+            // Add conversations with pending messages (if not already added)
+            conversationsWithPendingMessages.forEach((conv) => {
+                if (!allActions.has(conv.id)) {
+                    const oldestPendingMessage = conv.messages[0];
+                    allActions.set(conv.id, {
+                        id: `pending-${conv.id}`,
+                        type: 'follow_up',
+                        title: `Confirm message sent - ${conv.contact.name}`,
+                        description: oldestPendingMessage?.body
+                            ? oldestPendingMessage.body.slice(0, 150) + (oldestPendingMessage.body.length > 150 ? '...' : '')
+                            : undefined,
+                        conversationId: conv.id,
+                        contactName: conv.contact.name,
+                        contactCompany: conv.contact.company || undefined,
+                        dueAt: oldestPendingMessage?.sentAt || now,
+                        priority: conv.priority as 'high' | 'medium' | 'low',
+                        category: conv.category?.name || undefined,
+                        stage: conv.stage?.name || undefined,
+                    });
+                }
+            });
+
+            // Sort by priority and due date, then return
+            return Array.from(allActions.values()).sort((a, b) => {
+                // First by priority (high > medium > low > null)
+                const priorityOrder = { high: 3, medium: 2, low: 1, null: 0 };
+                const aPriority = priorityOrder[a.priority || 'null'];
+                const bPriority = priorityOrder[b.priority || 'null'];
+                if (aPriority !== bPriority) {
+                    return bPriority - aPriority;
+                }
+                // Then by due date
+                return a.dueAt.getTime() - b.dueAt.getTime();
+            }).slice(0, 20);
         },
 
         /**

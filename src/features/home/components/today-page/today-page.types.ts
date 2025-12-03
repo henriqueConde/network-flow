@@ -9,11 +9,11 @@ export type TodayPageMetrics = {
 
 export type TodayAction = {
     id: string;
-    type: 'reply' | 'follow_up' | 'outreach';
+    type: 'reply' | 'follow_up' | 'outreach' | 'seek_opportunities';
     title: string;
     description?: string;
     conversationId?: string;
-    contactName: string;
+    contactName?: string;
     contactCompany?: string;
     dueAt: Date;
     priority: 'high' | 'medium' | 'low' | null;
@@ -43,6 +43,17 @@ export type OverdueItem = {
     messagePreview?: string; // Preview of pending message if applicable
 };
 
+export interface EditGoalModalState {
+    isOpen: boolean;
+    goal: number;
+    error: string | null;
+    onOpen: () => void;
+    onClose: () => void;
+    onChangeGoal: (goal: number) => void;
+    onSave: () => Promise<void>;
+    isSaving: boolean;
+}
+
 export interface TodayPageViewProps {
     metrics: TodayPageMetrics;
     prioritizedActions: TodayAction[];
@@ -52,4 +63,7 @@ export interface TodayPageViewProps {
     config: typeof TODAY_PAGE_CONFIG;
     onActionClick: (actionId: string, conversationId?: string) => void;
     onOverdueClick: (itemId: string, conversationId: string) => void;
+    activeOpportunitiesGoal: number;
+    onEditGoalClick: () => void;
+    editGoalModal: EditGoalModalState;
 }

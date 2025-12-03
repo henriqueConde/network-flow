@@ -10,6 +10,13 @@ export function useTodayNavigation() {
 
   const handleActionClick = useCallback(
     (actionId: string, conversationId?: string) => {
+      // Special handling for "seek opportunities" action
+      if (actionId === 'seek-opportunities') {
+        // Navigate to contacts page to add new opportunities
+        router.push('/contacts');
+        return;
+      }
+      
       if (conversationId) {
         router.push(`/conversations/${conversationId}`);
       }
