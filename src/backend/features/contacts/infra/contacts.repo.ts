@@ -190,6 +190,76 @@ export function makeContactsRepo() {
     },
 
     /**
+     * Check if a contact already exists by LinkedIn URL.
+     * Returns the existing contact if found, null otherwise.
+     */
+    async findContactByLinkedInUrl(params: {
+      userId: string;
+      linkedInUrl: string;
+    }) {
+      const { userId, linkedInUrl } = params;
+
+      // Get all contacts for the user and filter in memory
+      // This is necessary because Prisma's JSON filtering is limited
+      const contacts = await prisma.contact.findMany({
+        where: {
+          userId,
+          profileLinks: {
+            not: Prisma.JsonNull,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          profileLinks: true,
+        },
+      });
+
+      // Filter contacts where profileLinks.linkedin matches
+      const matchingContact = contacts.find((contact) => {
+        if (!contact.profileLinks || typeof contact.profileLinks !== 'object') {
+          return false;
+        }
+        const links = contact.profileLinks as Record<string, unknown>;
+        return links.linkedin === linkedInUrl;
+      });
+
+      if (!matchingContact) {
+        return null;
+      }
+
+      // Return full contact
+      return await prisma.contact.findUnique({
+        where: {
+          id: matchingContact.id,
+        },
+      });
+    },
+
+    /**
+     * Check if a contact already exists by name (case-insensitive).
+     * Returns the existing contact if found, null otherwise.
+     */
+    async findContactByName(params: {
+      userId: string;
+      name: string;
+    }) {
+      const { userId, name } = params;
+
+      const contact = await prisma.contact.findFirst({
+        where: {
+          userId,
+          name: {
+            equals: name,
+            mode: 'insensitive',
+          },
+        },
+      });
+
+      return contact;
+    },
+
+    /**
      * Create a new contact.
      */
     async createContact(params: {

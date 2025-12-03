@@ -12,6 +12,15 @@ export async function listCategories(userId: string) {
 }
 
 /**
+ * Use case: Get a category by name for a user.
+ * Returns null if not found.
+ */
+export async function getCategoryByName(userId: string, name: string) {
+  const repo = makeCategoriesRepo();
+  return await repo.getCategoryByName(userId, name);
+}
+
+/**
  * Use case: Ensure default categories exist for a user.
  * Creates default categories if they don't exist.
  */

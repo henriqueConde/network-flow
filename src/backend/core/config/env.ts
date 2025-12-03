@@ -7,6 +7,9 @@ const Env = z.object({
   DATABASE_URL: z.string().min(1),
   DIRECT_URL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1),
+  LINKEDIN_API_BASE: z.string().url(),
+  LINKEDIN_VERSION: z.string(),
+  LINKEDIN_ACCESS_TOKEN: z.string(),
 });
 
 export const env = Env.parse(process.env);

@@ -26,6 +26,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import LinearProgress from '@mui/material/LinearProgress';
 import type { ContactsPageViewProps } from './contacts-page.types';
 import { styles } from './contacts-page.styles';
 
@@ -71,6 +73,12 @@ export function ContactsPageView({
   onCloseDeleteDialog,
   onConfirmDelete,
   isDeleting,
+  isImportDialogOpen,
+  importProgress,
+  importError,
+  onStartImport,
+  onCloseImportDialog,
+  isImporting,
 }: ContactsPageViewProps) {
   const formatTimeAgo = (date: Date | null) => {
     if (!date) return '—';
@@ -112,9 +120,19 @@ export function ContactsPageView({
             {config.copy.subtitle}
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={onOpenCreate}>
-          {config.copy.createButton}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<LinkedInIcon />}
+            onClick={onStartImport}
+            disabled={isImporting}
+          >
+            {config.copy.importLinkedInButton}
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={onOpenCreate}>
+            {config.copy.createButton}
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={styles.filtersRow()}>
@@ -178,7 +196,7 @@ export function ContactsPageView({
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ marginBottom: 2 }}>
+        <Alert severity="error" sx={{ marginBottom: 2, flexShrink: 0 }}>
           {error}
         </Alert>
       )}
@@ -194,124 +212,126 @@ export function ContactsPageView({
           </Box>
         ) : (
           <>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortBy === 'name'}
-                      direction={sortBy === 'name' ? sortDir : 'asc'}
-                      onClick={() => handleSort('name')}
-                    >
-                      {config.copy.table.name}
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>{config.copy.table.role}</TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortBy === 'company'}
-                      direction={sortBy === 'company' ? sortDir : 'asc'}
-                      onClick={() => handleSort('company')}
-                    >
-                      {config.copy.table.company}
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>{config.copy.table.platform}</TableCell>
-                  <TableCell>{config.copy.table.stage}</TableCell>
-                  <TableCell>{config.copy.table.category}</TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortBy === 'updatedAt'}
-                      direction={sortBy === 'updatedAt' ? sortDir : 'asc'}
-                      onClick={() => handleSort('updatedAt')}
-                    >
-                      {config.copy.table.lastTouch}
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>{config.copy.table.actions}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {contacts.map((contact) => (
-                  <TableRow
-                    key={contact.id}
-                    sx={styles.tableRow(true)}
-                    onClick={() => onRowClick(contact.id)}
-                  >
+            <Box sx={styles.tableWrapper()}>
+              <Table stickyHeader sx={styles.table()}>
+                <TableHead>
+                  <TableRow>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {contact.name}
-                      </Typography>
+                      <TableSortLabel
+                        active={sortBy === 'name'}
+                        direction={sortBy === 'name' ? sortDir : 'asc'}
+                        onClick={() => handleSort('name')}
+                      >
+                        {config.copy.table.name}
+                      </TableSortLabel>
                     </TableCell>
+                    <TableCell>{config.copy.table.role}</TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {contact.headlineOrRole || '—'}
-                      </Typography>
+                      <TableSortLabel
+                        active={sortBy === 'company'}
+                        direction={sortBy === 'company' ? sortDir : 'asc'}
+                        onClick={() => handleSort('company')}
+                      >
+                        {config.copy.table.company}
+                      </TableSortLabel>
                     </TableCell>
+                    <TableCell>{config.copy.table.platform}</TableCell>
+                    <TableCell>{config.copy.table.stage}</TableCell>
+                    <TableCell>{config.copy.table.category}</TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {contact.company || '—'}
-                      </Typography>
+                      <TableSortLabel
+                        active={sortBy === 'updatedAt'}
+                        direction={sortBy === 'updatedAt' ? sortDir : 'asc'}
+                        onClick={() => handleSort('updatedAt')}
+                      >
+                        {config.copy.table.lastTouch}
+                      </TableSortLabel>
                     </TableCell>
-                    <TableCell>
-                      {contact.primaryPlatform && (
-                        <Chip
-                          label={contact.primaryPlatform}
-                          size="small"
-                          sx={styles.chip()}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {contact.latestConversation?.stageName && (
-                        <Chip
-                          label={contact.latestConversation.stageName}
-                          size="small"
-                          sx={styles.chip()}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {contact.latestConversation?.categoryName && (
-                        <Chip
-                          label={contact.latestConversation.categoryName}
-                          size="small"
-                          sx={styles.chip()}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {contact.latestConversation?.lastMessageAtDate
-                          ? formatTimeAgo(contact.latestConversation.lastMessageAtDate)
-                          : '—'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleRowAction(e, contact, 'edit')}
-                          aria-label="Edit contact"
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleRowAction(e, contact, 'delete')}
-                          aria-label="Delete contact"
-                          color="error"
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
+                    <TableCell>{config.copy.table.actions}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {contacts.map((contact) => (
+                    <TableRow
+                      key={contact.id}
+                      sx={styles.tableRow(true)}
+                      onClick={() => onRowClick(contact.id)}
+                    >
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={500}>
+                          {contact.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {contact.headlineOrRole || '—'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {contact.company || '—'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {contact.primaryPlatform && (
+                          <Chip
+                            label={contact.primaryPlatform}
+                            size="small"
+                            sx={styles.chip()}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {contact.latestConversation?.stageName && (
+                          <Chip
+                            label={contact.latestConversation.stageName}
+                            size="small"
+                            sx={styles.chip()}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {contact.latestConversation?.categoryName && (
+                          <Chip
+                            label={contact.latestConversation.categoryName}
+                            size="small"
+                            sx={styles.chip()}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {contact.latestConversation?.lastMessageAtDate
+                            ? formatTimeAgo(contact.latestConversation.lastMessageAtDate)
+                            : '—'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleRowAction(e, contact, 'edit')}
+                            aria-label="Edit contact"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleRowAction(e, contact, 'delete')}
+                            aria-label="Delete contact"
+                            color="error"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
             {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', padding: 2 }}>
+              <Box sx={styles.paginationWrapper()}>
                 <Pagination
                   count={totalPages}
                   page={page}
@@ -437,6 +457,94 @@ export function ContactsPageView({
             disabled={isDeleting}
           >
             {isDeleting ? 'Deleting…' : config.copy.dialog.delete}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Import LinkedIn Dialog */}
+      <Dialog open={isImportDialogOpen} onClose={onCloseImportDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>{config.copy.importDialog.title}</DialogTitle>
+        <DialogContent>
+          {importError ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {config.copy.importDialog.error}: {importError}
+            </Alert>
+          ) : importProgress ? (
+            <Box>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                {isImporting ? config.copy.importDialog.processing : config.copy.importDialog.completed}
+              </Typography>
+              
+              {importProgress.total > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {importProgress.processed} / {importProgress.total}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {Math.round((importProgress.processed / importProgress.total) * 100)}%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={(importProgress.processed / importProgress.total) * 100}
+                    sx={{ height: 8, borderRadius: 1 }}
+                  />
+                </Box>
+              )}
+
+              {importProgress.currentContact && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    {config.copy.importDialog.currentContact}:
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {importProgress.currentContact.name}
+                  </Typography>
+                </Box>
+              )}
+
+              <Box sx={{ display: 'flex', gap: 3, mt: 3 }}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {config.copy.importDialog.stats.total}
+                  </Typography>
+                  <Typography variant="h6">{importProgress.total}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {config.copy.importDialog.stats.processed}
+                  </Typography>
+                  <Typography variant="h6">{importProgress.processed}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {config.copy.importDialog.stats.created}
+                  </Typography>
+                  <Typography variant="h6" color="success.main">
+                    {importProgress.created}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {config.copy.importDialog.stats.skipped}
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary">
+                    {importProgress.skipped}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <CircularProgress size={24} />
+              <Typography variant="body2">{config.copy.importDialog.processing}</Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onCloseImportDialog} disabled={isImporting}>
+            {config.copy.importDialog.close}
           </Button>
         </DialogActions>
       </Dialog>

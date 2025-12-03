@@ -8,6 +8,7 @@ import { CONTACTS_PAGE_CONFIG } from './contacts-page.config';
 import { useContactsFilters } from './hooks/use-contacts-filters.state';
 import { useContactDialog } from './hooks/use-contact-dialog.state';
 import { useDeleteContactDialog } from './hooks/use-delete-contact-dialog.state';
+import { useLinkedInImport } from './hooks/use-linkedin-import.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
 import type { ContactListItem } from '../../services/contacts.service';
@@ -77,6 +78,9 @@ export function ContactsPageContainer() {
 
   // Delete dialog
   const deleteDialog = useDeleteContactDialog();
+
+  // LinkedIn import
+  const linkedInImport = useLinkedInImport();
 
   const handleConfirmDelete = async () => {
     if (deleteDialog.contactId) {
@@ -162,6 +166,12 @@ export function ContactsPageContainer() {
       onCloseDeleteDialog={deleteDialog.close}
       onConfirmDelete={handleConfirmDelete}
       isDeleting={deleteMutation.isPending}
+      isImportDialogOpen={linkedInImport.isOpen}
+      importProgress={linkedInImport.progress}
+      importError={linkedInImport.error}
+      onStartImport={linkedInImport.startImport}
+      onCloseImportDialog={linkedInImport.close}
+      isImporting={linkedInImport.isImporting}
     />
   );
 }

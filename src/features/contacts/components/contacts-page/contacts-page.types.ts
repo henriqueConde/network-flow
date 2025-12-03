@@ -48,5 +48,21 @@ export interface ContactsPageViewProps {
   onCloseDeleteDialog: () => void;
   onConfirmDelete: () => void;
   isDeleting: boolean;
+  // Import LinkedIn dialog
+  isImportDialogOpen: boolean;
+  importProgress: {
+    total: number;
+    processed: number;
+    created: number;
+    skipped: number;
+    currentContact?: {
+      name: string;
+      status: 'processing' | 'created' | 'skipped';
+    };
+  } | null;
+  importError: string | null;
+  onStartImport: () => void;
+  onCloseImportDialog: () => void;
+  isImporting: boolean;
 }
 

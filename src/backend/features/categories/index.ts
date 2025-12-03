@@ -1,2 +1,2 @@
-export { listCategories, ensureDefaultCategories } from './application/categories.use-cases';
+export { listCategories, ensureDefaultCategories, getCategoryByName } from './application/categories.use-cases';
 

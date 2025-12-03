@@ -4,6 +4,7 @@ export const CONTACTS_PAGE_CONFIG = {
     subtitle: 'All your networking contacts in one place.',
     searchPlaceholder: 'Search by name, role, or company',
     createButton: 'New Contact',
+    importLinkedInButton: 'Import LinkedIn Contacts',
     editButton: 'Edit',
     deleteButton: 'Delete',
     dialog: {
@@ -15,6 +16,20 @@ export const CONTACTS_PAGE_CONFIG = {
       save: 'Save',
       create: 'Create',
       delete: 'Delete',
+    },
+    importDialog: {
+      title: 'Importing LinkedIn Contacts',
+      processing: 'Processing contacts...',
+      completed: 'Import completed!',
+      error: 'Import failed',
+      currentContact: 'Current contact',
+      stats: {
+        total: 'Total',
+        processed: 'Processed',
+        created: 'Created',
+        skipped: 'Skipped',
+      },
+      close: 'Close',
     },
     table: {
       name: 'Name',

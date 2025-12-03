@@ -22,6 +22,22 @@ export function makeCategoriesRepo() {
     },
 
     /**
+     * Get a category by name for a user.
+     */
+    async getCategoryByName(userId: string, name: string) {
+      const category = await prisma.category.findUnique({
+        where: {
+          userId_name: {
+            userId,
+            name,
+          },
+        },
+      });
+
+      return category;
+    },
+
+    /**
      * Create default categories for a user if they don't exist.
      */
     async ensureDefaultCategories(userId: string) {
