@@ -15,7 +15,8 @@ export type ConversationDetailSidebarProps = {
     originalUrl: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailSidebarProps['editValues'], string>>;
-  isEditing: boolean;
+  isEditingMetadata: boolean;
+  isEditingNotes: boolean;
   isSaving: boolean;
   availableStages: Stage[];
   availableCategories: Category[];
@@ -24,7 +25,9 @@ export type ConversationDetailSidebarProps = {
     field: keyof ConversationDetailSidebarProps['editValues'],
     value: string | null,
   ) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  onSaveMetadata: () => void;
+  onSaveNotes: () => void;
+  onCancelMetadata: () => void;
+  onCancelNotes: () => void;
 };
 

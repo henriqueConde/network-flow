@@ -15,7 +15,8 @@ export type ConversationDetailContentProps = {
     originalUrl: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailContentProps['editValues'], string>>;
-  isEditing: boolean;
+  isEditingMetadata: boolean;
+  isEditingNotes: boolean;
   isSaving: boolean;
   availableStages: Stage[];
   availableCategories: Category[];
@@ -26,8 +27,10 @@ export type ConversationDetailContentProps = {
     field: keyof ConversationDetailContentProps['editValues'],
     value: string | null,
   ) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  onSaveMetadata: () => void;
+  onSaveNotes: () => void;
+  onCancelMetadata: () => void;
+  onCancelNotes: () => void;
   onConfirmMessage?: (messageId: string) => void;
   onEditMessage?: (messageId: string) => void;
   onDeleteMessage?: (messageId: string) => void;

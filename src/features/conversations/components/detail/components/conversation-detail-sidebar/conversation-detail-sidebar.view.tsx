@@ -11,41 +11,44 @@ export function ConversationDetailSidebar({
   conversation,
   editValues,
   editErrors,
-  isEditing,
+  isEditingMetadata,
+  isEditingNotes,
   isSaving,
   availableStages,
   availableCategories,
   config,
   onChangeEditField,
-  onSave,
-  onCancel,
+  onSaveMetadata,
+  onSaveNotes,
+  onCancelMetadata,
+  onCancelNotes,
 }: ConversationDetailSidebarProps) {
   return (
     <Box sx={styles.sidebarColumn()}>
       <MetadataCard
         editValues={editValues}
         editErrors={editErrors}
-        isEditing={isEditing}
+        isEditing={isEditingMetadata}
         isSaving={isSaving}
         availableStages={availableStages}
         availableCategories={availableCategories}
         config={config}
         onChangeEditField={onChangeEditField}
-        onSave={onSave}
-        onCancel={onCancel}
+        onSave={onSaveMetadata}
+        onCancel={onCancelMetadata}
       />
 
       {conversation.summary && <SummaryCard summary={conversation.summary} config={config} />}
 
       <NotesCard
         notes={editValues.notes}
-        isEditing={isEditing}
+        isEditing={isEditingNotes}
         isSaving={isSaving}
         error={editErrors.notes}
         config={config}
         onChangeNotes={(value) => onChangeEditField('notes', value)}
-        onSave={onSave}
-        onCancel={onCancel}
+        onSave={onSaveNotes}
+        onCancel={onCancelNotes}
       />
     </Box>
   );

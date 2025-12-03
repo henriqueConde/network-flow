@@ -29,7 +29,7 @@ export function NotesCard({
           onChange={(e) => onChangeNotes(e.target.value || null)}
           error={!!error}
           helperText={error}
-          disabled={!isEditing || isSaving}
+          disabled={isSaving}
           sx={styles.notesTextarea()}
         />
         {isEditing && (

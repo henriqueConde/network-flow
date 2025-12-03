@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, CardContent, Typography, Box, TextField, MenuItem, Button, CircularProgress, Link } from '@mui/material';
+import { Card, CardContent, Typography, Box, TextField, MenuItem, Button, CircularProgress } from '@mui/material';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Priority } from '@/shared/types';
 import type { MetadataCardProps } from './metadata-card.types';
 import { styles } from './metadata-card.styles';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export function MetadataCard({
   editValues,
@@ -46,6 +46,26 @@ export function MetadataCard({
 
           <TextField
             select
+            label={config.copy.metadata.priority}
+            size="small"
+            fullWidth
+            value={editValues.priority}
+            onChange={(e) =>
+              onChangeEditField('priority', e.target.value as 'low' | 'medium' | 'high')
+            }
+            error={!!editErrors.priority}
+            helperText={editErrors.priority}
+            disabled={isSaving}
+          >
+            <MenuItem value={Priority.LOW}>{config.copy.priority.low}</MenuItem>
+            <MenuItem value={Priority.MEDIUM}>{config.copy.priority.medium}</MenuItem>
+            <MenuItem value={Priority.HIGH}>{config.copy.priority.high}</MenuItem>
+          </TextField>
+        </Box>
+
+        <Box sx={styles.stageContainer()}>
+          <TextField
+            select
             label={config.copy.metadata.stage}
             size="small"
             fullWidth
@@ -62,25 +82,9 @@ export function MetadataCard({
               </MenuItem>
             ))}
           </TextField>
+        </Box>
 
-          <TextField
-            select
-            label={config.copy.metadata.priority}
-            size="small"
-            fullWidth
-            value={editValues.priority}
-            onChange={(e) =>
-              onChangeEditField('priority', e.target.value as 'low' | 'medium' | 'high')
-            }
-            error={!!editErrors.priority}
-            helperText={editErrors.priority}
-            disabled={isSaving}
-          >
-            <MenuItem value={Priority.LOW}>{config.copy.priority.low}</MenuItem>
-            <MenuItem value={Priority.MEDIUM}>{config.copy.priority.medium}</MenuItem>
-            <MenuItem value={Priority.HIGH}>{config.copy.priority.high}</MenuItem>
-          </TextField>
-
+        <Box sx={styles.nextActionContainer()}>
           <TextField
             label={config.copy.metadata.nextAction}
             size="small"
@@ -91,7 +95,9 @@ export function MetadataCard({
             helperText={editErrors.nextActionType}
             disabled={isSaving}
           />
+        </Box>
 
+        <Box sx={styles.dueDateContainer()}>
           <TextField
             label={config.copy.metadata.dueDate}
             type="datetime-local"
@@ -113,40 +119,31 @@ export function MetadataCard({
             disabled={isSaving}
             InputLabelProps={{ shrink: true }}
           />
+        </Box>
 
-          {isEditing ? (
-            <TextField
-              label="Original URL"
+        <Box sx={styles.originalUrlContainer()}>
+          <TextField
+            label={config.copy.metadata.originalUrl.label}
+            size="small"
+            fullWidth
+            value={editValues.originalUrl || ''}
+            onChange={(e) => onChangeEditField('originalUrl', e.target.value || null)}
+            error={!!editErrors.originalUrl}
+            helperText={editErrors.originalUrl || config.copy.metadata.originalUrl.helperText}
+            disabled={isSaving}
+            placeholder={config.copy.metadata.originalUrl.placeholder}
+          />
+          {editValues.originalUrl && (
+            <Button
+              variant="outlined"
               size="small"
-              fullWidth
-              value={editValues.originalUrl || ''}
-              onChange={(e) => onChangeEditField('originalUrl', e.target.value || null)}
-              error={!!editErrors.originalUrl}
-              helperText={editErrors.originalUrl || 'Link to the original conversation (e.g., LinkedIn)'}
-              disabled={isSaving}
-              placeholder="https://..."
-            />
-          ) : (
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                Original URL
-              </Typography>
-              {editValues.originalUrl ? (
-                <Link
-                  href={editValues.originalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                >
-                  {editValues.originalUrl}
-                  <OpenInNewIcon fontSize="small" />
-                </Link>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No URL set
-                </Typography>
-              )}
-            </Box>
+              startIcon={<OpenInNewIcon />}
+              onClick={() => window.open(editValues.originalUrl || '', '_blank', 'noopener,noreferrer')}
+              disabled={isSaving || !editValues.originalUrl}
+              sx={styles.goToConversationButton()}
+            >
+              {config.copy.metadata.originalUrl.goToButton}
+            </Button>
           )}
         </Box>
 

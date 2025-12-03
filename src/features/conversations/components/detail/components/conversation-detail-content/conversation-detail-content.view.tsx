@@ -11,7 +11,8 @@ export function ConversationDetailContent({
   conversation,
   editValues,
   editErrors,
-  isEditing,
+  isEditingMetadata,
+  isEditingNotes,
   isSaving,
   availableStages,
   availableCategories,
@@ -19,8 +20,10 @@ export function ConversationDetailContent({
   onPasteNewMessages,
   onOpenAddReply,
   onChangeEditField,
-  onSave,
-  onCancel,
+  onSaveMetadata,
+  onSaveNotes,
+  onCancelMetadata,
+  onCancelNotes,
   onConfirmMessage,
   onEditMessage,
   onDeleteMessage,
@@ -53,14 +56,17 @@ export function ConversationDetailContent({
           conversation={conversation}
           editValues={editValues}
           editErrors={editErrors}
-          isEditing={isEditing}
+          isEditingMetadata={isEditingMetadata}
+          isEditingNotes={isEditingNotes}
           isSaving={isSaving}
           availableStages={availableStages}
           availableCategories={availableCategories}
           config={config}
           onChangeEditField={onChangeEditField}
-          onSave={onSave}
-          onCancel={onCancel}
+          onSaveMetadata={onSaveMetadata}
+          onSaveNotes={onSaveNotes}
+          onCancelMetadata={onCancelMetadata}
+          onCancelNotes={onCancelNotes}
         />
       </Box>
     </Box>

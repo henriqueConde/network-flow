@@ -22,7 +22,8 @@ export type ConversationDetailViewProps = {
     originalUrl: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailViewProps['editValues'], string>>;
-  isEditing: boolean;
+  isEditingMetadata: boolean;
+  isEditingNotes: boolean;
   isSaving: boolean;
   // Callbacks
   onBack: () => void;
@@ -30,8 +31,10 @@ export type ConversationDetailViewProps = {
     field: keyof ConversationDetailViewProps['editValues'],
     value: string | null,
   ) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  onSaveMetadata: () => void;
+  onSaveNotes: () => void;
+  onCancelMetadata: () => void;
+  onCancelNotes: () => void;
   onPasteNewMessages: () => void;
   // Add reply dialog
   isAddReplyOpen: boolean;

@@ -23,5 +23,27 @@ export const styles = {
     justifyContent: 'flex-end',
     marginTop: theme.spacing(2),
   }),
+  stageContainer: () => (theme: Theme) => ({
+    marginTop: theme.spacing(2),
+    width: '100%',
+  }),
+  dueDateContainer: () => (theme: Theme) => ({
+    marginTop: theme.spacing(2),
+    width: '100%',
+  }),
+  nextActionContainer: () => (theme: Theme) => ({
+    marginTop: theme.spacing(2),
+    width: '100%',
+  }),
+  originalUrlContainer: () => (theme: Theme) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(2),
+    width: '100%',
+  }),
+  goToConversationButton: () => ({
+    alignSelf: 'flex-start',
+  }),
 };
 

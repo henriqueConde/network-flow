@@ -14,7 +14,8 @@ type EditValues = {
 type EditErrors = Partial<Record<keyof EditValues, string>>;
 
 export function useConversationEdit(conversation: ConversationDetail | null) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [values, setValues] = useState<EditValues>({
     categoryId: null,
     stageId: null,
@@ -56,13 +57,18 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
     }
   };
 
-  const startEditing = () => {
-    setIsEditing(true);
+  const startEditingMetadata = () => {
+    setIsEditingMetadata(true);
   };
 
-  const cancelEditing = () => {
+  const startEditingNotes = () => {
+    setIsEditingNotes(true);
+  };
+
+  const cancelEditingMetadata = () => {
     if (conversation) {
-      setValues({
+      setValues((prev) => ({
+        ...prev,
         categoryId: conversation.categoryId,
         stageId: conversation.stageId,
         nextActionType: conversation.nextActionType,
@@ -70,12 +76,37 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
           ? new Date(conversation.nextActionDueAt).toISOString()
           : null,
         priority: conversation.priority,
-        notes: conversation.notes,
         originalUrl: conversation.originalUrl,
-      });
+      }));
     }
-    setErrors({});
-    setIsEditing(false);
+    // Clear only metadata-related errors
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.categoryId;
+      delete next.stageId;
+      delete next.nextActionType;
+      delete next.nextActionDueAt;
+      delete next.priority;
+      delete next.originalUrl;
+      return next;
+    });
+    setIsEditingMetadata(false);
+  };
+
+  const cancelEditingNotes = () => {
+    if (conversation) {
+      setValues((prev) => ({
+        ...prev,
+        notes: conversation.notes,
+      }));
+    }
+    // Clear only notes-related errors
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.notes;
+      return next;
+    });
+    setIsEditingNotes(false);
   };
 
   const getUpdatePayload = () => {
@@ -91,15 +122,19 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
   };
 
   return {
-    isEditing,
+    isEditingMetadata,
+    isEditingNotes,
     values,
     errors,
     changeField,
-    startEditing,
-    cancelEditing,
+    startEditingMetadata,
+    startEditingNotes,
+    cancelEditingMetadata,
+    cancelEditingNotes,
     getUpdatePayload,
     setErrors,
-    setIsEditing,
+    setIsEditingMetadata,
+    setIsEditingNotes,
   };
 }
 

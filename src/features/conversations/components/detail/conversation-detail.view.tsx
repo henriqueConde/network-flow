@@ -20,12 +20,15 @@ export function ConversationDetailView({
   editMessageDialogConfig,
   editValues,
   editErrors,
-  isEditing,
+  isEditingMetadata,
+  isEditingNotes,
   isSaving,
   onBack,
   onChangeEditField,
-  onSave,
-  onCancel,
+  onSaveMetadata,
+  onSaveNotes,
+  onCancelMetadata,
+  onCancelNotes,
   onPasteNewMessages,
   isAddReplyOpen,
   addReplyValues,
@@ -76,7 +79,8 @@ export function ConversationDetailView({
         conversation={conversation}
         editValues={editValues}
         editErrors={editErrors}
-        isEditing={isEditing}
+        isEditingMetadata={isEditingMetadata}
+        isEditingNotes={isEditingNotes}
         isSaving={isSaving}
         availableStages={availableStages}
         availableCategories={availableCategories}
@@ -84,8 +88,10 @@ export function ConversationDetailView({
         onPasteNewMessages={onPasteNewMessages}
         onOpenAddReply={onOpenAddReply}
         onChangeEditField={onChangeEditField}
-        onSave={onSave}
-        onCancel={onCancel}
+        onSaveMetadata={onSaveMetadata}
+        onSaveNotes={onSaveNotes}
+        onCancelMetadata={onCancelMetadata}
+        onCancelNotes={onCancelNotes}
         onConfirmMessage={onConfirmMessage}
         onEditMessage={onEditMessage}
         onDeleteMessage={onDeleteMessage}

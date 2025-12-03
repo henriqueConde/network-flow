@@ -18,6 +18,12 @@ export const CONVERSATION_DETAIL_CONFIG = {
       priority: 'Priority',
       nextAction: 'Next action',
       dueDate: 'Due date',
+      originalUrl: {
+        label: 'Original URL',
+        placeholder: 'https://...',
+        helperText: 'Link to the original conversation (e.g., LinkedIn)',
+        goToButton: 'Go to conversation',
+      },
     },
     summary: {
       title: 'Summary',
