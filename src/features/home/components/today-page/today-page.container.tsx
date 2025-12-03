@@ -3,7 +3,6 @@
 import {
   useTodayMetrics,
   useTodayActions,
-  useNewMessages,
   useOverdueItems,
 } from '../../services/today.queries';
 import { TodayPageView } from './today-page.view';
@@ -32,12 +31,6 @@ export function TodayPageContainer() {
   } = useTodayActions();
 
   const {
-    data: messages = [],
-    isLoading: isMessagesLoading,
-    error: messagesError,
-  } = useNewMessages();
-
-  const {
     data: overdueItems = [],
     isLoading: isOverdueLoading,
     error: overdueError,
@@ -47,11 +40,9 @@ export function TodayPageContainer() {
   const { isLoading, error } = useTodayLoadingError(
     isMetricsLoading,
     isActionsLoading,
-    isMessagesLoading,
     isOverdueLoading,
     metricsError,
     actionsError,
-    messagesError,
     overdueError,
   );
 
@@ -59,26 +50,23 @@ export function TodayPageContainer() {
   const { metrics: metricsWithOverdue } = useTodayData(metrics, overdueItems);
 
   // Sort and limit data for display
-  const { prioritizedActions, sortedMessages, sortedOverdueItems } = useTodaySorting(
+  const { prioritizedActions, sortedOverdueItems } = useTodaySorting(
     actions,
-    messages,
     overdueItems,
   );
 
   // Navigation handlers
-  const { handleActionClick, handleMessageClick, handleOverdueClick } = useTodayNavigation();
+  const { handleActionClick, handleOverdueClick } = useTodayNavigation();
 
   return (
     <TodayPageView
       metrics={metricsWithOverdue}
       prioritizedActions={prioritizedActions}
-      newMessages={sortedMessages}
       overdueItems={sortedOverdueItems}
       isLoading={isLoading}
       error={error}
       config={TODAY_PAGE_CONFIG}
       onActionClick={handleActionClick}
-      onMessageClick={handleMessageClick}
       onOverdueClick={handleOverdueClick}
     />
   );

@@ -7,24 +7,22 @@ import { useMemo } from 'react';
 export function useTodayLoadingError(
   isMetricsLoading: boolean,
   isActionsLoading: boolean,
-  isMessagesLoading: boolean,
   isOverdueLoading: boolean,
   metricsError: Error | null,
   actionsError: Error | null,
-  messagesError: Error | null,
   overdueError: Error | null,
 ) {
   const isLoading = useMemo(
-    () => isMetricsLoading || isActionsLoading || isMessagesLoading || isOverdueLoading,
-    [isMetricsLoading, isActionsLoading, isMessagesLoading, isOverdueLoading],
+    () => isMetricsLoading || isActionsLoading || isOverdueLoading,
+    [isMetricsLoading, isActionsLoading, isOverdueLoading],
   );
 
   const error = useMemo(
     () =>
-      metricsError || actionsError || messagesError || overdueError
+      metricsError || actionsError || overdueError
         ? 'Failed to load today\'s data. Please try again.'
         : null,
-    [metricsError, actionsError, messagesError, overdueError],
+    [metricsError, actionsError, overdueError],
   );
 
   return {

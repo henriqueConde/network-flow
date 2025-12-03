@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 
 /**
  * Hook for Today page navigation handlers.
- * Handles all navigation logic for actions, messages, and overdue items.
+ * Handles all navigation logic for actions and overdue items.
  */
 export function useTodayNavigation() {
   const router = useRouter();
@@ -17,13 +17,6 @@ export function useTodayNavigation() {
     [router],
   );
 
-  const handleMessageClick = useCallback(
-    (messageId: string, conversationId: string) => {
-      router.push(`/conversations/${conversationId}`);
-    },
-    [router],
-  );
-
   const handleOverdueClick = useCallback(
     (itemId: string, conversationId: string) => {
       router.push(`/conversations/${conversationId}`);
@@ -33,7 +26,6 @@ export function useTodayNavigation() {
 
   return {
     handleActionClick,
-    handleMessageClick,
     handleOverdueClick,
   };
 }

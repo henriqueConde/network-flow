@@ -8,13 +8,11 @@ import { styles } from './today-page.styles';
 export function TodayPageView({
   metrics,
   prioritizedActions,
-  newMessages,
   overdueItems,
   isLoading,
   error,
   config,
   onActionClick,
-  onMessageClick,
   onOverdueClick,
 }: TodayPageViewProps) {
   if (isLoading) {
@@ -56,18 +54,6 @@ export function TodayPageView({
       </Box>
     );
   }
-
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -162,48 +148,6 @@ export function TodayPageView({
                     <AccessTimeIcon sx={{ fontSize: 14 }} />
                     Due {formatDate(action.dueAt)}
                   </Typography>
-                </Box>
-              ))
-            )}
-          </Box>
-        </Box>
-
-        {/* New Messages */}
-        <Box sx={styles.sectionCard()}>
-          <Box sx={styles.sectionHeader()}>
-            <Typography sx={styles.sectionTitle()}>
-              {config.copy.sections.newMessages.title}
-            </Typography>
-          </Box>
-          <Box sx={styles.sectionContent()}>
-            {newMessages.length === 0 ? (
-              <Typography sx={styles.emptyState()}>
-                {config.copy.sections.newMessages.empty}
-              </Typography>
-            ) : (
-              newMessages.map((message) => (
-                <Box
-                  key={message.id}
-                  sx={styles.messageItem()}
-                  onClick={() => onMessageClick(message.id, message.conversationId)}
-                >
-                  <Box sx={styles.messageHeader()}>
-                    <Typography sx={styles.messageContact()}>
-                      {message.contactName}
-                      {message.contactCompany && ` • ${message.contactCompany}`}
-                    </Typography>
-                    <Typography sx={styles.messageTime()}>
-                      {formatTimeAgo(message.receivedAt)}
-                    </Typography>
-                  </Box>
-                  <Typography sx={styles.messageSnippet()}>
-                    {message.snippet}
-                  </Typography>
-                  {message.isOutOfSync && (
-                    <Typography sx={styles.outOfSyncBadge()}>
-                      Newer than export
-                    </Typography>
-                  )}
                 </Box>
               ))
             )}

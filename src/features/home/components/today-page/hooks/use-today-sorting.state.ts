@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { TodayAction, NewMessage, OverdueItem } from '../today-page.types';
+import type { TodayAction, OverdueItem } from '../today-page.types';
 import { TODAY_PAGE_CONFIG } from '../today-page.config';
 
 /**
@@ -8,7 +8,6 @@ import { TODAY_PAGE_CONFIG } from '../today-page.config';
  */
 export function useTodaySorting(
   actions: TodayAction[],
-  messages: NewMessage[],
   overdueItems: OverdueItem[],
 ) {
   // Sort actions by priority (high > medium > low) and due date
@@ -34,12 +33,6 @@ export function useTodaySorting(
     [sortedActions],
   );
 
-  // Sort messages by received time (newest first)
-  const sortedMessages = useMemo(
-    () => [...messages].sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime()),
-    [messages],
-  );
-
   // Sort overdue items by days overdue (most overdue first)
   const sortedOverdueItems = useMemo(
     () => [...overdueItems].sort((a, b) => b.daysOverdue - a.daysOverdue),
@@ -48,7 +41,6 @@ export function useTodaySorting(
 
   return {
     prioritizedActions,
-    sortedMessages,
     sortedOverdueItems,
   };
 }

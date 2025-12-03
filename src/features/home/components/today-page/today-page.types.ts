@@ -46,12 +46,10 @@ export type OverdueItem = {
 export interface TodayPageViewProps {
     metrics: TodayPageMetrics;
     prioritizedActions: TodayAction[];
-    newMessages: NewMessage[];
     overdueItems: OverdueItem[];
     isLoading: boolean;
     error: string | null;
     config: typeof TODAY_PAGE_CONFIG;
     onActionClick: (actionId: string, conversationId?: string) => void;
-    onMessageClick: (messageId: string, conversationId: string) => void;
     onOverdueClick: (itemId: string, conversationId: string) => void;
 }
