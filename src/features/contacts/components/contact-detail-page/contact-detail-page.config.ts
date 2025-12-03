@@ -38,6 +38,7 @@ export const CONTACT_DETAIL_CONFIG = {
     },
     conversations: {
       goToConversation: 'Go to conversation',
+      startConversation: 'Start Conversation',
     },
   },
   ui: {

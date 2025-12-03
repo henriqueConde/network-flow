@@ -39,5 +39,6 @@ export type ContactDetailViewProps = {
   onSave: () => void;
   onCancel: () => void;
   onGoToConversation: (conversationId: string) => void;
+  onStartConversation: () => void;
 };
 

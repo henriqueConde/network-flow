@@ -218,7 +218,7 @@ export function makeConversationsRepo() {
           body: pastedText,
           sentAt: now,
           source: 'manual_paste',
-          status: 'confirmed', // Pasted messages are from existing conversations, so they're confirmed
+          status: 'pending', // Messages start as pending by default
         },
       });
 

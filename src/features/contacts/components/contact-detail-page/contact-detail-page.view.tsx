@@ -35,6 +35,7 @@ export function ContactDetailPageView({
   onSave,
   onCancel,
   onGoToConversation,
+  onStartConversation,
 }: ContactDetailViewProps) {
   if (isLoading) {
     return <LoadingView />;
@@ -290,7 +291,15 @@ export function ContactDetailPageView({
                 {config.copy.sections.conversations}
               </Typography>
               {contact.conversations.length === 0 ? (
-                <Typography sx={styles.emptyValue()}>{config.copy.empty.noConversations}</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 2 }}>
+                  <Typography sx={styles.emptyValue()}>{config.copy.empty.noConversations}</Typography>
+                  <Button
+                    variant="contained"
+                    onClick={onStartConversation}
+                  >
+                    {config.copy.conversations.startConversation}
+                  </Button>
+                </Box>
               ) : (
                 <Box sx={styles.conversationsList()}>
                   {contact.conversations.map((conv) => (

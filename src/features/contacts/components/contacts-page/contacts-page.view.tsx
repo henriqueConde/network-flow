@@ -236,8 +236,8 @@ export function ContactsPageView({
                       </TableSortLabel>
                     </TableCell>
                     <TableCell>{config.copy.table.platform}</TableCell>
-                    <TableCell>{config.copy.table.stage}</TableCell>
-                    <TableCell>{config.copy.table.category}</TableCell>
+                    <TableCell sx={{ borderRight: 'none' }}>{config.copy.table.stage}</TableCell>
+                    <TableCell sx={{ borderLeft: 'none', paddingLeft: 1 }}>{config.copy.table.category}</TableCell>
                     <TableCell>
                       <TableSortLabel
                         active={sortBy === 'updatedAt'}
@@ -281,23 +281,35 @@ export function ContactsPageView({
                           />
                         )}
                       </TableCell>
-                      <TableCell>
-                        {contact.latestConversation?.stageName && (
-                          <Chip
-                            label={contact.latestConversation.stageName}
-                            size="small"
-                            sx={styles.chip()}
-                          />
-                        )}
+                      <TableCell sx={{ borderRight: 'none' }}>
+                        {(() => {
+                          if (!contact.stageId) return '—';
+                          const stage = availableStages.find((s) => s.id === contact.stageId);
+                          return stage ? (
+                            <Chip
+                              label={stage.name}
+                              size="small"
+                              sx={styles.chip()}
+                            />
+                          ) : (
+                            '—'
+                          );
+                        })()}
                       </TableCell>
-                      <TableCell>
-                        {contact.latestConversation?.categoryName && (
-                          <Chip
-                            label={contact.latestConversation.categoryName}
-                            size="small"
-                            sx={styles.chip()}
-                          />
-                        )}
+                      <TableCell sx={{ borderLeft: 'none', paddingLeft: 1 }}>
+                        {(() => {
+                          if (!contact.categoryId) return '—';
+                          const category = availableCategories.find((c) => c.id === contact.categoryId);
+                          return category ? (
+                            <Chip
+                              label={category.name}
+                              size="small"
+                              sx={styles.chip()}
+                            />
+                          ) : (
+                            '—'
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">

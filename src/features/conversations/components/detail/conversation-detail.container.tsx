@@ -16,6 +16,8 @@ import { useMessageActions } from './hooks/use-message-actions.state';
 import { usePasteMessages } from './hooks/use-paste-messages.state';
 import { useStages } from '@/features/stages';
 import { useCategories } from '@/features/categories';
+import { DeleteMessageDialog } from './components/delete-message-dialog/delete-message-dialog.view';
+import { DELETE_MESSAGE_DIALOG_CONFIG } from './components/delete-message-dialog/delete-message-dialog.config';
 
 export function ConversationDetailContainer() {
   // Navigation
@@ -43,15 +45,18 @@ export function ConversationDetailContainer() {
   // Action hooks
   const { addReplyDialog, handleUseAiSuggestion } = useAddReplyActions(conversationOrNull, addMessageMutation);
   const { editMessageDialog, handleEditMessage } = useEditMessageActions(conversationOrNull, updateMessageMutation);
-  const { handleToggleMessageStatus, handleDeleteMessage } = useMessageActions(
-    conversationOrNull,
-    toggleMessageStatusMutation,
-    deleteMessageMutation,
-    CONVERSATION_DETAIL_CONFIG.copy.messages.actions.deleteConfirmation,
-  );
+  const {
+    handleToggleMessageStatus,
+    handleOpenDeleteDialog,
+    deleteMessageId,
+    handleCloseDeleteDialog,
+    handleConfirmDelete,
+    isDeleting,
+  } = useMessageActions(conversationOrNull, toggleMessageStatusMutation, deleteMessageMutation);
   const { handlePasteNewMessages } = usePasteMessages();
 
   return (
+    <>
     <ConversationDetailView
       conversation={conversation ?? null}
       isLoading={isLoading}
@@ -85,7 +90,7 @@ export function ConversationDetailContainer() {
       onUseAiSuggestion={handleUseAiSuggestion}
       onConfirmMessage={handleToggleMessageStatus}
       onEditMessage={handleEditMessage}
-      onDeleteMessage={handleDeleteMessage}
+      onDeleteMessage={handleOpenDeleteDialog}
       isEditMessageOpen={editMessageDialog.isOpen}
       editMessageValues={editMessageDialog.values}
       editMessageErrors={editMessageDialog.errors}
@@ -94,6 +99,14 @@ export function ConversationDetailContainer() {
       onChangeEditMessageField={editMessageDialog.changeField}
       onSubmitEditMessage={editMessageDialog.submit}
     />
+    <DeleteMessageDialog
+      isOpen={deleteMessageId !== null}
+      onClose={handleCloseDeleteDialog}
+      onConfirm={handleConfirmDelete}
+      isDeleting={isDeleting}
+      config={DELETE_MESSAGE_DIALOG_CONFIG}
+    />
+  </>
   );
 }
 
