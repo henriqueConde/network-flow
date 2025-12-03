@@ -103,9 +103,8 @@ export function ContactsPageContainer() {
   });
 
   const handleRowClick = (contactId: string) => {
-    // Navigate to the first conversation for this contact, or create a new one
-    // For now, we'll navigate to conversations and filter by contact
-    router.push(`/conversations?contactId=${contactId}`);
+    // Navigate to the contact detail page
+    router.push(`/contacts/${contactId}`);
   };
 
   const handleOpenCreate = () => {

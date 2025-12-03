@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { signupQuerySchema } from '@/backend/features/auth/http/auth.schemas';
 import { checkUserExists } from '@/backend/features/auth';
 
 /**
