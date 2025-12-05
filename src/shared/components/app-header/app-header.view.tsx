@@ -100,6 +100,21 @@ export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewPro
             </Typography>
           </Link>
           <Link
+            href={config.routes.followups}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.followups) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.followups) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.followups}
+            </Typography>
+          </Link>
+          <Link
             href={config.routes.contacts}
             style={{ textDecoration: 'none' }}
             className={isActive(config.routes.contacts) ? 'active' : ''}

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CreateConversationFormSchema } from '../conversations-inbox.schema';
 import type { CreateConversationFormValues } from '../conversations-inbox.types';
 import { ConversationChannel, MessageSide } from '@/shared/types';
 
@@ -91,21 +90,24 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
   };
 
   const submit = async () => {
-    const parsed = CreateConversationFormSchema.safeParse(values);
-    if (!parsed.success) {
-      const fieldErrors: Partial<Record<keyof CreateConversationFormValues, string>> = {};
-      parsed.error.issues.forEach((issue) => {
-        const path = issue.path[0] as keyof CreateConversationFormValues | undefined;
-        if (path && !fieldErrors[path]) {
-          fieldErrors[path] = issue.message;
-        }
-      });
+    const fieldErrors: Partial<Record<keyof CreateConversationFormValues, string>> = {};
+
+    // Minimal client-side validation: only block submit when truly required
+    // fields are missing. All other constraints are enforced by the backend.
+    if (!values.contactName.trim()) {
+      fieldErrors.contactName = 'Contact name is required';
+    }
+    if (!values.pastedText.trim()) {
+      fieldErrors.pastedText = 'Conversation text is required';
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return;
     }
 
     setErrors({});
-    await onSubmit(parsed.data);
+    await onSubmit(values);
   };
 
   return {

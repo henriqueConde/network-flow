@@ -8,6 +8,7 @@ export const APP_HEADER_CONFIG = {
       interviews: 'Interviews',
       opportunities: 'Opportunities',
       pipeline: 'Pipeline',
+      followups: 'Follow-ups',
       contacts: 'Contacts',
     },
   },
@@ -20,6 +21,7 @@ export const APP_HEADER_CONFIG = {
     interviews: '/interviews',
     opportunities: '/opportunities',
     pipeline: '/pipeline',
+    followups: '/followups',
     contacts: '/contacts',
   },
 } as const;

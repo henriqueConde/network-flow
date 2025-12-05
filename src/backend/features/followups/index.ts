@@ -1,3 +1,3 @@
-export { runFollowupsForUser } from './application/followups.use-cases';
+export { runFollowupsForUser, listScheduledFollowups } from './application/followups.use-cases';
 
 

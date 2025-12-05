@@ -68,7 +68,17 @@ export async function listConversations(params: {
  * Create a new conversation from the Inbox.
  */
 export async function createConversation(payload: CreateConversationPayload) {
-  const body = CreateConversationBody.parse(payload);
+  // Normalize payload to ensure we never send non-string values (e.g. an
+  // accidentally passed opportunity object) where a string ID is expected.
+  const normalizedPayload: CreateConversationPayload = {
+    ...payload,
+    opportunityId:
+      typeof (payload as any)?.opportunityId === 'string'
+        ? (payload as any).opportunityId
+        : undefined,
+  };
+
+  const body = CreateConversationBody.parse(normalizedPayload);
   const res = await client.post('/api/conversations', body);
   return res.data as { id: string };
 }

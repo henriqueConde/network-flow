@@ -148,6 +148,176 @@ export function makeFollowupsRepo() {
         createdMessages,
       };
     },
+
+    /**
+     * List scheduled follow-ups for a user, grouped by due date.
+     * Returns conversations that are eligible for follow-ups with their calculated due dates.
+     */
+    async listScheduledFollowups(userId: string, now = new Date()) {
+      const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+      const RECENT_CONTACT_REPLY_WINDOW_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+      const recentContactCutoff = new Date(now.getTime() - RECENT_CONTACT_REPLY_WINDOW_MS);
+
+      // Get all conversations with auto-followups enabled
+      const conversations = await prisma.conversation.findMany({
+        where: {
+          userId,
+          lastMessageSide: 'user',
+          lastMessageAt: {
+            not: null,
+          },
+        },
+        select: {
+          id: true,
+          userId: true,
+          contactId: true,
+          opportunityId: true,
+          channel: true,
+          lastMessageAt: true,
+          lastMessageSide: true,
+          autoFollowupsEnabled: true,
+          contact: {
+            select: {
+              id: true,
+              name: true,
+              company: true,
+            },
+          },
+          opportunity: {
+            select: {
+              id: true,
+              title: true,
+              autoFollowupsEnabled: true,
+              conversations: {
+                select: {
+                  id: true,
+                  lastMessageSide: true,
+                  lastMessageAt: true,
+                },
+              },
+            },
+          },
+          messages: {
+            orderBy: {
+              sentAt: 'asc',
+            },
+            select: {
+              id: true,
+              sender: true,
+              source: true,
+              sentAt: true,
+            },
+          },
+        },
+      });
+
+      const scheduledFollowups: Array<{
+        conversationId: string;
+        contactName: string;
+        contactCompany: string | null;
+        opportunityId: string | null;
+        opportunityTitle: string | null;
+        channel: string;
+        lastMessageAt: Date;
+        followupNumber: number; // 0, 1, or 2 (which follow-up this is)
+        dueDate: Date; // When this follow-up is due
+      }> = [];
+
+      for (const conv of conversations) {
+        if (!conv.contact || !conv.lastMessageAt) continue;
+
+        // Check if auto-followups are enabled
+        const conversationAutoFollowupsEnabled = conv.autoFollowupsEnabled ?? true;
+        const opportunityAutoFollowupsEnabled =
+          conv.opportunity?.autoFollowupsEnabled ?? true;
+        if (!conversationAutoFollowupsEnabled || !opportunityAutoFollowupsEnabled) continue;
+
+        const messages = conv.messages;
+        if (messages.length === 0) continue;
+
+        const lastUserMessage = [...messages].reverse().find((m) => m.sender === 'user');
+        const lastContactMessage = [...messages].reverse().find((m) => m.sender === 'contact');
+
+        // If contact has replied after the last user message, skip
+        if (
+          lastContactMessage &&
+          lastUserMessage &&
+          lastContactMessage.sentAt > lastUserMessage.sentAt
+        ) {
+          continue;
+        }
+
+        // Count existing auto follow-ups
+        const autoFollowups = messages.filter(
+          (m) => m.sender === 'user' && m.source === 'auto_follow_up',
+        );
+        if (autoFollowups.length >= 3) {
+          continue;
+        }
+
+        // Check whether opportunity is "moving forward" via another conversation with recent contact reply
+        if (conv.opportunity) {
+          const hasRecentContactReplyInOpportunity = conv.opportunity.conversations.some(
+            (other) =>
+              other.id !== conv.id &&
+              other.lastMessageSide === 'contact' &&
+              other.lastMessageAt &&
+              other.lastMessageAt >= recentContactCutoff,
+          );
+
+          if (hasRecentContactReplyInOpportunity) {
+            continue;
+          }
+        }
+
+        if (!lastUserMessage) continue;
+
+        // Calculate due dates for remaining follow-ups
+        const followupCount = autoFollowups.length;
+        const baseDate = lastUserMessage.sentAt;
+
+        // Calculate due dates for up to 3 follow-ups total
+        for (let i = followupCount; i < 3; i++) {
+          const daysToAdd = (i + 1) * 2; // 2 days, 4 days, 6 days after last user message
+          const dueDate = new Date(baseDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+
+          // Only include if due date is in the future or today
+          if (dueDate >= now) {
+            scheduledFollowups.push({
+              conversationId: conv.id,
+              contactName: conv.contact.name,
+              contactCompany: conv.contact.company,
+              opportunityId: conv.opportunityId,
+              opportunityTitle: conv.opportunity?.title ?? null,
+              channel: conv.channel,
+              lastMessageAt: lastUserMessage.sentAt,
+              followupNumber: i,
+              dueDate,
+            });
+          }
+        }
+      }
+
+      // Group by date (YYYY-MM-DD)
+      const groupedByDate = new Map<string, typeof scheduledFollowups>();
+      for (const followup of scheduledFollowups) {
+        const dateKey = followup.dueDate.toISOString().split('T')[0];
+        if (!groupedByDate.has(dateKey)) {
+          groupedByDate.set(dateKey, []);
+        }
+        groupedByDate.get(dateKey)!.push(followup);
+      }
+
+      // Convert to array and sort by date
+      const result = Array.from(groupedByDate.entries())
+        .map(([date, followups]) => ({
+          date,
+          followups: followups.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()),
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      return result;
+    },
   };
 }
 

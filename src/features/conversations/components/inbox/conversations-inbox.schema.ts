@@ -5,7 +5,12 @@ export const CreateConversationFormSchema = z.object({
   contactId: z.string().uuid().optional(),
   contactName: z.string().min(1, 'Contact name is required'),
   contactCompany: z.string().optional(),
-  opportunityId: z.string().uuid().optional(),
+  // Opportunity is optional in the UI. When not selected, we send no ID and let
+  // the backend either link an existing opportunity or create a new one.
+  // We intentionally allow any string here (including empty) so that client-side
+  // validation never blocks submit solely because of this field; the backend
+  // will still enforce UUID format via its own schema.
+  opportunityId: z.string().optional(),
   channel: conversationChannelSchema,
   pastedText: z.string().min(1, 'Conversation text is required'),
   firstMessageSender: messageSideSchema.default('contact'),
