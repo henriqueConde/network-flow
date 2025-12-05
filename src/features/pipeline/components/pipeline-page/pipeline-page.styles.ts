@@ -110,6 +110,37 @@ export const styles = {
     fontSize: '0.75rem',
     color: theme.palette.text.secondary,
   }),
+  opportunityConversations: () => (theme: Theme) => ({
+    mt: 1,
+    pt: 1,
+    borderTop: `1px dashed ${theme.palette.divider}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0.5,
+  }),
+  opportunityConversationsHeader: () => (theme: Theme) => ({
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    color: theme.palette.text.secondary,
+    mb: 0.25,
+  }),
+  opportunityConversationItem: () => (theme: Theme) => ({
+    borderRadius: 1,
+    padding: '4px 8px',
+    backgroundColor: theme.palette.action.hover,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0.25,
+  }),
+  opportunityConversationTitle: () => (theme: Theme) => ({
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    color: theme.palette.text.primary,
+  }),
+  opportunityConversationMeta: () => (theme: Theme) => ({
+    fontSize: '0.7rem',
+    color: theme.palette.text.secondary,
+  }),
   outOfSyncBadge: () => (theme: Theme) => ({
     bgcolor: theme.palette.warning.light,
     color: theme.palette.warning.contrastText,

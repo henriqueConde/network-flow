@@ -3,6 +3,8 @@ import type { CONVERSATION_DETAIL_CONFIG } from '../../conversation-detail.confi
 export type ConversationDetailHeaderProps = {
   contactName: string;
   contactCompany: string | null;
+  opportunityId: string | null;
+  opportunityTitle: string | null;
   isOutOfSync: boolean;
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onBack: () => void;

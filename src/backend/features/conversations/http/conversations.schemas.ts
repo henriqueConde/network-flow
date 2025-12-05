@@ -51,6 +51,9 @@ export const createConversationBody = z.object({
   contactCompany: z.string().optional(),
   channel: conversationChannelSchema.default('linkedin'),
 
+  // Optional: link to an existing opportunity
+  opportunityId: z.string().uuid().optional(),
+
   // Raw pasted conversation text; for v1 we store it as a single message
   pastedText: z.string().min(1, 'Conversation text is required'),
 
@@ -107,6 +110,8 @@ export const conversationDetailDto = z.object({
   contactId: z.string().uuid(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  opportunityId: z.string().uuid().nullable(),
+  opportunityTitle: z.string().nullable(),
   channel: z.string(),
   categoryId: z.string().uuid().nullable(),
   categoryName: z.string().nullable(),

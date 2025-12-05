@@ -27,6 +27,10 @@ export async function getOpportunityById(input: {
     updatedAt: opportunity.updatedAt.toISOString(),
     conversations: opportunity.conversations.map((conv) => ({
       id: conv.id,
+      // Contact info for each conversation card in opportunity detail
+      // These fields are required by `conversationDetailDto`
+      contactName: conv.contactName,
+      contactCompany: conv.contactCompany,
       channel: conv.channel,
       stageId: conv.stageId,
       stageName: conv.stageName,

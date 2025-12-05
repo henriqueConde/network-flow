@@ -13,24 +13,32 @@ type SubmitHandler = (values: CreateConversationFormValues) => Promise<void> | v
 export function useCreateConversationDialog(onSubmit: SubmitHandler) {
   const [isOpen, setIsOpen] = useState(false);
   const [values, setValues] = useState<CreateConversationFormValues>({
+    contactId: undefined,
     contactName: '',
     contactCompany: '',
+    opportunityId: undefined,
     channel: ConversationChannel.LINKEDIN,
     pastedText: '',
     firstMessageSender: MessageSide.CONTACT,
   });
+  const [contactSearchInput, setContactSearchInput] = useState('');
+  const [opportunitySearchInput, setOpportunitySearchInput] = useState('');
   const [errors, setErrors] = useState<
     Partial<Record<keyof CreateConversationFormValues, string>>
   >({});
 
-  const open = () => {
+  const open = (initialOpportunityId?: string) => {
     setValues({
+      contactId: undefined,
       contactName: '',
       contactCompany: '',
+      opportunityId: initialOpportunityId,
       channel: ConversationChannel.LINKEDIN,
       pastedText: '',
       firstMessageSender: MessageSide.CONTACT,
     });
+    setContactSearchInput('');
+    setOpportunitySearchInput('');
     setErrors({});
     setIsOpen(true);
   };
@@ -46,6 +54,39 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
     setValues((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleContactSearchChange = (inputValue: string) => {
+    setContactSearchInput(inputValue);
+    // If user is typing, clear the selected contact
+    if (inputValue !== values.contactName) {
+      setValues((prev) => ({
+        ...prev,
+        contactId: undefined,
+        contactName: inputValue,
+      }));
+    }
+  };
+
+  const handleContactSelect = (contactId: string | null, contactName: string, contactCompany?: string | null) => {
+    setValues((prev) => ({
+      ...prev,
+      contactId: contactId || undefined,
+      contactName,
+      contactCompany: contactCompany || '',
+    }));
+    setContactSearchInput(contactName);
+  };
+
+  const handleOpportunitySearchChange = (inputValue: string) => {
+    setOpportunitySearchInput(inputValue);
+  };
+
+  const handleOpportunitySelect = (opportunityId: string | null) => {
+    setValues((prev) => ({
+      ...prev,
+      opportunityId: opportunityId || undefined,
     }));
   };
 
@@ -71,10 +112,16 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
     isOpen,
     values,
     errors,
+    contactSearchInput,
+    opportunitySearchInput,
     open,
     close,
     changeField,
     submit,
+    handleContactSearchChange,
+    handleContactSelect,
+    handleOpportunitySearchChange,
+    handleOpportunitySelect,
   };
 }
 

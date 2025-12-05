@@ -10,6 +10,10 @@ import { useCreateConversationDialog } from './hooks/use-create-conversation-dia
 import { useDeleteConversationDialog } from './hooks/use-delete-conversation-dialog.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
+import { useContactsList } from '@/features/contacts/services/contacts.queries';
+import { useOpportunitiesList } from '@/features/opportunities/services/opportunities.queries';
+import { useDebounce } from '@/shared/hooks';
+import { CREATE_CONVERSATION_DIALOG_CONFIG } from './components/create-conversation-dialog/create-conversation-dialog.config';
 
 export function ConversationsInboxContainer() {
   const router = useRouter();
@@ -40,8 +44,10 @@ export function ConversationsInboxContainer() {
 
   const createDialog = useCreateConversationDialog(async (values) => {
     await createMutation.mutateAsync({
+      contactId: values.contactId,
       contactName: values.contactName,
       contactCompany: values.contactCompany || undefined,
+      opportunityId: values.opportunityId,
       channel: values.channel,
       pastedText: values.pastedText,
       priority: 'medium',
@@ -49,6 +55,30 @@ export function ConversationsInboxContainer() {
     });
     // Close the dialog after successful creation
     createDialog.close();
+  });
+
+  // Debounce contact search input for API calls
+  const debouncedContactSearch = useDebounce(createDialog.contactSearchInput, 300);
+  const debouncedOpportunitySearch = useDebounce(createDialog.opportunitySearchInput, 300);
+
+  // Fetch contacts for autocomplete (only when dialog is open)
+  const { data: contactsData, isLoading: isSearchingContacts } = useContactsList({
+    search: debouncedContactSearch.trim() || undefined,
+    page: 1,
+    pageSize: 20,
+    sortBy: 'name',
+    sortDir: 'asc',
+    enabled: createDialog.isOpen,
+  });
+
+  // Fetch opportunities for autocomplete (only when dialog is open)
+  const { data: opportunitiesData, isLoading: isSearchingOpportunities } = useOpportunitiesList({
+    search: debouncedOpportunitySearch.trim() || undefined,
+    page: 1,
+    pageSize: 20,
+    sortBy: 'updatedAt',
+    sortDir: 'desc',
+    enabled: createDialog.isOpen,
   });
 
   // Delete dialog
@@ -112,6 +142,17 @@ export function ConversationsInboxContainer() {
       onChangeCreateField={createDialog.changeField}
       onSubmitCreate={createDialog.submit}
       isCreating={createMutation.isPending}
+      createDialogConfig={CREATE_CONVERSATION_DIALOG_CONFIG}
+      contactSearchInput={createDialog.contactSearchInput}
+      onContactSearchChange={createDialog.handleContactSearchChange}
+      onContactSelect={createDialog.handleContactSelect}
+      contacts={contactsData?.contacts || []}
+      isSearchingContacts={isSearchingContacts}
+      opportunitySearchInput={createDialog.opportunitySearchInput}
+      onOpportunitySearchChange={createDialog.handleOpportunitySearchChange}
+      onOpportunitySelect={createDialog.handleOpportunitySelect}
+      opportunities={opportunitiesData?.items || []}
+      isSearchingOpportunities={isSearchingOpportunities}
       onOpenDelete={deleteDialog.open}
       isDeleteDialogOpen={deleteDialog.isOpen}
       deleteConversationContactName={deleteDialog.contactName}

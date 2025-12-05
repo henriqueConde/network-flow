@@ -70,6 +70,8 @@ export function ConversationDetailView({
       <ConversationDetailHeader
         contactName={conversation.contactName}
         contactCompany={conversation.contactCompany}
+        opportunityId={conversation.opportunityId}
+        opportunityTitle={conversation.opportunityTitle}
         isOutOfSync={conversation.isOutOfSync}
         config={config}
         onBack={onBack}

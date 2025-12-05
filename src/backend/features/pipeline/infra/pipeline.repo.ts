@@ -48,10 +48,18 @@ export function makePipelineRepo() {
             orderBy: {
               lastMessageAt: 'desc',
             },
-            take: 1, // Get most recent conversation for lastMessageAt
+            include: {
+              contact: true,
+              stage: true,
+            },
           },
         },
       });
+
+      // Build a quick lookup for stage order (used to find the most advanced stage)
+      const stageOrderById = new Map<string, number>(
+        stages.map((stage) => [stage.id, stage.order]),
+      );
 
       // Group opportunities by stage
       const stageMap = new Map(
@@ -73,6 +81,16 @@ export function makePipelineRepo() {
               nextActionDueAt: Date | null;
               priority: 'low' | 'medium' | 'high' | null;
               isOutOfSync: boolean;
+              conversations: Array<{
+                id: string;
+                contactName: string;
+                contactCompany: string | null;
+                channel: string;
+                stageName: string | null;
+                lastMessageAt: Date | null;
+                lastMessageSnippet: string | null;
+                isOutOfSync: boolean;
+              }>;
             }>,
           },
         ]),
@@ -95,6 +113,16 @@ export function makePipelineRepo() {
           nextActionDueAt: Date | null;
           priority: 'low' | 'medium' | 'high' | null;
           isOutOfSync: boolean;
+          conversations: Array<{
+            id: string;
+            contactName: string;
+            contactCompany: string | null;
+            channel: string;
+            stageName: string | null;
+            lastMessageAt: Date | null;
+            lastMessageSnippet: string | null;
+            isOutOfSync: boolean;
+          }>;
         }>,
       };
 
@@ -115,13 +143,40 @@ export function makePipelineRepo() {
           nextActionDueAt: opp.nextActionDueAt,
           priority: opp.priority as 'low' | 'medium' | 'high' | null,
           isOutOfSync,
+          conversations: opp.conversations.map((conv) => ({
+            id: conv.id,
+            contactName: conv.contact.name,
+            contactCompany: conv.contact.company ?? null,
+            channel: conv.channel,
+            stageName: conv.stage?.name ?? null,
+            lastMessageAt: conv.lastMessageAt ?? null,
+            lastMessageSnippet: conv.lastMessageSnippet ?? null,
+            isOutOfSync: conv.isOutOfSync,
+          })),
         };
 
-        if (opp.stageId && stageMap.has(opp.stageId)) {
-          const stage = stageMap.get(opp.stageId)!;
+        // Decide which stage column this opportunity should live in.
+        // Rule: use the most advanced stage across its conversations (by stage.order).
+        // Fallback to the opportunity's own stageId, otherwise treat as unassigned.
+        let derivedStageId: string | null = null;
+        let bestOrder = -Infinity;
+
+        for (const conv of opp.conversations) {
+          if (!conv.stageId) continue;
+          const order = stageOrderById.get(conv.stageId);
+          if (order !== undefined && order > bestOrder) {
+            bestOrder = order;
+            derivedStageId = conv.stageId;
+          }
+        }
+
+        const targetStageId = derivedStageId ?? opp.stageId;
+
+        if (targetStageId && stageMap.has(targetStageId)) {
+          const stage = stageMap.get(targetStageId)!;
           stage.opportunities.push(opportunity);
         } else {
-          // Add to unassigned if no stage
+          // Add to unassigned if no stage can be determined
           unassignedStage.opportunities.push(opportunity);
         }
       }

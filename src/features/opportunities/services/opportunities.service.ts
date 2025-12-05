@@ -60,6 +60,8 @@ const LinkedInEmailEventDto = z.object({
  */
 const ConversationDetailDto = z.object({
   id: z.string(),
+  contactName: z.string(),
+  contactCompany: z.string().nullable(),
   channel: z.string(),
   stageId: z.string().nullable(),
   stageName: z.string().nullable(),
@@ -104,6 +106,8 @@ export type OpportunityListItem = OpportunityListItemDto & {
 
 export type ConversationDetail = {
   id: string;
+  contactName: string;
+  contactCompany: string | null;
   channel: string;
   stageId: string | null;
   stageName: string | null;

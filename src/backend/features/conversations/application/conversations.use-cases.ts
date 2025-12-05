@@ -55,6 +55,7 @@ export async function createConversation(input: {
     contactId: parsed.contactId,
     contactName: parsed.contactName,
     contactCompany: parsed.contactCompany,
+    opportunityId: parsed.opportunityId,
     channel: parsed.channel,
     pastedText: parsed.pastedText,
     categoryId: parsed.categoryId,

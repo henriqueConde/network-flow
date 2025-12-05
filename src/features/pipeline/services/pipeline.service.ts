@@ -2,6 +2,17 @@ import { client } from '@/shared/services/http/client';
 import { z } from 'zod';
 import { prioritySchema } from '@/shared/types';
 
+const PipelineOpportunityConversationDto = z.object({
+  id: z.string(),
+  contactName: z.string(),
+  contactCompany: z.string().nullable(),
+  channel: z.string(),
+  stageName: z.string().nullable(),
+  lastMessageAt: z.string().datetime().nullable(),
+  lastMessageSnippet: z.string().nullable(),
+  isOutOfSync: z.boolean(),
+});
+
 const PipelineOpportunityDto = z.object({
   id: z.string(),
   contactName: z.string(),
@@ -13,6 +24,7 @@ const PipelineOpportunityDto = z.object({
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema,
   isOutOfSync: z.boolean(),
+  conversations: z.array(PipelineOpportunityConversationDto),
 });
 
 const PipelineStageDto = z.object({
@@ -27,9 +39,14 @@ const PipelineBoardDto = z.object({
   stages: z.array(PipelineStageDto),
 });
 
+export type PipelineOpportunityConversation = z.infer<typeof PipelineOpportunityConversationDto> & {
+  lastMessageAtDate: Date | null;
+};
+
 export type PipelineOpportunity = z.infer<typeof PipelineOpportunityDto> & {
   lastMessageAtDate: Date | null;
   nextActionDueAtDate: Date | null;
+  conversations: PipelineOpportunityConversation[];
 };
 
 export type PipelineStage = Omit<z.infer<typeof PipelineStageDto>, 'opportunities'> & {
@@ -57,6 +74,10 @@ export async function getPipelineBoard(params?: {
         ...opp,
         lastMessageAtDate: opp.lastMessageAt ? new Date(opp.lastMessageAt) : null,
         nextActionDueAtDate: opp.nextActionDueAt ? new Date(opp.nextActionDueAt) : null,
+        conversations: opp.conversations.map((conv) => ({
+          ...conv,
+          lastMessageAtDate: conv.lastMessageAt ? new Date(conv.lastMessageAt) : null,
+        })),
       })),
     })),
   };

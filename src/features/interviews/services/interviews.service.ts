@@ -83,7 +83,10 @@ const InterviewDetailDto = z.object({
   contactProfileLinks: z.any().nullable(),
 });
 
-export type InterviewDetail = Omit<ConversationDetail, 'messages' | 'latestEmailEvent'> & {
+export type InterviewDetail = Omit<
+  ConversationDetail,
+  'messages' | 'latestEmailEvent' | 'opportunityId' | 'opportunityTitle'
+> & {
   messages: Array<{
     id: string;
     sender: 'user' | 'contact';

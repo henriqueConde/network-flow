@@ -154,6 +154,7 @@ export function makeConversationsRepo() {
       contactId?: string;
       contactName: string;
       contactCompany?: string;
+      opportunityId?: string;
       channel: ConversationChannelType;
       pastedText: string;
       categoryId?: string;
@@ -166,6 +167,7 @@ export function makeConversationsRepo() {
         contactId,
         contactName,
         contactCompany,
+        opportunityId,
         channel,
         pastedText,
         categoryId,
@@ -197,40 +199,58 @@ export function makeConversationsRepo() {
           },
         }));
 
-      // Find or create an opportunity for this contact
-      let opportunity = await prisma.opportunity.findFirst({
-        where: {
-          userId,
-          contactId: ensuredContact.id,
-        },
-        orderBy: {
-          createdAt: 'desc', // Get the most recent one
-        },
-      });
+      // Use provided opportunityId, or find/create an opportunity for this contact
+      let opportunity: { id: string } | null = null;
 
-      // If no opportunity exists, create one with metadata from the conversation
-      if (!opportunity) {
-        // Generate opportunity title from contact and company
-        let title: string | null = null;
-        if (contactCompany) {
-          title = contactCompany;
-          if (ensuredContact.headlineOrRole) {
-            title = `${ensuredContact.headlineOrRole} at ${contactCompany}`;
-          }
-        }
-
-        opportunity = await prisma.opportunity.create({
-          data: {
+      if (opportunityId) {
+        // Verify the opportunity exists and belongs to the user
+        const existingOpportunity = await prisma.opportunity.findFirst({
+          where: {
+            id: opportunityId,
             userId,
-            contactId: ensuredContact.id,
-            title,
-            categoryId: categoryId ?? null,
-            stageId: stageId ?? null,
-            nextActionType: null,
-            nextActionDueAt: null,
-            priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
           },
         });
+        if (existingOpportunity) {
+          opportunity = existingOpportunity;
+        }
+      }
+
+      // If no opportunity was provided or found, find or create one for this contact
+      if (!opportunity) {
+        opportunity = await prisma.opportunity.findFirst({
+          where: {
+            userId,
+            contactId: ensuredContact.id,
+          },
+          orderBy: {
+            createdAt: 'desc', // Get the most recent one
+          },
+        });
+
+        // If no opportunity exists, create one with metadata from the conversation
+        if (!opportunity) {
+          // Generate opportunity title from contact and company
+          let title: string | null = null;
+          if (contactCompany) {
+            title = contactCompany;
+            if (ensuredContact.headlineOrRole) {
+              title = `${ensuredContact.headlineOrRole} at ${contactCompany}`;
+            }
+          }
+
+          opportunity = await prisma.opportunity.create({
+            data: {
+              userId,
+              contactId: ensuredContact.id,
+              title,
+              categoryId: categoryId ?? null,
+              stageId: stageId ?? null,
+              nextActionType: null,
+              nextActionDueAt: null,
+              priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
+            },
+          });
+        }
       }
 
       // Create conversation and link it to the opportunity
@@ -279,6 +299,7 @@ export function makeConversationsRepo() {
           contact: true,
           category: true,
           stage: true,
+          opportunity: true,
           messages: {
             orderBy: {
               sentAt: 'asc',
@@ -302,6 +323,8 @@ export function makeConversationsRepo() {
         contactId: conversation.contactId,
         contactName: conversation.contact.name,
         contactCompany: conversation.contact.company ?? null,
+        opportunityId: conversation.opportunityId ?? null,
+        opportunityTitle: conversation.opportunity?.title ?? null,
         channel: conversation.channel,
         categoryId: conversation.categoryId ?? null,
         categoryName: conversation.category?.name ?? null,
@@ -471,6 +494,36 @@ export function makeConversationsRepo() {
         updateData.priority = null;
         updateData.nextActionType = null;
         updateData.nextActionDueAt = null;
+      }
+
+      // If we're changing the stage and this conversation is (or will be) linked to an opportunity,
+      // propagate the new stage to the opportunity and all its conversations.
+      if (updates.stageId !== undefined) {
+        const effectiveOpportunityId = currentConversation.opportunityId ?? opportunityIdToLink;
+
+        if (effectiveOpportunityId) {
+          // Update the opportunity's stage so the pipeline reflects the change
+          await prisma.opportunity.updateMany({
+            where: {
+              id: effectiveOpportunityId,
+              userId,
+            },
+            data: {
+              stageId: updates.stageId,
+            },
+          });
+
+          // Update all conversations linked to this opportunity to keep them in sync
+          await prisma.conversation.updateMany({
+            where: {
+              userId,
+              opportunityId: effectiveOpportunityId,
+            },
+            data: {
+              stageId: updates.stageId,
+            },
+          });
+        }
       }
 
       const conversation = await prisma.conversation.updateMany({

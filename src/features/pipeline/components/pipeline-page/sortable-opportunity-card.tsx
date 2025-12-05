@@ -108,6 +108,37 @@ export function SortableOpportunityCard({
             Last: {formatDate(opportunity.lastMessageAtDate)}
           </Typography>
         )}
+
+        {opportunity.conversations.length > 0 && (
+          <Box sx={styles.opportunityConversations()}>
+            <Typography
+              variant="caption"
+              sx={styles.opportunityConversationsHeader()}
+            >
+              Conversations ({opportunity.conversations.length})
+            </Typography>
+
+            {opportunity.conversations.map((conv) => (
+              <Box key={conv.id} sx={styles.opportunityConversationItem()}>
+                <Typography
+                  variant="caption"
+                  sx={styles.opportunityConversationTitle()}
+                >
+                  {conv.contactName}
+                  {conv.contactCompany ? ` • ${conv.contactCompany}` : ''}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={styles.opportunityConversationMeta()}
+                >
+                  {conv.stageName && `${conv.stageName} • `}
+                  {conv.channel}
+                  {conv.lastMessageAt && ` • ${formatDate(new Date(conv.lastMessageAt))}`}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
       </Box>
     </Card>
   );

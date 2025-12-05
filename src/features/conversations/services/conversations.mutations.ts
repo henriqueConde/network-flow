@@ -30,6 +30,10 @@ export function useCreateConversation() {
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+      // Invalidate all opportunity details (new conversation might be linked to an opportunity)
+      queryClient.invalidateQueries({ queryKey: opportunitiesKeys.details() });
+      // Invalidate pipeline board (opportunities might have changed)
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.board() });
     },
   });
 }

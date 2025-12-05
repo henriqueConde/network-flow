@@ -21,6 +21,10 @@ export async function getPipelineBoard(userId: string, filters?: GetPipelineBoar
         ...opp,
         lastMessageAt: opp.lastMessageAt ? opp.lastMessageAt.toISOString() : null,
         nextActionDueAt: opp.nextActionDueAt ? opp.nextActionDueAt.toISOString() : null,
+        conversations: opp.conversations.map((conv) => ({
+          ...conv,
+          lastMessageAt: conv.lastMessageAt ? conv.lastMessageAt.toISOString() : null,
+        })),
       })),
     })),
   };

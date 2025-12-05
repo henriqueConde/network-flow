@@ -1,17 +1,23 @@
 'use client';
 
-import { Box, Typography, Button, Chip } from '@mui/material';
+import { Box, Typography, Button, Chip, Link } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LaunchIcon from '@mui/icons-material/Launch';
+import { useRouter } from 'next/navigation';
 import type { ConversationDetailHeaderProps } from './conversation-detail-header.types';
 import { styles } from './conversation-detail-header.styles';
 
 export function ConversationDetailHeader({
   contactName,
   contactCompany,
+  opportunityId,
+  opportunityTitle,
   isOutOfSync,
   config,
   onBack,
 }: ConversationDetailHeaderProps) {
+  const router = useRouter();
+
   return (
     <Box sx={styles.headerSection()}>
       <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={styles.backButton()}>
@@ -27,6 +33,22 @@ export function ConversationDetailHeader({
             <Typography variant="body2" color="text.secondary">
               {contactCompany}
             </Typography>
+          )}
+          {opportunityId && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Opportunity:
+              </Typography>
+              <Link
+                component="button"
+                variant="body2"
+                onClick={() => router.push(`/opportunities/${opportunityId}`)}
+                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+              >
+                {opportunityTitle || 'View Opportunity'}
+                <LaunchIcon fontSize="small" />
+              </Link>
+            </Box>
           )}
         </Box>
         {isOutOfSync && <Chip label="Out of sync" color="warning" variant="outlined" />}

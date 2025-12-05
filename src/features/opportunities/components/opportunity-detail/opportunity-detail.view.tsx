@@ -3,6 +3,7 @@
 import { Box, Typography, Button, Card, CardContent, CircularProgress, Alert, Chip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import AddIcon from '@mui/icons-material/Add';
 import type { OpportunityDetail } from '../../services/opportunities.service';
 import { useMemo } from 'react';
 
@@ -13,6 +14,7 @@ type OpportunityDetailViewProps = {
   onBack: () => void;
   onConversationClick: (conversationId: string) => void;
   onInterviewClick: (conversationId: string) => void;
+  onOpenCreateConversation: () => void;
 };
 
 export function OpportunityDetailView({
@@ -22,6 +24,7 @@ export function OpportunityDetailView({
   onBack,
   onConversationClick,
   onInterviewClick,
+  onOpenCreateConversation,
 }: OpportunityDetailViewProps) {
   // Separate conversations into interviews and all conversations
   // Interviews should appear in BOTH sections (as interviews AND as conversations)
@@ -87,12 +90,6 @@ export function OpportunityDetailView({
         {opportunity.title || opportunity.contactName}
       </Typography>
 
-      {opportunity.contactCompany && (
-        <Typography variant="body1" color="text.secondary" gutterBottom>
-          {opportunity.contactCompany}
-        </Typography>
-      )}
-
       {/* Interviews Section */}
       {interviews.length > 0 && (
         <Box sx={{ marginTop: 3 }}>
@@ -105,7 +102,10 @@ export function OpportunityDetailView({
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 1 }}>
                   <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 1 }}>
-                      <Typography variant="h6">{interview.channel}</Typography>
+                      <Typography variant="h6">
+                        {interview.contactName}
+                        {interview.contactCompany ? ` • ${interview.contactCompany}` : ''}
+                      </Typography>
                       <Chip label="Interview" color="primary" size="small" />
                     </Box>
                     {interview.lastMessageAt && (
@@ -140,9 +140,19 @@ export function OpportunityDetailView({
 
       {/* Conversations Section */}
       <Box sx={{ marginTop: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Conversations ({allConversations.length})
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+          <Typography variant="h6">
+            Conversations ({allConversations.length})
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onOpenCreateConversation}
+            size="small"
+          >
+            New Conversation
+          </Button>
+        </Box>
 
         {allConversations.length === 0 ? (
           <Typography color="text.secondary">
@@ -157,7 +167,10 @@ export function OpportunityDetailView({
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                     <Box sx={{ flex: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 1 }}>
-                        <Typography variant="h6">{conv.channel}</Typography>
+                        <Typography variant="h6">
+                          {conv.contactName}
+                          {conv.contactCompany ? ` • ${conv.contactCompany}` : ''}
+                        </Typography>
                         {isInterview && (
                           <Chip label="Interview" color="primary" size="small" />
                         )}

@@ -16,12 +16,14 @@ export function useContactsList(params: {
   pageSize: number;
   sortBy: 'name' | 'company' | 'updatedAt' | 'createdAt';
   sortDir: 'asc' | 'desc';
+  enabled?: boolean;
 }) {
   return useQuery({
     queryKey: contactsKeys.list(params),
     queryFn: () => listContacts(params),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
+    enabled: params.enabled !== false,
   });
 }
 

@@ -1,8 +1,21 @@
 'use client';
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
+  Autocomplete,
+  CircularProgress,
+  Box,
+  Typography,
+} from '@mui/material';
 import type { CreateConversationDialogProps } from './create-conversation-dialog.types';
 import { styles } from './create-conversation-dialog.styles';
+import type { ContactListItem } from '@/features/contacts/services/contacts.service';
 
 export function CreateConversationDialog({
   isOpen,
@@ -12,23 +25,198 @@ export function CreateConversationDialog({
   onChangeField,
   onSubmit,
   isCreating,
+  config,
+  contactSearchInput,
+  onContactSearchChange,
+  onContactSelect,
+  contacts,
+  isSearchingContacts,
+  opportunitySearchInput,
+  onOpportunitySearchChange,
+  onOpportunitySelect,
+  opportunities,
+  isSearchingOpportunities,
 }: CreateConversationDialogProps) {
+  // Create options: existing contacts + "New contact" option if search input doesn't match any contact
+  const contactOptions = contacts || [];
+  const searchInputTrimmed = contactSearchInput.trim();
+  const hasExactMatch = contactOptions.some(
+    (contact) => contact.name.toLowerCase() === searchInputTrimmed.toLowerCase(),
+  );
+  const showNewContactOption =
+    searchInputTrimmed.length > 0 && !hasExactMatch && !values.contactId;
+
+  // Create a special option for "New contact"
+  const newContactOption = showNewContactOption
+    ? ({
+        id: '__NEW_CONTACT__',
+        name: `${searchInputTrimmed} ${config.copy.newContactOption}`,
+        company: null,
+        headlineOrRole: null,
+        primaryPlatform: null,
+        profileLinks: null,
+        tags: [],
+        categoryId: null,
+        stageId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        latestConversation: null,
+        createdAtDate: new Date(),
+        updatedAtDate: new Date(),
+        isNewContact: true as const,
+      } as ContactListItem & { isNewContact: true })
+    : null;
+
+  const allOptions = newContactOption ? [...contactOptions, newContactOption] : contactOptions;
+
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>New Conversation</DialogTitle>
+      <DialogTitle>{config.copy.title}</DialogTitle>
       <DialogContent sx={styles.createDialogContent()}>
-        <TextField
-          label="Contact name"
-          fullWidth
-          required
-          size="small"
-          value={values.contactName}
-          onChange={(e) => onChangeField('contactName', e.target.value)}
-          error={!!errors.contactName}
-          helperText={errors.contactName}
+        <Autocomplete
+          freeSolo
+          options={allOptions}
+          getOptionLabel={(option) => {
+            if (typeof option === 'string') return option;
+            return option.name;
+          }}
+          inputValue={contactSearchInput}
+          onInputChange={(_, newInputValue) => {
+            onContactSearchChange(newInputValue);
+          }}
+          onChange={(_, newValue) => {
+            if (!newValue || typeof newValue === 'string') {
+              // User typed a string directly (freeSolo)
+              onContactSelect(null, newValue || '');
+            } else if ('isNewContact' in newValue && newValue.isNewContact) {
+              // User selected "New contact" option
+              onContactSelect(null, searchInputTrimmed);
+            } else {
+              // User selected an existing contact
+              onContactSelect(newValue.id, newValue.name, newValue.company);
+            }
+          }}
+          value={
+            values.contactId
+              ? contactOptions.find((c) => c.id === values.contactId) || null
+              : null
+          }
+          loading={isSearchingContacts}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={config.copy.contactLabel}
+              placeholder={config.copy.contactPlaceholder}
+              required
+              size="small"
+              error={!!errors.contactName}
+              helperText={errors.contactName}
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {isSearchingContacts ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          renderOption={(props, option) => {
+            if (typeof option === 'string') {
+              return (
+                <Box component="li" {...props}>
+                  {option}
+                </Box>
+              );
+            }
+            if ('isNewContact' in option && option.isNewContact) {
+              return (
+                <Box component="li" {...props}>
+                  <Typography>{option.name}</Typography>
+                </Box>
+              );
+            }
+            return (
+              <Box component="li" {...props}>
+                <Box>
+                  <Typography variant="body2">{option.name}</Typography>
+                  {option.company && (
+                    <Typography variant="caption" color="text.secondary">
+                      {option.company}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            );
+          }}
+        />
+        <Autocomplete
+          options={opportunities || []}
+          getOptionLabel={(option) => {
+            if (typeof option === 'string') return option;
+            return option.title || `${option.contactName}${option.contactCompany ? ` - ${option.contactCompany}` : ''}`;
+          }}
+          inputValue={opportunitySearchInput}
+          onInputChange={(_, newInputValue) => {
+            onOpportunitySearchChange(newInputValue);
+          }}
+          onChange={(_, newValue) => {
+            if (!newValue || typeof newValue === 'string') {
+              onOpportunitySelect(null);
+            } else {
+              onOpportunitySelect(newValue.id);
+            }
+          }}
+          value={
+            values.opportunityId
+              ? opportunities.find((o) => o.id === values.opportunityId) || null
+              : null
+          }
+          loading={isSearchingOpportunities}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={config.copy.opportunityLabel}
+              placeholder={config.copy.opportunityPlaceholder}
+              size="small"
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {isSearchingOpportunities ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          renderOption={(props, option) => {
+            if (typeof option === 'string') {
+              return (
+                <Box component="li" {...props}>
+                  {option}
+                </Box>
+              );
+            }
+            return (
+              <Box component="li" {...props}>
+                <Box>
+                  <Typography variant="body2">
+                    {option.title || option.contactName}
+                  </Typography>
+                  {option.contactCompany && (
+                    <Typography variant="caption" color="text.secondary">
+                      {option.contactCompany}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            );
+          }}
         />
         <TextField
-          label="Company (optional)"
+          label={config.copy.companyLabel}
           fullWidth
           size="small"
           value={values.contactCompany}
@@ -38,7 +226,7 @@ export function CreateConversationDialog({
         />
         <TextField
           select
-          label="Channel"
+          label={config.copy.channelLabel}
           fullWidth
           size="small"
           value={values.channel}
@@ -53,7 +241,7 @@ export function CreateConversationDialog({
         </TextField>
         <TextField
           select
-          label="First message from"
+          label={config.copy.firstMessageSenderLabel}
           fullWidth
           size="small"
           value={values.firstMessageSender}
@@ -65,7 +253,7 @@ export function CreateConversationDialog({
           <MenuItem value="user">You</MenuItem>
         </TextField>
         <TextField
-          label="Pasted conversation text"
+          label={config.copy.pastedTextLabel}
           fullWidth
           required
           size="small"
@@ -78,9 +266,9 @@ export function CreateConversationDialog({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>{config.copy.cancelButton}</Button>
         <Button disabled={isCreating} variant="contained" onClick={onSubmit}>
-          {isCreating ? 'Creating…' : 'Create'}
+          {isCreating ? config.copy.creatingButton : config.copy.createButton}
         </Button>
       </DialogActions>
     </Dialog>

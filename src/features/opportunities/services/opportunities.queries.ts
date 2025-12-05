@@ -13,12 +13,14 @@ export function useOpportunitiesList(params: {
   pageSize: number;
   sortBy: 'updatedAt' | 'nextActionDueAt' | 'priority';
   sortDir: 'asc' | 'desc';
+  enabled?: boolean;
 }) {
   return useQuery({
     queryKey: opportunitiesKeys.list(params),
     queryFn: () => listOpportunities(params),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
+    enabled: params.enabled !== false,
   });
 }
 

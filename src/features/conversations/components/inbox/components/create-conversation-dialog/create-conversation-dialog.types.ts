@@ -1,4 +1,7 @@
 import type { CreateConversationFormValues } from '../../conversations-inbox.schema';
+import type { CREATE_CONVERSATION_DIALOG_CONFIG } from './create-conversation-dialog.config';
+import type { ContactListItem } from '@/features/contacts/services/contacts.service';
+import type { OpportunityListItem } from '@/features/opportunities/services/opportunities.service';
 
 export interface CreateConversationDialogProps {
   isOpen: boolean;
@@ -11,5 +14,16 @@ export interface CreateConversationDialogProps {
   ) => void;
   onSubmit: () => void;
   isCreating: boolean;
+  config: typeof CREATE_CONVERSATION_DIALOG_CONFIG;
+  contactSearchInput: string;
+  onContactSearchChange: (value: string) => void;
+  onContactSelect: (contactId: string | null, contactName: string, contactCompany?: string | null) => void;
+  contacts: ContactListItem[];
+  isSearchingContacts: boolean;
+  opportunitySearchInput: string;
+  onOpportunitySearchChange: (value: string) => void;
+  onOpportunitySelect: (opportunityId: string | null) => void;
+  opportunities: OpportunityListItem[];
+  isSearchingOpportunities: boolean;
 }
 

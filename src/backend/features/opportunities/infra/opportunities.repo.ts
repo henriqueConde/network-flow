@@ -48,15 +48,20 @@ export function makeOpportunitiesRepo() {
         return null;
       }
 
-      // Fetch ALL conversations for this contact
-      // An opportunity is associated with a contact, so all conversations with that contact
-      // should be shown for that opportunity, not just those explicitly linked via opportunityId
+      // Fetch ALL conversations for this opportunity
+      // Include conversations that are:
+      // 1. Explicitly linked to this opportunity via opportunityId, OR
+      // 2. Associated with the same contact (for backwards compatibility)
       const allContactConversations = await prisma.conversation.findMany({
         where: {
           userId,
-          contactId: opportunity.contactId,
+          OR: [
+            { opportunityId: opportunity.id },
+            { contactId: opportunity.contactId },
+          ],
         },
         include: {
+          contact: true,
           stage: true,
           messages: {
             orderBy: {
@@ -76,11 +81,48 @@ export function makeOpportunitiesRepo() {
       });
 
       // Create a map of all conversations by ID
-      // We use the conversations from the query above which includes all conversations for the contact
+      // We use the conversations from the query above which includes all conversations for the opportunity
       const allConversationsMap = new Map<string, typeof allContactConversations[0]>();
       
+      // Collect unique contact IDs
+      const contactIds = new Set<string>();
       for (const conv of allContactConversations) {
         allConversationsMap.set(conv.id, conv);
+        contactIds.add(conv.contactId);
+      }
+      
+      // Fetch contacts - always fetch them manually to ensure they're available
+      const contactsMap = new Map<string, { name: string; company: string | null }>();
+      if (contactIds.size > 0) {
+        try {
+          const contacts = await prisma.contact.findMany({
+            where: {
+              id: { in: Array.from(contactIds) },
+              userId,
+            },
+            select: {
+              id: true,
+              name: true,
+              company: true,
+            },
+          });
+          
+          for (const contact of contacts) {
+            contactsMap.set(contact.id, {
+              name: contact.name,
+              company: contact.company ?? null,
+            });
+          }
+          
+          // Log if we're missing any contacts
+          const missingContactIds = Array.from(contactIds).filter(id => !contactsMap.has(id));
+          if (missingContactIds.length > 0) {
+            console.error(`Missing contacts for IDs: ${missingContactIds.join(', ')}`);
+          }
+        } catch (error) {
+          console.error('Error fetching contacts:', error);
+          throw error;
+        }
       }
 
       return {
@@ -101,10 +143,20 @@ export function makeOpportunitiesRepo() {
         notes: opportunity.notes ?? null,
         createdAt: opportunity.createdAt,
         updatedAt: opportunity.updatedAt,
-        // Include all conversations for this contact (interviews and regular conversations)
-        conversations: Array.from(allConversationsMap.values()).map((conv) => ({
-          id: conv.id,
-          channel: conv.channel,
+        // Include all conversations for this opportunity (explicitly linked or same contact)
+        conversations: Array.from(allConversationsMap.values()).map((conv) => {
+          // Get contact info from the manually fetched map (more reliable than Prisma include)
+          const contactInfo = contactsMap.get(conv.contactId);
+          if (!contactInfo) {
+            console.error(`Conversation ${conv.id} has no contact info. ContactId: ${conv.contactId}. Available contact IDs:`, Array.from(contactsMap.keys()));
+            throw new Error(`Conversation ${conv.id} has no contact info. ContactId: ${conv.contactId}. Available contacts: ${Array.from(contactsMap.keys()).join(', ')}`);
+          }
+          
+          return {
+            id: conv.id,
+            contactName: contactInfo.name,
+            contactCompany: contactInfo.company,
+            channel: conv.channel,
           stageId: conv.stageId ?? null,
           stageName: conv.stage?.name ?? null,
           lastMessageAt: conv.lastMessageAt,
@@ -129,7 +181,8 @@ export function makeOpportunitiesRepo() {
                 emailReceivedAt: conv.linkedInEmailEvents[0].emailReceivedAt,
               }
               : null,
-        })),
+          };
+        }),
       };
     },
 
@@ -345,7 +398,7 @@ export function makeOpportunitiesRepo() {
 
     /**
      * Move an opportunity to a different stage.
-     * When moving to "Interviewing" stage, also updates all linked conversations to that stage.
+     * Also updates all linked conversations to keep stages in sync.
      */
     async moveOpportunityToStage(params: {
       userId: string;
@@ -368,7 +421,6 @@ export function makeOpportunitiesRepo() {
 
       // If stageId is provided, verify it belongs to the user and check if it's a closed stage
       let isClosedStage = false;
-      let isInterviewingStage = false;
       if (stageId) {
         const stage = await prisma.stage.findFirst({
           where: {
@@ -383,8 +435,6 @@ export function makeOpportunitiesRepo() {
 
         // Check if the stage name starts with "Closed"
         isClosedStage = stage.name.toLowerCase().startsWith('closed');
-        // Check if it's the "Interviewing" stage
-        isInterviewingStage = stage.name === 'Interviewing';
       }
 
       // Prepare update data
@@ -407,18 +457,16 @@ export function makeOpportunitiesRepo() {
         data: updateData,
       });
 
-      // If moving to "Interviewing" stage, also update all conversations linked to this opportunity
-      if (isInterviewingStage && stageId) {
-        await prisma.conversation.updateMany({
-          where: {
-            opportunityId,
-            userId,
-          },
-          data: {
-            stageId,
-          },
-        });
-      }
+      // Keep all conversations linked to this opportunity in sync with the opportunity stage
+      await prisma.conversation.updateMany({
+        where: {
+          opportunityId,
+          userId,
+        },
+        data: {
+          stageId,
+        },
+      });
 
       return await prisma.opportunity.findUnique({
         where: {

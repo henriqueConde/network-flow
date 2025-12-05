@@ -79,6 +79,8 @@ const linkedInEmailEventDto = z.object({
  */
 export const conversationDetailDto = z.object({
   id: z.string().uuid(),
+  contactName: z.string(),
+  contactCompany: z.string().nullable(),
   channel: z.string(),
   stageId: z.string().uuid().nullable(),
   stageName: z.string().nullable(),

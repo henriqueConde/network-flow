@@ -11,6 +11,8 @@ export function ErrorView({ error, isNotFound, config, onBack }: ErrorViewProps)
       <ConversationDetailHeader
         contactName=""
         contactCompany={null}
+        opportunityId={null}
+        opportunityTitle={null}
         isOutOfSync={false}
         config={config}
         onBack={onBack}

@@ -40,6 +40,17 @@ export function ConversationsInboxView({
   createErrors,
   onChangeCreateField,
   isCreating,
+  createDialogConfig,
+  contactSearchInput,
+  onContactSearchChange,
+  onContactSelect,
+  contacts,
+  isSearchingContacts,
+  opportunitySearchInput,
+  onOpportunitySearchChange,
+  onOpportunitySelect,
+  opportunities,
+  isSearchingOpportunities,
   onOpenDelete,
   isDeleteDialogOpen,
   deleteConversationContactName,
@@ -108,6 +119,17 @@ export function ConversationsInboxView({
         onChangeField={onChangeCreateField}
         onSubmit={onSubmitCreate}
         isCreating={isCreating}
+        config={createDialogConfig}
+        contactSearchInput={contactSearchInput}
+        onContactSearchChange={onContactSearchChange}
+        onContactSelect={onContactSelect}
+        contacts={contacts}
+        isSearchingContacts={isSearchingContacts}
+        opportunitySearchInput={opportunitySearchInput}
+        onOpportunitySearchChange={onOpportunitySearchChange}
+        onOpportunitySelect={onOpportunitySelect}
+        opportunities={opportunities}
+        isSearchingOpportunities={isSearchingOpportunities}
       />
 
       <DeleteConversationDialog

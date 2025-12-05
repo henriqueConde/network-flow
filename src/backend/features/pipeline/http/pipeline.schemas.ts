@@ -2,6 +2,23 @@ import { z } from 'zod';
 import { prioritySchema } from '@/shared/types';
 
 /**
+ * DTO for a single conversation summary inside an opportunity on the pipeline.
+ * Kept lightweight for the board view while still giving enough context.
+ */
+export const pipelineOpportunityConversationDto = z.object({
+  id: z.string().uuid(),
+  contactName: z.string(),
+  contactCompany: z.string().nullable(),
+  channel: z.string(),
+  stageName: z.string().nullable(),
+  lastMessageAt: z.string().datetime().nullable(),
+  lastMessageSnippet: z.string().nullable(),
+  isOutOfSync: z.boolean(),
+});
+
+export type PipelineOpportunityConversationDto = z.infer<typeof pipelineOpportunityConversationDto>;
+
+/**
  * DTO for a single opportunity card in the pipeline.
  */
 export const pipelineOpportunityDto = z.object({
@@ -15,6 +32,7 @@ export const pipelineOpportunityDto = z.object({
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema,
   isOutOfSync: z.boolean(),
+  conversations: z.array(pipelineOpportunityConversationDto),
 });
 
 export type PipelineOpportunityDto = z.infer<typeof pipelineOpportunityDto>;
