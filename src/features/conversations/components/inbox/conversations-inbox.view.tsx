@@ -45,6 +45,10 @@ export function ConversationsInboxView({
   onContactSearchChange,
   onContactSelect,
   contacts,
+  contactOptions,
+  allContactOptions,
+  contactSearchInputTrimmed,
+  onContactScroll,
   isSearchingContacts,
   opportunitySearchInput,
   onOpportunitySearchChange,
@@ -77,15 +81,15 @@ export function ConversationsInboxView({
       />
 
       {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', padding: 4 }}>
+        <Box sx={styles.loadingState()}>
           <CircularProgress />
         </Box>
       )}
 
       {error && !isLoading && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
+        <Box sx={styles.errorState()}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
       )}
 
       {!isLoading && !error && (
@@ -102,7 +106,7 @@ export function ConversationsInboxView({
         </Box>
       )}
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+      <Box sx={styles.paginationContainer()}>
         <Pagination
           page={page}
           onChange={(_, value) => onPageChange(value)}
@@ -124,6 +128,10 @@ export function ConversationsInboxView({
         onContactSearchChange={onContactSearchChange}
         onContactSelect={onContactSelect}
         contacts={contacts}
+        contactOptions={contactOptions}
+        allContactOptions={allContactOptions}
+        contactSearchInputTrimmed={contactSearchInputTrimmed}
+        onContactScroll={onContactScroll}
         isSearchingContacts={isSearchingContacts}
         opportunitySearchInput={opportunitySearchInput}
         onOpportunitySearchChange={onOpportunitySearchChange}

@@ -2,6 +2,7 @@ import type { CreateConversationFormValues } from '../../conversations-inbox.sch
 import type { CREATE_CONVERSATION_DIALOG_CONFIG } from './create-conversation-dialog.config';
 import type { ContactListItem } from '@/features/contacts/services/contacts.service';
 import type { OpportunityListItem } from '@/features/opportunities/services/opportunities.service';
+import type { ContactOption } from './hooks/use-contact-options.state';
 
 export interface CreateConversationDialogProps {
   isOpen: boolean;
@@ -19,6 +20,10 @@ export interface CreateConversationDialogProps {
   onContactSearchChange: (value: string) => void;
   onContactSelect: (contactId: string | null, contactName: string, contactCompany?: string | null) => void;
   contacts: ContactListItem[];
+  contactOptions: ContactListItem[];
+  allContactOptions: ContactOption[];
+  contactSearchInputTrimmed: string;
+  onContactScroll: (event: React.UIEvent<HTMLUListElement>) => void;
   isSearchingContacts: boolean;
   opportunitySearchInput: string;
   onOpportunitySearchChange: (value: string) => void;

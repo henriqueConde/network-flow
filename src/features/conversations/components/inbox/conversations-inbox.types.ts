@@ -48,6 +48,10 @@ export interface ConversationsInboxViewProps {
   onContactSearchChange: (value: string) => void;
   onContactSelect: (contactId: string | null, contactName: string, contactCompany?: string | null) => void;
   contacts: ContactListItem[];
+  contactOptions: ContactListItem[];
+  allContactOptions: import('./components/create-conversation-dialog/hooks/use-contact-options.state').ContactOption[];
+  contactSearchInputTrimmed: string;
+  onContactScroll: (event: React.UIEvent<HTMLUListElement>) => void;
   isSearchingContacts: boolean;
   opportunitySearchInput: string;
   onOpportunitySearchChange: (value: string) => void;

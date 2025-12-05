@@ -4,17 +4,16 @@ import { useRouter } from 'next/navigation';
 import { useScheduledFollowups } from '../../services/followups.queries';
 import { FollowupsPageView } from './followups-page.view';
 import { FOLLOWUPS_PAGE_CONFIG } from './followups-page.config';
+import { useFollowupsCalendar } from './hooks/use-followups-calendar.state';
 
 export function FollowupsPageContainer() {
   const router = useRouter();
   const { data: followupsByDate = [], isLoading, error } = useScheduledFollowups();
 
+  const { calendarData, handlePrevMonth, handleNextMonth } = useFollowupsCalendar(followupsByDate);
+
   const handleConversationClick = (conversationId: string) => {
     router.push(`/conversations/${conversationId}`);
-  };
-
-  const handleOpportunityClick = (opportunityId: string) => {
-    router.push(`/opportunities/${opportunityId}`);
   };
 
   return (
@@ -23,8 +22,10 @@ export function FollowupsPageContainer() {
       isLoading={isLoading}
       error={error}
       config={FOLLOWUPS_PAGE_CONFIG}
+      calendarData={calendarData}
       onConversationClick={handleConversationClick}
-      onOpportunityClick={handleOpportunityClick}
+      onPrevMonth={handlePrevMonth}
+      onNextMonth={handleNextMonth}
     />
   );
 }

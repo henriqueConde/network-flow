@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import type { CreateConversationDialogProps } from './create-conversation-dialog.types';
 import { styles } from './create-conversation-dialog.styles';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
 
 export function CreateConversationDialog({
   isOpen,
@@ -29,7 +28,10 @@ export function CreateConversationDialog({
   contactSearchInput,
   onContactSearchChange,
   onContactSelect,
-  contacts,
+  contactOptions,
+  allContactOptions,
+  contactSearchInputTrimmed,
+  onContactScroll,
   isSearchingContacts,
   opportunitySearchInput,
   onOpportunitySearchChange,
@@ -37,37 +39,6 @@ export function CreateConversationDialog({
   opportunities,
   isSearchingOpportunities,
 }: CreateConversationDialogProps) {
-  // Create options: existing contacts + "New contact" option if search input doesn't match any contact
-  const contactOptions = contacts || [];
-  const searchInputTrimmed = contactSearchInput.trim();
-  const hasExactMatch = contactOptions.some(
-    (contact) => contact.name.toLowerCase() === searchInputTrimmed.toLowerCase(),
-  );
-  const showNewContactOption =
-    searchInputTrimmed.length > 0 && !hasExactMatch && !values.contactId;
-
-  // Create a special option for "New contact"
-  const newContactOption = showNewContactOption
-    ? ({
-        id: '__NEW_CONTACT__',
-        name: `${searchInputTrimmed} ${config.copy.newContactOption}`,
-        company: null,
-        headlineOrRole: null,
-        primaryPlatform: null,
-        profileLinks: null,
-        tags: [],
-        categoryId: null,
-        stageId: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        latestConversation: null,
-        createdAtDate: new Date(),
-        updatedAtDate: new Date(),
-        isNewContact: true as const,
-      } as ContactListItem & { isNewContact: true })
-    : null;
-
-  const allOptions = newContactOption ? [...contactOptions, newContactOption] : contactOptions;
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
@@ -75,7 +46,7 @@ export function CreateConversationDialog({
       <DialogContent sx={styles.createDialogContent()}>
         <Autocomplete
           freeSolo
-          options={allOptions}
+          options={allContactOptions}
           getOptionLabel={(option) => {
             if (typeof option === 'string') return option;
             return option.name;
@@ -90,7 +61,7 @@ export function CreateConversationDialog({
               onContactSelect(null, newValue || '');
             } else if ('isNewContact' in newValue && newValue.isNewContact) {
               // User selected "New contact" option
-              onContactSelect(null, searchInputTrimmed);
+              onContactSelect(null, contactSearchInputTrimmed);
             } else {
               // User selected an existing contact
               onContactSelect(newValue.id, newValue.name, newValue.company);
@@ -102,6 +73,10 @@ export function CreateConversationDialog({
               : null
           }
           loading={isSearchingContacts}
+          ListboxProps={{
+            onScroll: onContactScroll,
+            style: styles.listbox,
+          }}
           renderInput={(params) => (
             <TextField
               {...params}

@@ -15,6 +15,19 @@ export const styles = {
     border: '1px solid rgba(148, 163, 184, 0.12)',
     overflow: 'hidden',
   }),
+  loadingState: () => (theme: Theme) => ({
+    display: 'flex',
+    justifyContent: 'center',
+    padding: theme.spacing(4),
+  }),
+  errorState: () => (theme: Theme) => ({
+    mb: 2,
+  }),
+  paginationContainer: () => (theme: Theme) => ({
+    display: 'flex',
+    justifyContent: 'flex-end',
+    mt: 2,
+  }),
 };
 
 

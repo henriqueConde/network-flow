@@ -6,95 +6,20 @@ import {
   CircularProgress,
   Alert,
   Card,
-  CardContent,
   Button,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
 import type { FollowupsPageViewProps } from './followups-page.types';
 import { styles } from './followups-page.styles';
 
 export function FollowupsPageView({
-  followupsByDate,
   isLoading,
   error,
   config,
+  calendarData,
   onConversationClick,
-  onOpportunityClick,
+  onPrevMonth,
+  onNextMonth,
 }: FollowupsPageViewProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-
-  const calendarData = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-
-    // Get first day of month and how many days
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    // Create a map of follow-ups by date (YYYY-MM-DD)
-    const followupsMap = new Map<string, typeof followupsByDate[0]['followups']>();
-    for (const group of followupsByDate) {
-      followupsMap.set(group.date, group.followups);
-    }
-
-    // Build calendar grid
-    const days: Array<{
-      date: Date;
-      dayNumber: number;
-      isCurrentMonth: boolean;
-      followups: typeof followupsByDate[0]['followups'];
-    }> = [];
-
-    // Add days from previous month to fill the first week
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
-    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-      const date = new Date(year, month - 1, prevMonthLastDay - i);
-      const dateKey = date.toISOString().split('T')[0];
-      days.push({
-        date,
-        dayNumber: prevMonthLastDay - i,
-        isCurrentMonth: false,
-        followups: followupsMap.get(dateKey) || [],
-      });
-    }
-
-    // Add days from current month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateKey = date.toISOString().split('T')[0];
-      days.push({
-        date,
-        dayNumber: day,
-        isCurrentMonth: true,
-        followups: followupsMap.get(dateKey) || [],
-      });
-    }
-
-    // Add days from next month to fill the last week (up to 42 days total for 6 weeks)
-    const remainingDays = 42 - days.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(year, month + 1, day);
-      const dateKey = date.toISOString().split('T')[0];
-      days.push({
-        date,
-        dayNumber: day,
-        isCurrentMonth: false,
-        followups: followupsMap.get(dateKey) || [],
-      });
-    }
-
-    return { days, year, month };
-  }, [currentMonth, followupsByDate]);
-
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
 
   if (isLoading) {
     return (
@@ -132,7 +57,6 @@ export function FollowupsPageView({
     );
   }
 
-  const monthName = config.copy.calendar.monthNames[calendarData.month];
   const today = new Date();
   const todayKey = today.toISOString().split('T')[0];
 
@@ -149,24 +73,26 @@ export function FollowupsPageView({
 
       <Card sx={styles.calendar()}>
         <Box sx={styles.calendarHeader()}>
-          <Button onClick={handlePrevMonth} size="small">
+          <Button onClick={onPrevMonth} size="small">
             ← Prev
           </Button>
           <Typography variant="h6" sx={styles.monthYear()}>
-            {monthName} {calendarData.year}
+            {config.copy.calendar.monthNames[calendarData.month]} {calendarData.year}
           </Typography>
-          <Button onClick={handleNextMonth} size="small">
+          <Button onClick={onNextMonth} size="small">
             Next →
           </Button>
         </Box>
 
-        <Box sx={styles.calendarGrid()}>
+        <Box sx={styles.dayHeadersContainer()}>
           {config.copy.calendar.dayNames.map((dayName) => (
             <Box key={dayName} sx={styles.dayHeader()}>
               {dayName}
             </Box>
           ))}
+        </Box>
 
+        <Box sx={styles.calendarGrid()}>
           {calendarData.days.map((day, index) => {
             const dayKey = day.date.toISOString().split('T')[0];
             const isToday = dayKey === todayKey;
@@ -201,12 +127,14 @@ export function FollowupsPageView({
                       e.stopPropagation();
                       onConversationClick(followup.conversationId);
                     }}
-                    title={`${followup.contactName} - ${config.copy.followup.followupNumber(followup.followupNumber)}`}
+                    title={`${followup.contactName} - ${config.copy.followup.followupNumber(
+                      followup.followupNumber,
+                    )}`}
                   >
-                    <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
+                    <Typography variant="body2" sx={styles.followupContactName()}>
                       {followup.contactName}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.65rem', opacity: 0.9 }}>
+                    <Typography variant="body2" sx={styles.followupNumberText()}>
                       {config.copy.followup.followupNumber(followup.followupNumber)}
                     </Typography>
                   </Box>
@@ -219,4 +147,3 @@ export function FollowupsPageView({
     </Box>
   );
 }
-

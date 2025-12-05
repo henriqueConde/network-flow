@@ -10,6 +10,9 @@ import { CREATE_CONVERSATION_DIALOG_CONFIG } from '@/features/conversations/comp
 import { useContactsList } from '@/features/contacts/services/contacts.queries';
 import { useOpportunitiesList } from '@/features/opportunities/services/opportunities.queries';
 import { useDebounce } from '@/shared/hooks';
+import { useContactsPagination } from '@/features/conversations/components/inbox/hooks/use-contacts-pagination.state';
+import { useContactOptions } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-contact-options.state';
+import { useAutocompleteScroll } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-autocomplete-scroll.state';
 
 export function OpportunityDetailContainer() {
   const params = useParams();
@@ -39,15 +42,51 @@ export function OpportunityDetailContainer() {
   const debouncedContactSearch = useDebounce(createDialog.contactSearchInput, 300);
   const debouncedOpportunitySearch = useDebounce(createDialog.opportunitySearchInput, 300);
 
+  // Contact pagination hook - manages pagination state and accumulation
+  const {
+    contactPage,
+    accumulatedContacts,
+    hasMoreContacts,
+    loadMoreContacts,
+    CONTACTS_PAGE_SIZE,
+  } = useContactsPagination(undefined, false, createDialog.isOpen, debouncedContactSearch);
+
   // Fetch contacts for autocomplete (only when dialog is open)
   const { data: contactsData, isLoading: isSearchingContacts } = useContactsList({
     search: debouncedContactSearch.trim() || undefined,
-    page: 1,
-    pageSize: 20,
+    page: contactPage,
+    pageSize: CONTACTS_PAGE_SIZE,
     sortBy: 'name',
     sortDir: 'asc',
     enabled: createDialog.isOpen,
   });
+
+  // Update pagination with fetched data
+  const {
+    accumulatedContacts: finalAccumulatedContacts,
+    hasMoreContacts: finalHasMoreContacts,
+    loadMoreContacts: finalLoadMoreContacts,
+  } = useContactsPagination(
+    contactsData,
+    isSearchingContacts,
+    createDialog.isOpen,
+    debouncedContactSearch,
+  );
+
+  // Contact options hook - handles "New contact" option logic
+  const { contactOptions, allOptions, searchInputTrimmed } = useContactOptions(
+    finalAccumulatedContacts,
+    createDialog.contactSearchInput,
+    createDialog.values.contactId,
+    CREATE_CONVERSATION_DIALOG_CONFIG.copy.newContactOption,
+  );
+
+  // Infinite scroll hook for contacts autocomplete
+  const { handleScroll: handleContactScroll } = useAutocompleteScroll(
+    finalHasMoreContacts,
+    isSearchingContacts,
+    finalLoadMoreContacts,
+  );
 
   // Fetch opportunities for autocomplete (only when dialog is open)
   const { data: opportunitiesData, isLoading: isSearchingOpportunities } = useOpportunitiesList({
@@ -111,7 +150,11 @@ export function OpportunityDetailContainer() {
         contactSearchInput={createDialog.contactSearchInput}
         onContactSearchChange={createDialog.handleContactSearchChange}
         onContactSelect={createDialog.handleContactSelect}
-        contacts={contactsData?.contacts || []}
+        contacts={finalAccumulatedContacts}
+        contactOptions={contactOptions}
+        allContactOptions={allOptions}
+        contactSearchInputTrimmed={searchInputTrimmed}
+        onContactScroll={handleContactScroll}
         isSearchingContacts={isSearchingContacts}
         opportunitySearchInput={createDialog.opportunitySearchInput}
         onOpportunitySearchChange={createDialog.handleOpportunitySearchChange}

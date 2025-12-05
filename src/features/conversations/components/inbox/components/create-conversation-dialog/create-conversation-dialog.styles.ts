@@ -6,5 +6,8 @@ export const styles = {
     flexDirection: 'column',
     gap: theme.spacing(2),
   }),
+  listbox: {
+    maxHeight: '300px',
+  },
 };
 
