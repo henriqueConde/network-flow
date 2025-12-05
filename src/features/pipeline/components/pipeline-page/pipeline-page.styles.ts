@@ -2,12 +2,18 @@ import { Theme } from '@mui/material';
 
 export const styles = {
   root: () => (theme: Theme) => ({
-    p: 3,
-    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
     bgcolor: theme.palette.background.default,
+    overflow: 'hidden',
   }),
   header: () => (theme: Theme) => ({
-    mb: 4,
+    p: 3,
+    pb: 2,
+    flexShrink: 0,
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    bgcolor: theme.palette.background.paper,
   }),
   title: () => (theme: Theme) => ({
     mb: 1,
@@ -16,39 +22,97 @@ export const styles = {
   subtitle: () => (theme: Theme) => ({
     color: theme.palette.text.secondary,
   }),
+  boardContainer: () => (theme: Theme) => ({
+    flex: 1,
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'stretch',
+    overflow: 'hidden',
+    minHeight: 0, // Important for flex children to respect overflow
+  }),
   board: () => (theme: Theme) => ({
+    flex: 1,
     display: 'flex',
     gap: 2,
     overflowX: 'auto',
-    pb: 2,
-    // Hide scrollbar but keep functionality
+    overflowY: 'hidden',
+    p: 3,
+    pt: 2,
+    scrollBehavior: 'smooth',
+    minHeight: 0, // Important for flex children to respect overflow
+    // Hide horizontal scrollbar
     '&::-webkit-scrollbar': {
-      height: 8,
+      display: 'none',
     },
-    '&::-webkit-scrollbar-track': {
-      background: theme.palette.grey[100],
-      borderRadius: 4,
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
+  }),
+  scrollButton: (direction: 'left' | 'right') => (theme: Theme) => ({
+    position: 'absolute',
+    [direction]: theme.spacing(1),
+    top: '50%',
+    transform: 'translateY(-50%)',
+    zIndex: 10,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[4],
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+      boxShadow: theme.shadows[6],
     },
-    '&::-webkit-scrollbar-thumb': {
-      background: theme.palette.grey[400],
-      borderRadius: 4,
-      '&:hover': {
-        background: theme.palette.grey[600],
-      },
-    },
+    width: 40,
+    height: 40,
   }),
   column: () => (theme: Theme) => ({
     minWidth: 300,
+    width: 300,
     flexShrink: 0,
     bgcolor: theme.palette.background.paper,
     borderRadius: 2,
-    p: 2,
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    maxHeight: '100%',
+    minHeight: 0, // Important for flex children to respect overflow
+    overflow: 'hidden', // Prevent column itself from scrolling
+    transition: 'all 0.2s ease-in-out',
+  }),
+  columnContent: () => (theme: Theme) => ({
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
     gap: 2,
-    maxHeight: 'calc(100vh - 200px)',
+    p: 2,
+    pb: 8, // Extra bottom padding to ensure last item is fully visible
     overflowY: 'auto',
-    transition: 'all 0.2s ease-in-out',
+    overflowX: 'hidden',
+    minHeight: 0, // Important for flex children to respect overflow
+    // Visible scrollbar for columns
+    '&::-webkit-scrollbar': {
+      width: 10,
+    },
+    '&::-webkit-scrollbar-track': {
+      background: theme.palette.mode === 'dark'
+        ? theme.palette.grey[800]
+        : theme.palette.grey[100],
+      borderRadius: 5,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background: theme.palette.mode === 'dark'
+        ? theme.palette.grey[600]
+        : theme.palette.grey[400],
+      borderRadius: 5,
+      '&:hover': {
+        background: theme.palette.mode === 'dark'
+          ? theme.palette.grey[500]
+          : theme.palette.grey[500],
+      },
+    },
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${theme.palette.mode === 'dark'
+      ? theme.palette.grey[600]
+      : theme.palette.grey[400]} ${theme.palette.mode === 'dark'
+        ? theme.palette.grey[800]
+        : theme.palette.grey[100]}`,
   }),
   columnDragOver: () => (theme: Theme) => ({
     ...styles.column()(theme),
@@ -58,9 +122,11 @@ export const styles = {
     boxShadow: theme.shadows[4],
   }),
   columnHeader: () => (theme: Theme) => ({
-    mb: 1,
+    flexShrink: 0,
+    p: 2,
     pb: 1,
     borderBottom: `2px solid ${theme.palette.divider}`,
+    bgcolor: theme.palette.background.paper,
   }),
   columnTitle: () => (theme: Theme) => ({
     fontWeight: 600,
@@ -78,6 +144,19 @@ export const styles = {
     border: `1px solid ${theme.palette.divider}`,
     cursor: 'pointer',
     transition: 'all 0.2s ease-in-out',
+    width: '100%',
+    minHeight: 'auto',
+    height: 'auto',
+    maxHeight: 'none',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'visible',
+    '& .MuiCardContent-root': {
+      padding: 0,
+      '&:last-child': {
+        paddingBottom: 0,
+      },
+    },
     '&:hover': {
       boxShadow: theme.shadows[3],
       transform: 'translateY(-2px)',
@@ -105,6 +184,8 @@ export const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: 0.5,
+    flex: '1 1 auto',
+    minHeight: 0,
   }),
   opportunityMetaItem: () => (theme: Theme) => ({
     fontSize: '0.75rem',
@@ -117,6 +198,8 @@ export const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: 0.5,
+    flex: '1 1 auto',
+    minHeight: 0,
   }),
   opportunityConversationsHeader: () => (theme: Theme) => ({
     fontSize: '0.75rem',

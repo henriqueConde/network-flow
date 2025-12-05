@@ -21,6 +21,7 @@ export const PIPELINE_PAGE_CONFIG = {
       noNextAction: 'No next action',
       viewDetails: 'View Details',
       moveTo: 'Move to',
+      unassigned: 'Unassigned',
     },
   },
   ui: {

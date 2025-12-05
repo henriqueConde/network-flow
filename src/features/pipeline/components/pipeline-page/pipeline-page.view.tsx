@@ -9,8 +9,11 @@ import {
   MenuItem,
   ListItemText,
   TextField,
+  IconButton,
 } from '@mui/material';
-import { useState } from 'react';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useState, useRef, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -49,10 +52,8 @@ function DroppableColumn({
   const showDragOver = isOver || isDroppableOver;
 
   return (
-    <Box ref={setNodeRef}>
-      <Box sx={showDragOver ? styles.columnDragOver() : styles.column()}>
-        {children}
-      </Box>
+    <Box ref={setNodeRef} sx={showDragOver ? styles.columnDragOver() : styles.column()}>
+      {children}
     </Box>
   );
 }
@@ -74,6 +75,9 @@ export function PipelinePageView({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<{ element: HTMLElement; opportunityId: string } | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const boardRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -140,6 +144,37 @@ export function PipelinePageView({
   const activeOpportunity = board?.stages
     .flatMap((stage) => stage.opportunities)
     .find((opp) => opp.id === activeId);
+
+  // Check scroll position for arrow buttons
+  const checkScrollButtons = () => {
+    if (!boardRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = boardRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+  };
+
+  // Scroll handlers
+  const scrollLeft = () => {
+    if (boardRef.current) {
+      boardRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (boardRef.current) {
+      boardRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+    }
+  };
+
+  // Check scroll buttons on mount and when board changes
+  useEffect(() => {
+    checkScrollButtons();
+    const boardElement = boardRef.current;
+    if (boardElement) {
+      boardElement.addEventListener('scroll', checkScrollButtons);
+      return () => boardElement.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [board]);
 
   if (isLoading) {
     return (
@@ -244,22 +279,33 @@ export function PipelinePageView({
         </Box>
 
         <SortableContext items={allOpportunityIds} strategy={verticalListSortingStrategy}>
-          <Box sx={styles.board()}>
-            {board.stages.map((stage) => (
+          <Box sx={styles.boardContainer()}>
+            {canScrollLeft && (
+              <IconButton
+                sx={styles.scrollButton('left')}
+                onClick={scrollLeft}
+                aria-label="Scroll left"
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+            )}
+            <Box ref={boardRef} sx={styles.board()}>
+              {board.stages.map((stage) => (
               <DroppableColumn
                 key={stage.id}
                 stageId={stage.id}
                 isOver={overId === stage.id && !!activeId}
               >
-                  <Box sx={styles.columnHeader()}>
-                    <Typography variant="h6" sx={styles.columnTitle()}>
-                      {stage.name}
-                      <Typography component="span" sx={styles.columnCount()}>
-                        ({stage.opportunities.length})
-                      </Typography>
+                <Box sx={styles.columnHeader()}>
+                  <Typography variant="h6" sx={styles.columnTitle()}>
+                    {stage.name}
+                    <Typography component="span" sx={styles.columnCount()}>
+                      ({stage.opportunities.length})
                     </Typography>
-                  </Box>
+                  </Typography>
+                </Box>
 
+                <Box sx={styles.columnContent()}>
                   {stage.opportunities.length === 0 ? (
                     <Box sx={styles.emptyState()}>
                       <Typography variant="body2">{config.copy.empty.noOpportunities}</Typography>
@@ -277,8 +323,19 @@ export function PipelinePageView({
                       ))}
                     </SortableContext>
                   )}
+                </Box>
               </DroppableColumn>
             ))}
+            </Box>
+            {canScrollRight && (
+              <IconButton
+                sx={styles.scrollButton('right')}
+                onClick={scrollRight}
+                aria-label="Scroll right"
+              >
+                <ChevronRightIcon />
+              </IconButton>
+            )}
           </Box>
         </SortableContext>
 
@@ -316,7 +373,7 @@ export function PipelinePageView({
             if (showUnassigned) {
               menuItems.push(
                 <MenuItem key="__unassigned__" onClick={() => handleMove('__unassigned__')}>
-                  <ListItemText primary="Unassigned" />
+                  <ListItemText primary={config.copy.opportunity.unassigned} />
                 </MenuItem>
               );
             }
