@@ -85,7 +85,7 @@ const InterviewDetailDto = z.object({
 
 export type InterviewDetail = Omit<
   ConversationDetail,
-  'messages' | 'latestEmailEvent' | 'opportunityId' | 'opportunityTitle'
+  'messages' | 'latestEmailEvent' | 'opportunityId' | 'opportunityTitle' | 'autoFollowupsEnabled'
 > & {
   messages: Array<{
     id: string;

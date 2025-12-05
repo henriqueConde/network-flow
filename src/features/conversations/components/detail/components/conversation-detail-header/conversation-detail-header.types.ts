@@ -8,5 +8,7 @@ export type ConversationDetailHeaderProps = {
   isOutOfSync: boolean;
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onBack: () => void;
+  autoFollowupsEnabled: boolean;
+  onToggleAutoFollowups: (enabled: boolean) => void;
 };
 

@@ -16,6 +16,8 @@ export function ErrorView({ error, isNotFound, config, onBack }: ErrorViewProps)
         isOutOfSync={false}
         config={config}
         onBack={onBack}
+        autoFollowupsEnabled={true}
+        onToggleAutoFollowups={() => {}}
       />
       <Alert severity={isNotFound ? 'info' : 'error'} sx={styles.errorContainer()}>
         {isNotFound ? 'Conversation not found' : error}

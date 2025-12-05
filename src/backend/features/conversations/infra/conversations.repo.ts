@@ -318,6 +318,11 @@ export function makeConversationsRepo() {
         return null;
       }
 
+      const autoFollowupsEnabled =
+        (conversation as any).autoFollowupsEnabled !== undefined
+          ? Boolean((conversation as any).autoFollowupsEnabled)
+          : true;
+
       return {
         id: conversation.id,
         contactId: conversation.contactId,
@@ -337,6 +342,7 @@ export function makeConversationsRepo() {
         summary: conversation.summary ?? null,
         notes: conversation.notes ?? null,
         originalUrl: conversation.originalUrl ?? null,
+        autoFollowupsEnabled,
         lastMessageAt: conversation.lastMessageAt,
         lastMessageSide: conversation.lastMessageSide as 'user' | 'contact' | null,
         messages: conversation.messages.map((msg) => ({
@@ -399,6 +405,7 @@ export function makeConversationsRepo() {
         priority?: 'low' | 'medium' | 'high' | null;
         notes?: string | null;
         originalUrl?: string | null;
+        autoFollowupsEnabled?: boolean;
       };
     }) {
       const { userId, conversationId, updates } = params;
@@ -469,6 +476,9 @@ export function makeConversationsRepo() {
       }
       if (updates.stageId !== undefined) {
         updateData.stageId = updates.stageId;
+      }
+      if (updates.autoFollowupsEnabled !== undefined) {
+        updateData.autoFollowupsEnabled = updates.autoFollowupsEnabled;
       }
       if (opportunityIdToLink !== null) {
         updateData.opportunityId = opportunityIdToLink;

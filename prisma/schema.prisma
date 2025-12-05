@@ -114,6 +114,7 @@ model Opportunity {
   priority        String?   // "low", "medium", "high", or null for closed
   summary         String?   // AI-generated summary of the overall opportunity
   notes           String?   // User's personal notes about the opportunity
+  autoFollowupsEnabled Boolean @default(true) @map("auto_followups_enabled")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -149,6 +150,7 @@ model Conversation {
   summary             String?   // AI-generated summary
   notes               String?   // User's personal notes
   originalUrl         String?   @map("original_url") // URL to the original conversation (e.g., LinkedIn)
+  autoFollowupsEnabled Boolean  @default(true) @map("auto_followups_enabled")
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 

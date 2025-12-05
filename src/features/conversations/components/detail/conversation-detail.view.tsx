@@ -24,6 +24,7 @@ export function ConversationDetailView({
   isEditingNotes,
   isSaving,
   onBack,
+  onToggleAutoFollowups,
   onChangeEditField,
   onSaveMetadata,
   onSaveNotes,
@@ -75,6 +76,8 @@ export function ConversationDetailView({
         isOutOfSync={conversation.isOutOfSync}
         config={config}
         onBack={onBack}
+        autoFollowupsEnabled={conversation.autoFollowupsEnabled}
+        onToggleAutoFollowups={onToggleAutoFollowups}
       />
 
       <ConversationDetailContent

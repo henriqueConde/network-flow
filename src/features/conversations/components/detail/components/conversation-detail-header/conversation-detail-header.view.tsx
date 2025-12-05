@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Typography, Button, Chip, Link } from '@mui/material';
+import { Box, Typography, Button, Chip, Link, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,8 @@ export function ConversationDetailHeader({
   isOutOfSync,
   config,
   onBack,
+  autoFollowupsEnabled,
+  onToggleAutoFollowups,
 }: ConversationDetailHeaderProps) {
   const router = useRouter();
 
@@ -51,7 +53,21 @@ export function ConversationDetailHeader({
             </Box>
           )}
         </Box>
-        {isOutOfSync && <Chip label="Out of sync" color="warning" variant="outlined" />}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Tooltip title={config.copy.autoFollowups.helper}>
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={autoFollowupsEnabled}
+                  onChange={(e) => onToggleAutoFollowups(e.target.checked)}
+                />
+              }
+              label={config.copy.autoFollowups.label}
+            />
+          </Tooltip>
+          {isOutOfSync && <Chip label="Out of sync" color="warning" variant="outlined" />}
+        </Box>
       </Box>
     </Box>
   );

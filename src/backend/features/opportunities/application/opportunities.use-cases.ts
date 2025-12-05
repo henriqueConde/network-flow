@@ -149,6 +149,7 @@ export async function updateOpportunity(input: {
   priority?: 'low' | 'medium' | 'high' | null;
   summary?: string | null;
   notes?: string | null;
+  autoFollowupsEnabled?: boolean;
 }) {
   const repo = makeOpportunitiesRepo();
 
@@ -163,6 +164,7 @@ export async function updateOpportunity(input: {
     priority: input.priority,
     summary: input.summary,
     notes: input.notes,
+    autoFollowupsEnabled: input.autoFollowupsEnabled,
   });
 
   if (!updated) {

@@ -55,6 +55,16 @@ export function ConversationDetailContainer() {
   } = useMessageActions(conversationOrNull, toggleMessageStatusMutation, deleteMessageMutation);
   const { handlePasteNewMessages } = usePasteMessages();
 
+  const handleToggleAutoFollowups = (enabled: boolean) => {
+    if (!conversationId || !conversation) return;
+    updateMutation.mutate({
+      id: conversationId,
+      payload: {
+        autoFollowupsEnabled: enabled,
+      },
+    });
+  };
+
   return (
     <>
     <ConversationDetailView
@@ -69,6 +79,7 @@ export function ConversationDetailContainer() {
       isEditingNotes={edit.isEditingNotes}
       isSaving={updateMutation.isPending}
       onBack={handleBack}
+      onToggleAutoFollowups={handleToggleAutoFollowups}
       onChangeEditField={editActions.handleFieldChange}
       onSaveMetadata={editActions.handleSaveMetadata}
       onSaveNotes={editActions.handleSaveNotes}

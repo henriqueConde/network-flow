@@ -10,6 +10,160 @@ import { env } from '@/backend/core/config/env';
 const MAX_MESSAGES_IN_CONTEXT = 40;
 
 /**
+ * Messaging playbook used as inspiration for suggested replies.
+ * The model should NOT copy these verbatim, but adapt the style and intent.
+ */
+const MESSAGING_PLAYBOOK = `
+Messaging playbook (use these as inspiration for "suggestedReply"):
+
+1) Initial outreach – Warm contact
+   Typical stages: "Not contacted", "First touch"
+   Relationship: friend, ex-colleague, previous recruiter, existing LinkedIn connection, etc.
+   Goal:
+   - Ask whether their team/company is hiring or expects to hire.
+   - If not, ask whether they can introduce you to someone who is.
+   Style:
+   - Short, warm, direct, clearly job-hunt focused.
+   Example vibe (DO NOT copy verbatim, just match the style):
+   - "Hey [Name], hope you're doing well! Quick question — is your team/company currently hiring [your role/stack]? If so, I'd love to throw my hat in the ring. If not, do you know any managers/recruiters I could reach out to?"
+
+2) Initial outreach – Cold contact
+   Typical stages: "Not contacted", "First touch"
+   Relationship: no prior connection or clear relationship.
+   Goal:
+   - Introduce yourself and your stack/level.
+   - Show a specific reason you're interested in their company.
+   - Optionally highlight any common ground (school, tech, country, community, etc.).
+   Style:
+   - Brief, respectful, specific, no vague "let's chat".
+   Example vibe:
+   - "Hey [Name], I noticed we both [common ground]. I'm a [level + stack] and I'm really interested in [Company], especially [specific thing]. I'd love to connect and learn if there are any opportunities that might fit my background."
+
+3) They replied – Move toward a concrete step
+   Typical stages: "Replied"
+   Relationship: they already answered or accepted connection.
+   Goal:
+   - Thank them for replying.
+   - Move toward a clear next step (referral, quick call, sending CV/portfolio, or clarifying fit).
+   Style:
+   - Appreciative, concise, concrete ask.
+   Example vibe:
+   - "Thanks so much for getting back to me! Based on what you shared, I'd be really interested in exploring roles on your team. Would you be open to a quick call, or would it make sense for me to send my CV/GitHub so you can see if there’s a potential fit?"
+
+4) Explicitly asking for a referral to a specific role
+   Typical stages: "Replied", "First touch" (if you’re very direct), "Not contacted" for strong cold outreach
+   Goal:
+   - Ask politely but clearly for a referral to a specific job posting.
+   - Include the link/title so it’s easy for them.
+   Style:
+   - Direct but respectful, low-friction for them.
+   Example vibe:
+   - "Thanks again for connecting! I've been following [Company] and saw this role that looks like a strong match: [role + link]. Would you feel comfortable referring me for this position? I'm happy to share my CV, LinkedIn and a short summary of why I think I’d be a good fit."
+
+5) Follow-up – Gentle bump after no response
+   Typical stages: "Replied" with no answer to last message, "Dormant"
+   Goal:
+   - Nudge them in case they missed the previous message.
+   Style:
+   - Very short, polite, acknowledges they may be busy.
+   Example vibe:
+   - "Hey [Name], just bumping this in case it got buried in your inbox. No rush at all — I’d really appreciate any pointer or intro if you have one."
+
+6) Final follow-up – Light-hearted last nudge
+   Typical stages: multiple follow-ups already, still no answer
+   Goal:
+   - One last attempt, then stop following up.
+   Style:
+   - Friendly, slightly playful if the overall thread is casual enough.
+   Example vibe:
+   - "Please don’t ghost me, man 🙂 A quick ‘yes’, ‘no’ or ‘later’ would really help me know where I stand."
+
+General rules:
+- Always be concise, warm, and professional.
+- Make the job-hunting intent clear instead of vague “let’s chat” messages.
+- Prefer a concrete next step: follow up, ask for referral, propose a quick call, send CV/portfolio, or ask a focused question.
+- Match the tone of the existing conversation (more formal vs more casual), but stay respectful.
+- Do NOT copy the example sentences word-for-word. Use them only as style and structure inspiration.
+`;
+
+/**
+ * Stage-specific hints derived from the conversation.
+ * This is used to tell the model which part of the playbook is most relevant.
+ */
+function getStagePlaybookSnippet(conversation: ConversationDetailDto): string {
+    const stage = (conversation.stageName || '').toLowerCase();
+    const category = (conversation.categoryName || '').toLowerCase();
+
+    // Heuristic for warm vs cold:
+    const hasMessages = (conversation.messages?.length ?? 0) > 0;
+    const looksWarm =
+        category.includes('warm') ||
+        category.includes('friend') ||
+        category.includes('recruiter') ||
+        category.includes('hiring manager') ||
+        hasMessages; // if there is already a thread, treat as at least semi-warm
+
+    if (!stage || stage === 'not contacted' || stage === 'first touch') {
+        if (looksWarm) {
+            return `
+For this conversation, treat it as an initial outreach to a WARM contact.
+Use the "Initial outreach – Warm contact" style from the messaging playbook:
+- Short, friendly, clear that you're exploring roles or referrals.
+- Ask if they/their team are hiring and, if not, whether they can introduce you to someone who is.`;
+        }
+
+        return `
+For this conversation, treat it as an initial outreach to a COLD contact.
+Use the "Initial outreach – Cold contact" style from the messaging playbook:
+- Introduce yourself and your stack/level.
+- Mention a specific reason you're interested in their company.
+- Highlight any obvious common ground if you see it in the conversation or context.`;
+    }
+
+    if (stage === 'replied') {
+        return `
+This conversation already has a reply from the contact.
+Use the "They replied – Move toward a concrete step" and "Explicitly asking for a referral" patterns from the messaging playbook:
+- Thank them for their response.
+- Suggest a concrete next step such as a referral, quick call, or sending your CV/portfolio.
+- Keep the ask specific and easy for them to act on.`;
+    }
+
+    if (stage === 'dormant' || stage === 'waiting' || stage === 'stalled') {
+        return `
+This conversation appears to be dormant or waiting on the other side.
+Use the "Follow-up – Gentle bump" pattern from the messaging playbook:
+- Send a short, polite nudge.
+- If there have already been several follow-ups, you may optionally use the light-hearted "Please don't ghost me, man" style if the tone of the thread is casual enough.`;
+    }
+
+    if (stage.includes('interview') || stage.includes('screening')) {
+        return `
+This conversation is in an interview/screening stage.
+Focus your "suggestedReply" on:
+- Confirming availability, logistics or next steps.
+- Thanking them for their time and reiterating interest.
+You can still draw on the playbook's concise, clear style, but adapt it to interview logistics rather than initial outreach.`;
+    }
+
+    if (stage.includes('offer') || stage.includes('closed')) {
+        return `
+This conversation looks close to or past an offer stage.
+For "suggestedReply", focus on:
+- Thanking them.
+- Clarifying details, next steps, or gracefully closing the loop.
+Keep it professional and appreciative.`;
+    }
+
+    // Default fallback
+    return `
+Use the messaging playbook for tone and structure:
+- Be concise, warm, and professional.
+- Choose the playbook pattern that best matches the current situation (initial outreach, reply, follow-up, referral ask, etc.).
+- Move the conversation one clear step forward in the opportunity pipeline.`;
+}
+
+/**
  * Creates the system message for the conversation analysis agent.
  * This provides context about the conversation, contact, category, and stage.
  */
@@ -33,6 +187,8 @@ function createSystemMessage(conversation: ConversationDetailDto): string {
         ? `Notes: ${conversation.notes}`
         : 'Notes: None';
 
+    const stageSnippet = getStagePlaybookSnippet(conversation);
+
     return `You are an AI assistant helping with networking and job-hunting conversations.
 
 You are analyzing a conversation with the following context:
@@ -45,6 +201,11 @@ ${stageInfo}
 Priority: ${conversation.priority}
 ${nextActionInfo}
 ${notesInfo}
+
+${MESSAGING_PLAYBOOK}
+
+Stage-specific messaging guidance for this conversation:
+${stageSnippet}
 
 Your overall goals:
 1. Understand the context and tone of the conversation.
@@ -159,7 +320,7 @@ export async function* analyzeConversation(
    - Mention whether the other side seems interested, lukewarm, or unresponsive if that can be inferred.
 
 2. "classification":
-   - "category": Suggested category label for this relationship or opportunity (e.g., "Recently funded startup", "Recruiter", "Hiring manager", "Cold outreach", "Warm outreach", "Speedster").
+   - "category": Suggested category label for this relationship or opportunity (e.g., "Recently funded startup", "Recruiter", "Hiring manager", "Cold outreach", "Warm outreach").
      - If an existing category was provided and still looks correct, you may reuse it.
    - "stage": Suggested stage in the funnel (e.g., "Not contacted", "First touch", "Replied", "Screening scheduled", "Interviewing", "Offer", "Dormant", "Closed (positive)", "Closed (negative)").
      - If an existing stage was provided and still looks correct, you may reuse it.
@@ -178,10 +339,13 @@ export async function* analyzeConversation(
      - Is appropriate for the suggested category and stage.
      - Acknowledges previous context if this is a follow-up.
      - Is clear about the user’s intent (e.g., exploring roles, discussing a specific opportunity, introducing themselves).
-   - Keep it actionable and easy to copy-paste into LinkedIn or email.
+   - When constructing "suggestedReply":
+     - Choose the most relevant messaging pattern from the "Messaging playbook" in the system message, based on the current stage and whether the contact appears warm or cold.
+     - Adapt the style and structure from the playbook examples, but do NOT copy any example sentence verbatim.
+     - Keep the message actionable and easy to copy-paste into LinkedIn or email.
    - Avoid over-promising and keep it honest and realistic.
 
-If there are no prior messages, treat this as an initial outreach and craft an appropriate first message.
+If there are no prior messages, treat this as an initial outreach and craft an appropriate first message, using the initial outreach patterns from the messaging playbook.
 
 JSON contract (VERY IMPORTANT):
 - You MUST output ONLY valid JSON.

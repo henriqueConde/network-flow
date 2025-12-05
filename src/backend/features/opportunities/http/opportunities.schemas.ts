@@ -114,6 +114,7 @@ export const opportunityDetailDto = z.object({
   priority: prioritySchema.nullable(),
   summary: z.string().nullable(),
   notes: z.string().nullable(),
+  autoFollowupsEnabled: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   conversations: z.array(conversationDetailDto),
@@ -158,6 +159,7 @@ export const updateOpportunityBody = z.object({
   priority: prioritySchema.optional(),
   summary: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  autoFollowupsEnabled: z.boolean().optional(),
 });
 
 export type UpdateOpportunityBody = z.infer<typeof updateOpportunityBody>;

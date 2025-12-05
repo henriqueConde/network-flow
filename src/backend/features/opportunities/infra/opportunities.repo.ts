@@ -125,6 +125,11 @@ export function makeOpportunitiesRepo() {
         }
       }
 
+      const autoFollowupsEnabled =
+        (opportunity as any).autoFollowupsEnabled !== undefined
+          ? Boolean((opportunity as any).autoFollowupsEnabled)
+          : true;
+
       return {
         id: opportunity.id,
         contactId: opportunity.contactId,
@@ -141,6 +146,7 @@ export function makeOpportunitiesRepo() {
         priority: opportunity.priority as 'low' | 'medium' | 'high' | null,
         summary: opportunity.summary ?? null,
         notes: opportunity.notes ?? null,
+        autoFollowupsEnabled,
         createdAt: opportunity.createdAt,
         updatedAt: opportunity.updatedAt,
         // Include all conversations for this opportunity (explicitly linked or same contact)
@@ -351,6 +357,7 @@ export function makeOpportunitiesRepo() {
       priority?: 'low' | 'medium' | 'high' | null;
       summary?: string | null;
       notes?: string | null;
+      autoFollowupsEnabled?: boolean;
     }) {
       const {
         userId,
@@ -363,6 +370,7 @@ export function makeOpportunitiesRepo() {
         priority,
         summary,
         notes,
+        autoFollowupsEnabled,
       } = params;
 
       // Verify the opportunity belongs to the user
@@ -387,6 +395,7 @@ export function makeOpportunitiesRepo() {
       if (priority !== undefined) updateData.priority = priority;
       if (summary !== undefined) updateData.summary = summary;
       if (notes !== undefined) updateData.notes = notes;
+      if (autoFollowupsEnabled !== undefined) updateData.autoFollowupsEnabled = autoFollowupsEnabled;
 
       return await prisma.opportunity.update({
         where: {

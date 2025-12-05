@@ -128,6 +128,7 @@ export const conversationDetailDto = z.object({
   lastMessageSide: messageSideSchema.nullable(),
   messages: z.array(messageDto),
   latestEmailEvent: linkedInEmailEventDto.nullable(),
+  autoFollowupsEnabled: z.boolean(),
 });
 
 export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
@@ -143,6 +144,7 @@ export const updateConversationBody = z.object({
   priority: prioritySchema.optional(),
   notes: z.string().nullable().optional(),
   originalUrl: z.string().url().nullable().optional(),
+  autoFollowupsEnabled: z.boolean().optional(),
 });
 
 export type UpdateConversationBody = z.infer<typeof updateConversationBody>;

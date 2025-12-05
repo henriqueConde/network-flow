@@ -27,6 +27,7 @@ export type ConversationDetailViewProps = {
   isSaving: boolean;
   // Callbacks
   onBack: () => void;
+  onToggleAutoFollowups: (enabled: boolean) => void;
   onChangeEditField: (
     field: keyof ConversationDetailViewProps['editValues'],
     value: string | null,

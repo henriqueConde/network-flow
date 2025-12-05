@@ -277,6 +277,11 @@ export function InterviewDetailView({
                   getSuggestions: 'Get AI Suggestions' as const,
                 },
               },
+              autoFollowups: {
+                label: 'Auto follow-ups' as const,
+                helper:
+                  'Automatically draft follow-up messages every 2 days (up to 3) when this opportunity is not moving forward.' as const,
+              },
             },
           }}
           onOpenAddReply={() => {}}
