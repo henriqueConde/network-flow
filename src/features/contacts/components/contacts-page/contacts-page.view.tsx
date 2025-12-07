@@ -23,6 +23,9 @@ export function ContactsPageView({
   categoryId,
   stageId,
   primaryPlatform,
+  warmOrCold,
+  connectionStatus,
+  contactType,
   sortBy,
   sortDir,
   availableCategories,
@@ -33,6 +36,9 @@ export function ContactsPageView({
   onCategoryChange,
   onStageChange,
   onPlatformChange,
+  onWarmOrColdChange,
+  onConnectionStatusChange,
+  onContactTypeChange,
   onPageChange,
   onSortChange,
   onRowClick,
@@ -74,6 +80,9 @@ export function ContactsPageView({
         categoryId={categoryId}
         stageId={stageId}
         primaryPlatform={primaryPlatform}
+        warmOrCold={warmOrCold}
+        connectionStatus={connectionStatus}
+        contactType={contactType}
         availableCategories={availableCategories}
         availableStages={availableStages}
         config={config}
@@ -82,6 +91,9 @@ export function ContactsPageView({
         onCategoryChange={onCategoryChange}
         onStageChange={onStageChange}
         onPlatformChange={onPlatformChange}
+        onWarmOrColdChange={onWarmOrColdChange}
+        onConnectionStatusChange={onConnectionStatusChange}
+        onContactTypeChange={onContactTypeChange}
       />
 
       {error && (

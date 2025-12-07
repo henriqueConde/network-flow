@@ -43,6 +43,7 @@ export function InterviewsListView({
         status={status}
         categoryId={categoryId}
         stageId={null}
+        emailStatus={null}
         availableCategories={availableCategories}
         availableStages={[]}
         config={{
@@ -70,6 +71,7 @@ export function InterviewsListView({
         onStatusChange={onStatusChange}
         onCategoryChange={onCategoryChange}
         onStageChange={() => {}}
+        onEmailStatusChange={() => {}}
       />
 
       {isLoading && (

@@ -1,17 +1,53 @@
 'use client';
 
-import { Box, Typography, Button, Card, CardContent, CircularProgress, Alert, Chip } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, Divider, Card, CardContent, Chip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import type { OpportunityDetail } from '../../services/opportunities.service';
 import { useMemo } from 'react';
+import { ProofOfWorkEditCard } from './components/proof-of-work-edit-card';
+import type { Category } from '@/features/categories';
+import type { Stage } from '@/features/stages';
 
 type OpportunityDetailViewProps = {
   opportunity: OpportunityDetail | null;
   isLoading: boolean;
   error: string | null;
+  availableCategories: Category[];
+  availableStages: Stage[];
+  editValues: {
+    title: string | null;
+    categoryId: string | null;
+    stageId: string | null;
+    nextActionType: string | null;
+    nextActionDueAt: string | null;
+    priority: 'low' | 'medium' | 'high' | null;
+    summary: string | null;
+    notes: string | null;
+    autoFollowupsEnabled: boolean;
+    strategyIds: string[];
+    proofOfWorkType: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null;
+    issuesFound: any;
+    projectDetails: string | null;
+    loomVideoUrl: string | null;
+    githubRepoUrl: string | null;
+    liveDemoUrl: string | null;
+    sharedChannels: string[];
+    teamResponses: any;
+  };
+  editErrors: Partial<Record<keyof OpportunityDetailViewProps['editValues'], string>>;
+  isEditing: boolean;
+  isSaving: boolean;
   onBack: () => void;
+  onStartEdit: () => void;
+  onChangeEditField: (
+    field: keyof OpportunityDetailViewProps['editValues'],
+    value: string | string[] | boolean | any | null,
+  ) => void;
+  onSave: () => void;
+  onCancel: () => void;
   onConversationClick: (conversationId: string) => void;
   onInterviewClick: (conversationId: string) => void;
   onOpenCreateConversation: () => void;
@@ -21,7 +57,17 @@ export function OpportunityDetailView({
   opportunity,
   isLoading,
   error,
+  availableCategories,
+  availableStages,
+  editValues,
+  editErrors,
+  isEditing,
+  isSaving,
   onBack,
+  onStartEdit,
+  onChangeEditField,
+  onSave,
+  onCancel,
   onConversationClick,
   onInterviewClick,
   onOpenCreateConversation,
@@ -78,17 +124,53 @@ export function OpportunityDetailView({
 
   return (
     <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={onBack}
-        sx={{ marginBottom: 2 }}
-      >
-        Back
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 2 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={onBack}
+        >
+          Back
+        </Button>
+        {!isEditing && (
+          <Button
+            startIcon={<EditIcon />}
+            variant="outlined"
+            onClick={onStartEdit}
+          >
+            Edit
+          </Button>
+        )}
+      </Box>
 
       <Typography variant="h4" gutterBottom>
         {opportunity.title || opportunity.contactName}
       </Typography>
+
+      {/* Proof-of-Work Section */}
+      <ProofOfWorkEditCard
+        opportunity={opportunity}
+        editValues={{
+          strategyIds: editValues.strategyIds,
+          proofOfWorkType: editValues.proofOfWorkType,
+          issuesFound: editValues.issuesFound,
+          projectDetails: editValues.projectDetails,
+          loomVideoUrl: editValues.loomVideoUrl,
+          githubRepoUrl: editValues.githubRepoUrl,
+          liveDemoUrl: editValues.liveDemoUrl,
+          sharedChannels: editValues.sharedChannels,
+          teamResponses: editValues.teamResponses,
+        }}
+        editErrors={editErrors}
+        isEditing={isEditing}
+        isSaving={isSaving}
+        availableCategories={availableCategories}
+        availableStages={availableStages}
+        onChangeEditField={onChangeEditField}
+        onSave={onSave}
+        onCancel={onCancel}
+      />
+
+      <Divider sx={{ my: 3 }} />
 
       {/* Interviews Section */}
       {interviews.length > 0 && (

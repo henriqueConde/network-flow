@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
       search: query.search,
       categoryId: query.categoryId,
       stageId: query.stageId,
+      proofOfWorkType: query.proofOfWorkType,
       page: query.page,
       pageSize: query.pageSize,
       sortBy: query.sortBy,

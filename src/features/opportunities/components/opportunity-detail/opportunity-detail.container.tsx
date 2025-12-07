@@ -2,7 +2,10 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useOpportunityDetail } from '../../services/opportunities.queries';
+import { useUpdateOpportunity } from '../../services/opportunities.mutations';
 import { OpportunityDetailView } from './opportunity-detail.view';
+import { useOpportunityEdit } from './hooks/use-opportunity-edit.state';
+import { useOpportunityEditActions } from './hooks/use-opportunity-edit-actions.state';
 import { useCreateConversation } from '@/features/conversations/services/conversations.mutations';
 import { useCreateConversationDialog } from '@/features/conversations/components/inbox/hooks/use-create-conversation-dialog.state';
 import { CreateConversationDialog } from '@/features/conversations/components/inbox/components/create-conversation-dialog';
@@ -13,6 +16,8 @@ import { useDebounce } from '@/shared/hooks';
 import { useContactsPagination } from '@/features/conversations/components/inbox/hooks/use-contacts-pagination.state';
 import { useContactOptions } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-contact-options.state';
 import { useAutocompleteScroll } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-autocomplete-scroll.state';
+import { useCategories } from '@/features/categories';
+import { useStages } from '@/features/stages';
 
 export function OpportunityDetailContainer() {
   const params = useParams();
@@ -20,6 +25,14 @@ export function OpportunityDetailContainer() {
   const opportunityId = params?.id as string;
 
   const { data: opportunity, isLoading, error } = useOpportunityDetail(opportunityId);
+  const { data: categories = [] } = useCategories();
+  const { data: stages = [] } = useStages();
+
+  // Edit state
+  const updateMutation = useUpdateOpportunity();
+  const opportunityOrNull = opportunity ?? null;
+  const edit = useOpportunityEdit(opportunityOrNull);
+  const editActions = useOpportunityEditActions(opportunityOrNull, edit, updateMutation);
 
   const createMutation = useCreateConversation();
 
@@ -133,7 +146,17 @@ export function OpportunityDetailContainer() {
         opportunity={opportunity ?? null}
         isLoading={isLoading}
         error={error ? 'Failed to load opportunity. Please try again.' : null}
+        availableCategories={categories}
+        availableStages={stages}
+        editValues={edit.values}
+        editErrors={edit.errors}
+        isEditing={edit.isEditing}
+        isSaving={updateMutation.isPending}
         onBack={handleBack}
+        onStartEdit={edit.startEditing}
+        onChangeEditField={editActions.handleFieldChange}
+        onSave={editActions.handleSave}
+        onCancel={editActions.handleCancel}
         onConversationClick={handleConversationClick}
         onInterviewClick={handleInterviewClick}
         onOpenCreateConversation={handleOpenCreateConversation}

@@ -6,6 +6,7 @@ export const listConversationsQuery = z.object({
   status: z.enum(['all', 'needs_attention', 'waiting_on_them']).optional().default('all'),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  emailStatus: z.enum(['no_reply', 'replied', 'call_scheduled', 'rejected', 'in_process']).optional(),
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
   sortBy: z
@@ -129,6 +130,17 @@ export const conversationDetailDto = z.object({
   messages: z.array(messageDto),
   latestEmailEvent: linkedInEmailEventDto.nullable(),
   autoFollowupsEnabled: z.boolean(),
+  strategyIds: z.array(z.string()),
+  responseReceived: z.boolean(),
+  responseReceivedAt: z.string().datetime().nullable(),
+  emailSentAt: z.string().datetime().nullable(),
+  loomVideoUrl: z.string().url().nullable(),
+  loomSent: z.boolean(),
+  emailFollowUpDates: z.array(z.string().datetime()),
+  emailStatus: z.enum(['no_reply', 'replied', 'call_scheduled', 'rejected', 'in_process']).nullable(),
+  followUp1Date: z.string().datetime().nullable(),
+  followUp2Date: z.string().datetime().nullable(),
+  followUp3Date: z.string().datetime().nullable(),
 });
 
 export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
@@ -145,6 +157,17 @@ export const updateConversationBody = z.object({
   notes: z.string().nullable().optional(),
   originalUrl: z.string().url().nullable().optional(),
   autoFollowupsEnabled: z.boolean().optional(),
+  strategyIds: z.array(z.string()).optional(),
+  responseReceived: z.boolean().optional(),
+  responseReceivedAt: z.string().datetime().nullable().optional(),
+  emailSentAt: z.string().datetime().nullable().optional(),
+  loomVideoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  loomSent: z.boolean().optional(),
+  emailFollowUpDates: z.array(z.string().datetime()).optional(),
+  emailStatus: z.enum(['no_reply', 'replied', 'call_scheduled', 'rejected', 'in_process']).nullable().optional(),
+  followUp1Date: z.string().datetime().nullable().optional(),
+  followUp2Date: z.string().datetime().nullable().optional(),
+  followUp3Date: z.string().datetime().nullable().optional(),
 });
 
 export type UpdateConversationBody = z.infer<typeof updateConversationBody>;

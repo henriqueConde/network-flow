@@ -10,6 +10,9 @@ export function ContactsFilters({
   categoryId,
   stageId,
   primaryPlatform,
+  warmOrCold,
+  connectionStatus,
+  contactType,
   availableCategories,
   availableStages,
   config,
@@ -18,6 +21,9 @@ export function ContactsFilters({
   onCategoryChange,
   onStageChange,
   onPlatformChange,
+  onWarmOrColdChange,
+  onConnectionStatusChange,
+  onContactTypeChange,
 }: ContactsFiltersProps) {
   return (
     <Box sx={styles.filtersRow()}>
@@ -78,6 +84,38 @@ export function ContactsFilters({
         <MenuItem value="email">Email</MenuItem>
         <MenuItem value="twitter">Twitter</MenuItem>
       </TextField>
+      <TextField
+        select
+        size="small"
+        label="Warm/Cold"
+        value={warmOrCold || ''}
+        onChange={(e) => onWarmOrColdChange((e.target.value as 'warm' | 'cold') || null)}
+        sx={{ minWidth: 150 }}
+      >
+        <MenuItem value="">All</MenuItem>
+        <MenuItem value="warm">Warm</MenuItem>
+        <MenuItem value="cold">Cold</MenuItem>
+      </TextField>
+      <TextField
+        select
+        size="small"
+        label="Connection Status"
+        value={connectionStatus || ''}
+        onChange={(e) => onConnectionStatusChange((e.target.value as 'not_connected' | 'request_sent' | 'connected') || null)}
+        sx={{ minWidth: 180 }}
+      >
+        <MenuItem value="">All</MenuItem>
+        <MenuItem value="not_connected">Not Connected</MenuItem>
+        <MenuItem value="request_sent">Request Sent</MenuItem>
+        <MenuItem value="connected">Connected</MenuItem>
+      </TextField>
+      <TextField
+        size="small"
+        placeholder="Filter by contact type"
+        value={contactType}
+        onChange={(e) => onContactTypeChange(e.target.value)}
+        sx={{ minWidth: 180 }}
+      />
     </Box>
   );
 }

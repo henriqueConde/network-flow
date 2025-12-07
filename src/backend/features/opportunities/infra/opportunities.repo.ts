@@ -147,6 +147,15 @@ export function makeOpportunitiesRepo() {
         summary: opportunity.summary ?? null,
         notes: opportunity.notes ?? null,
         autoFollowupsEnabled,
+        strategyIds: opportunity.strategyIds || [],
+        proofOfWorkType: opportunity.proofOfWorkType as 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null,
+        issuesFound: opportunity.issuesFound,
+        projectDetails: opportunity.projectDetails ?? null,
+        loomVideoUrl: opportunity.loomVideoUrl ?? null,
+        githubRepoUrl: opportunity.githubRepoUrl ?? null,
+        liveDemoUrl: opportunity.liveDemoUrl ?? null,
+        sharedChannels: opportunity.sharedChannels || [],
+        teamResponses: opportunity.teamResponses,
         createdAt: opportunity.createdAt,
         updatedAt: opportunity.updatedAt,
         // Include all conversations for this opportunity (explicitly linked or same contact)
@@ -200,6 +209,7 @@ export function makeOpportunitiesRepo() {
       search?: string;
       categoryId?: string;
       stageId?: string;
+      proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other';
       page: number;
       pageSize: number;
       sortBy: 'updatedAt' | 'nextActionDueAt' | 'priority';
@@ -210,6 +220,7 @@ export function makeOpportunitiesRepo() {
         search,
         categoryId,
         stageId,
+        proofOfWorkType,
         page,
         pageSize,
         sortBy,
@@ -253,6 +264,10 @@ export function makeOpportunitiesRepo() {
 
       if (stageId) {
         where.stageId = stageId;
+      }
+
+      if (proofOfWorkType) {
+        where.proofOfWorkType = proofOfWorkType;
       }
 
       const skip = (page - 1) * pageSize;
@@ -358,6 +373,15 @@ export function makeOpportunitiesRepo() {
       summary?: string | null;
       notes?: string | null;
       autoFollowupsEnabled?: boolean;
+      strategyIds?: string[];
+      proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null;
+      issuesFound?: any; // JSON field
+      projectDetails?: string | null;
+      loomVideoUrl?: string | null;
+      githubRepoUrl?: string | null;
+      liveDemoUrl?: string | null;
+      sharedChannels?: string[];
+      teamResponses?: any; // JSON field
     }) {
       const {
         userId,
@@ -371,6 +395,15 @@ export function makeOpportunitiesRepo() {
         summary,
         notes,
         autoFollowupsEnabled,
+        strategyIds,
+        proofOfWorkType,
+        issuesFound,
+        projectDetails,
+        loomVideoUrl,
+        githubRepoUrl,
+        liveDemoUrl,
+        sharedChannels,
+        teamResponses,
       } = params;
 
       // Verify the opportunity belongs to the user
@@ -396,6 +429,15 @@ export function makeOpportunitiesRepo() {
       if (summary !== undefined) updateData.summary = summary;
       if (notes !== undefined) updateData.notes = notes;
       if (autoFollowupsEnabled !== undefined) updateData.autoFollowupsEnabled = autoFollowupsEnabled;
+      if (strategyIds !== undefined) updateData.strategyIds = strategyIds;
+      if (proofOfWorkType !== undefined) updateData.proofOfWorkType = proofOfWorkType;
+      if (issuesFound !== undefined) updateData.issuesFound = issuesFound;
+      if (projectDetails !== undefined) updateData.projectDetails = projectDetails;
+      if (loomVideoUrl !== undefined) updateData.loomVideoUrl = loomVideoUrl || null;
+      if (githubRepoUrl !== undefined) updateData.githubRepoUrl = githubRepoUrl || null;
+      if (liveDemoUrl !== undefined) updateData.liveDemoUrl = liveDemoUrl || null;
+      if (sharedChannels !== undefined) updateData.sharedChannels = sharedChannels;
+      if (teamResponses !== undefined) updateData.teamResponses = teamResponses;
 
       return await prisma.opportunity.update({
         where: {

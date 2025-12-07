@@ -19,6 +19,7 @@ export function makeConversationsRepo() {
       status?: 'all' | 'needs_attention' | 'waiting_on_them';
       categoryId?: string;
       stageId?: string;
+      emailStatus?: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process';
       page: number;
       pageSize: number;
       sortBy: 'updatedAt' | 'lastMessageAt' | 'priority';
@@ -30,6 +31,7 @@ export function makeConversationsRepo() {
         status = 'all',
         categoryId,
         stageId,
+        emailStatus,
         page,
         pageSize,
         sortBy,
@@ -67,6 +69,10 @@ export function makeConversationsRepo() {
 
       if (stageId) {
         where.stageId = stageId;
+      }
+
+      if (emailStatus) {
+        where.emailStatus = emailStatus;
       }
 
       if (status === 'needs_attention') {
@@ -362,6 +368,17 @@ export function makeConversationsRepo() {
               emailReceivedAt: conversation.linkedInEmailEvents[0].emailReceivedAt,
             }
             : null,
+        strategyIds: conversation.strategyIds || [],
+        responseReceived: conversation.responseReceived,
+        responseReceivedAt: conversation.responseReceivedAt,
+        emailSentAt: conversation.emailSentAt,
+        loomVideoUrl: conversation.loomVideoUrl,
+        loomSent: conversation.loomSent,
+        emailFollowUpDates: conversation.emailFollowUpDates || [],
+        emailStatus: conversation.emailStatus as 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null,
+        followUp1Date: conversation.followUp1Date,
+        followUp2Date: conversation.followUp2Date,
+        followUp3Date: conversation.followUp3Date,
       };
     },
 
@@ -406,6 +423,17 @@ export function makeConversationsRepo() {
         notes?: string | null;
         originalUrl?: string | null;
         autoFollowupsEnabled?: boolean;
+        strategyIds?: string[];
+        responseReceived?: boolean;
+        responseReceivedAt?: Date | null;
+        emailSentAt?: Date | null;
+        loomVideoUrl?: string | null;
+        loomSent?: boolean;
+        emailFollowUpDates?: Date[];
+        emailStatus?: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+        followUp1Date?: Date | null;
+        followUp2Date?: Date | null;
+        followUp3Date?: Date | null;
       };
     }) {
       const { userId, conversationId, updates } = params;
@@ -497,6 +525,39 @@ export function makeConversationsRepo() {
       }
       if (updates.originalUrl !== undefined) {
         updateData.originalUrl = updates.originalUrl;
+      }
+      if (updates.strategyIds !== undefined) {
+        updateData.strategyIds = updates.strategyIds;
+      }
+      if (updates.responseReceived !== undefined) {
+        updateData.responseReceived = updates.responseReceived;
+      }
+      if (updates.responseReceivedAt !== undefined) {
+        updateData.responseReceivedAt = updates.responseReceivedAt;
+      }
+      if (updates.emailSentAt !== undefined) {
+        updateData.emailSentAt = updates.emailSentAt;
+      }
+      if (updates.loomVideoUrl !== undefined) {
+        updateData.loomVideoUrl = updates.loomVideoUrl;
+      }
+      if (updates.loomSent !== undefined) {
+        updateData.loomSent = updates.loomSent;
+      }
+      if (updates.emailFollowUpDates !== undefined) {
+        updateData.emailFollowUpDates = updates.emailFollowUpDates;
+      }
+      if (updates.emailStatus !== undefined) {
+        updateData.emailStatus = updates.emailStatus;
+      }
+      if (updates.followUp1Date !== undefined) {
+        updateData.followUp1Date = updates.followUp1Date;
+      }
+      if (updates.followUp2Date !== undefined) {
+        updateData.followUp2Date = updates.followUp2Date;
+      }
+      if (updates.followUp3Date !== undefined) {
+        updateData.followUp3Date = updates.followUp3Date;
       }
 
       // If moving to a closed stage, set priority and next action to null

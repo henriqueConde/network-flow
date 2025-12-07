@@ -11,6 +11,7 @@ export function useConversationsInbox(params: {
   status?: 'all' | 'needs_attention' | 'waiting_on_them';
   categoryId?: string;
   stageId?: string;
+  emailStatus?: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process';
   page: number;
   pageSize: number;
   sortBy: 'updatedAt' | 'lastMessageAt' | 'priority';

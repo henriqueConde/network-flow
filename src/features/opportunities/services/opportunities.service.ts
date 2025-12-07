@@ -93,6 +93,16 @@ const OpportunityDetailDto = z.object({
   priority: prioritySchema.nullable(),
   summary: z.string().nullable(),
   notes: z.string().nullable(),
+  autoFollowupsEnabled: z.boolean(),
+  strategyIds: z.array(z.string()),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable(),
+  issuesFound: z.any().nullable(), // JSON field - array of { issue, screenshot?, notes? }
+  projectDetails: z.string().nullable(),
+  loomVideoUrl: z.string().url().nullable(),
+  githubRepoUrl: z.string().url().nullable(),
+  liveDemoUrl: z.string().url().nullable(),
+  sharedChannels: z.array(z.string()),
+  teamResponses: z.any().nullable(), // JSON field - array of { name, response, date }
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   conversations: z.array(ConversationDetailDto),
@@ -167,6 +177,16 @@ export const UpdateOpportunityPayload = z.object({
   priority: prioritySchema.optional(),
   summary: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  autoFollowupsEnabled: z.boolean().optional(),
+  strategyIds: z.array(z.string()).optional(),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable().optional(),
+  issuesFound: z.any().optional(), // JSON field
+  projectDetails: z.string().nullable().optional(),
+  loomVideoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  githubRepoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  liveDemoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  sharedChannels: z.array(z.string()).optional(),
+  teamResponses: z.any().optional(), // JSON field
 });
 
 export type UpdateOpportunityPayload = z.infer<typeof UpdateOpportunityPayload>;
@@ -178,6 +198,7 @@ export async function listOpportunities(params: {
   search?: string;
   categoryId?: string;
   stageId?: string;
+  proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other';
   page: number;
   pageSize: number;
   sortBy: 'updatedAt' | 'nextActionDueAt' | 'priority';

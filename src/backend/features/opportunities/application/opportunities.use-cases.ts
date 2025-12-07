@@ -25,6 +25,15 @@ export async function getOpportunityById(input: {
       : null,
     createdAt: opportunity.createdAt.toISOString(),
     updatedAt: opportunity.updatedAt.toISOString(),
+    strategyIds: opportunity.strategyIds || [],
+    proofOfWorkType: opportunity.proofOfWorkType as 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null,
+    issuesFound: opportunity.issuesFound,
+    projectDetails: opportunity.projectDetails,
+    loomVideoUrl: opportunity.loomVideoUrl,
+    githubRepoUrl: opportunity.githubRepoUrl,
+    liveDemoUrl: opportunity.liveDemoUrl,
+    sharedChannels: opportunity.sharedChannels || [],
+    teamResponses: opportunity.teamResponses,
     conversations: opportunity.conversations.map((conv) => ({
       id: conv.id,
       // Contact info for each conversation card in opportunity detail
@@ -69,6 +78,7 @@ export async function listOpportunities(input: {
   search?: string;
   categoryId?: string;
   stageId?: string;
+  proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other';
   page?: number;
   pageSize?: number;
   sortBy?: 'updatedAt' | 'nextActionDueAt' | 'priority';
@@ -80,6 +90,7 @@ export async function listOpportunities(input: {
     search: input.search,
     categoryId: input.categoryId,
     stageId: input.stageId,
+    proofOfWorkType: input.proofOfWorkType,
     page: input.page ?? 1,
     pageSize: input.pageSize ?? 20,
     sortBy: input.sortBy ?? 'updatedAt',
@@ -150,6 +161,15 @@ export async function updateOpportunity(input: {
   summary?: string | null;
   notes?: string | null;
   autoFollowupsEnabled?: boolean;
+  strategyIds?: string[];
+  proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null;
+  issuesFound?: any;
+  projectDetails?: string | null;
+  loomVideoUrl?: string | null;
+  githubRepoUrl?: string | null;
+  liveDemoUrl?: string | null;
+  sharedChannels?: string[];
+  teamResponses?: any;
 }) {
   const repo = makeOpportunitiesRepo();
 
@@ -165,6 +185,15 @@ export async function updateOpportunity(input: {
     summary: input.summary,
     notes: input.notes,
     autoFollowupsEnabled: input.autoFollowupsEnabled,
+    strategyIds: input.strategyIds,
+    proofOfWorkType: input.proofOfWorkType,
+    issuesFound: input.issuesFound,
+    projectDetails: input.projectDetails,
+    loomVideoUrl: input.loomVideoUrl === '' ? null : input.loomVideoUrl,
+    githubRepoUrl: input.githubRepoUrl === '' ? null : input.githubRepoUrl,
+    liveDemoUrl: input.liveDemoUrl === '' ? null : input.liveDemoUrl,
+    sharedChannels: input.sharedChannels,
+    teamResponses: input.teamResponses,
   });
 
   if (!updated) {

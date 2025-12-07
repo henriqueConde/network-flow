@@ -31,6 +31,9 @@ export type { AiAssistantCardProps } from './ai-assistant-card';
 export { NotesCard } from './notes-card';
 export type { NotesCardProps } from './notes-card';
 
+export { EmailTrackingCard } from './email-tracking-card';
+export type { EmailTrackingCardProps } from './email-tracking-card';
+
 // Banner components
 export { OutOfSyncBanner } from './out-of-sync-banner';
 export type { OutOfSyncBannerProps } from './out-of-sync-banner';

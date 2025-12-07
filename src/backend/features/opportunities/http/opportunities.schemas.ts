@@ -8,6 +8,7 @@ export const listOpportunitiesQuery = z.object({
   search: z.string().trim().optional(),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).optional(),
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
   sortBy: z
@@ -115,6 +116,15 @@ export const opportunityDetailDto = z.object({
   summary: z.string().nullable(),
   notes: z.string().nullable(),
   autoFollowupsEnabled: z.boolean(),
+  strategyIds: z.array(z.string()),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable(),
+  issuesFound: z.any().nullable(), // JSON field - array of { issue, screenshot?, notes? }
+  projectDetails: z.string().nullable(),
+  loomVideoUrl: z.string().url().nullable(),
+  githubRepoUrl: z.string().url().nullable(),
+  liveDemoUrl: z.string().url().nullable(),
+  sharedChannels: z.array(z.string()),
+  teamResponses: z.any().nullable(), // JSON field - array of { name, response, date }
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   conversations: z.array(conversationDetailDto),
@@ -160,6 +170,15 @@ export const updateOpportunityBody = z.object({
   summary: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   autoFollowupsEnabled: z.boolean().optional(),
+  strategyIds: z.array(z.string()).optional(),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable().optional(),
+  issuesFound: z.any().optional(), // JSON field
+  projectDetails: z.string().nullable().optional(),
+  loomVideoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  githubRepoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  liveDemoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  sharedChannels: z.array(z.string()).optional(),
+  teamResponses: z.any().optional(), // JSON field
 });
 
 export type UpdateOpportunityBody = z.infer<typeof updateOpportunityBody>;

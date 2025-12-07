@@ -27,6 +27,7 @@ export function ConversationsInboxContainer() {
     status,
     categoryId,
     stageId,
+    emailStatus,
     page,
     pageSize,
     sortBy,
@@ -35,6 +36,7 @@ export function ConversationsInboxContainer() {
     handleStatusChange,
     handleCategoryChange,
     handleStageChange,
+    handleEmailStatusChange,
     handlePageChange,
     handleSortChange,
   } = useConversationsFilters();
@@ -143,6 +145,7 @@ export function ConversationsInboxContainer() {
     status,
     categoryId: categoryId || undefined,
     stageId: stageId || undefined,
+    emailStatus: emailStatus || undefined,
     page,
     pageSize,
     sortBy,
@@ -173,10 +176,12 @@ export function ConversationsInboxContainer() {
       onStatusChange={handleStatusChange}
       categoryId={categoryId}
       stageId={stageId}
+      emailStatus={emailStatus}
       availableCategories={categories}
       availableStages={stages}
       onCategoryChange={handleCategoryChange}
       onStageChange={handleStageChange}
+      onEmailStatusChange={handleEmailStatusChange}
       onPageChange={handlePageChange}
       onSortChange={handleSortChange}
       onRowClick={handleRowClick}

@@ -84,6 +84,16 @@ export async function PATCH(
       priority: body.priority,
       summary: body.summary,
       notes: body.notes,
+      autoFollowupsEnabled: body.autoFollowupsEnabled,
+      strategyIds: body.strategyIds,
+      proofOfWorkType: body.proofOfWorkType,
+      issuesFound: body.issuesFound,
+      projectDetails: body.projectDetails,
+      loomVideoUrl: body.loomVideoUrl,
+      githubRepoUrl: body.githubRepoUrl,
+      liveDemoUrl: body.liveDemoUrl,
+      sharedChannels: body.sharedChannels,
+      teamResponses: body.teamResponses,
     });
 
     if (!result) {

@@ -12,6 +12,9 @@ export function useContactsList(params: {
   categoryId?: string;
   stageId?: string;
   primaryPlatform?: string;
+  warmOrCold?: 'warm' | 'cold';
+  connectionStatus?: 'not_connected' | 'request_sent' | 'connected';
+  contactType?: string;
   page: number;
   pageSize: number;
   sortBy: 'name' | 'company' | 'updatedAt' | 'createdAt';

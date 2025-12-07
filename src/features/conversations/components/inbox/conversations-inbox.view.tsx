@@ -22,6 +22,7 @@ export function ConversationsInboxView({
   status,
   categoryId,
   stageId,
+  emailStatus,
   availableCategories,
   availableStages,
   config,
@@ -29,6 +30,7 @@ export function ConversationsInboxView({
   onStatusChange,
   onCategoryChange,
   onStageChange,
+  onEmailStatusChange,
   onPageChange,
   onSortChange,
   onRowClick,
@@ -71,6 +73,7 @@ export function ConversationsInboxView({
         status={status}
         categoryId={categoryId}
         stageId={stageId}
+        emailStatus={emailStatus}
         availableCategories={availableCategories}
         availableStages={availableStages}
         config={config}
@@ -78,6 +81,7 @@ export function ConversationsInboxView({
         onStatusChange={onStatusChange}
         onCategoryChange={onCategoryChange}
         onStageChange={onStageChange}
+        onEmailStatusChange={onEmailStatusChange}
       />
 
       {isLoading && (

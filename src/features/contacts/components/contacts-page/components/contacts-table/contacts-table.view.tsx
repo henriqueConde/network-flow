@@ -103,6 +103,8 @@ export function ContactsTable({
                   <TableCell>{config.copy.table.platform}</TableCell>
                   <TableCell sx={{ borderRight: 'none' }}>{config.copy.table.stage}</TableCell>
                   <TableCell sx={{ borderLeft: 'none', paddingLeft: 1 }}>{config.copy.table.category}</TableCell>
+                  <TableCell>Warm/Cold</TableCell>
+                  <TableCell>Connection</TableCell>
                   <TableCell>
                     <TableSortLabel
                       active={sortBy === 'updatedAt'}
@@ -163,6 +165,34 @@ export function ContactsTable({
                           '—'
                         );
                       })()}
+                    </TableCell>
+                    <TableCell>
+                      {contact.warmOrCold ? (
+                        <Chip 
+                          label={contact.warmOrCold.charAt(0).toUpperCase() + contact.warmOrCold.slice(1)} 
+                          size="small" 
+                          sx={styles.chip()}
+                          color={contact.warmOrCold === 'warm' ? 'success' : 'default'}
+                        />
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {contact.connectionStatus ? (
+                        <Chip 
+                          label={contact.connectionStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} 
+                          size="small" 
+                          sx={styles.chip()}
+                          color={
+                            contact.connectionStatus === 'connected' ? 'success' :
+                            contact.connectionStatus === 'request_sent' ? 'warning' :
+                            'default'
+                          }
+                        />
+                      ) : (
+                        '—'
+                      )}
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">

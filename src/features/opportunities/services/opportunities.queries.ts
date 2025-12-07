@@ -9,6 +9,7 @@ export function useOpportunitiesList(params: {
   search?: string;
   categoryId?: string;
   stageId?: string;
+  proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other';
   page: number;
   pageSize: number;
   sortBy: 'updatedAt' | 'nextActionDueAt' | 'priority';

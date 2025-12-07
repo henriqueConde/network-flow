@@ -9,6 +9,7 @@ export function ConversationsInboxFilters({
   status,
   categoryId,
   stageId,
+  emailStatus,
   availableCategories,
   availableStages,
   config,
@@ -16,6 +17,7 @@ export function ConversationsInboxFilters({
   onStatusChange,
   onCategoryChange,
   onStageChange,
+  onEmailStatusChange,
 }: ConversationsInboxFiltersProps) {
   return (
     <Box sx={styles.filtersRow()}>
@@ -75,6 +77,21 @@ export function ConversationsInboxFilters({
           {config.copy.statusFilter.waiting_on_them}
         </ToggleButton>
       </ToggleButtonGroup>
+      <TextField
+        select
+        size="small"
+        label="Email Status"
+        value={emailStatus || ''}
+        onChange={(e) => onEmailStatusChange((e.target.value as 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process') || null)}
+        sx={{ minWidth: 180 }}
+      >
+        <MenuItem value="">All</MenuItem>
+        <MenuItem value="no_reply">No Reply</MenuItem>
+        <MenuItem value="replied">Replied</MenuItem>
+        <MenuItem value="call_scheduled">Call Scheduled</MenuItem>
+        <MenuItem value="rejected">Rejected</MenuItem>
+        <MenuItem value="in_process">In Process</MenuItem>
+      </TextField>
     </Box>
   );
 }

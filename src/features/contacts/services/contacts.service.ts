@@ -20,11 +20,17 @@ const ContactListItemDto = z.object({
   name: z.string(),
   headlineOrRole: z.string().nullable(),
   company: z.string().nullable(),
+  companyId: z.string().nullable(),
   primaryPlatform: z.string().nullable(),
   profileLinks: z.record(z.string()).nullable(),
   tags: z.array(z.string()),
   categoryId: z.string().nullable(),
   stageId: z.string().nullable(),
+  email: z.string().nullable(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  connectionStatus: z.enum(['not_connected', 'request_sent', 'connected']).nullable(),
+  contactType: z.string().nullable(),
+  strategyIds: z.array(z.string()),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   latestConversation: ContactLatestConversationDto.nullable(),
@@ -75,30 +81,31 @@ const ContactDetailDto = z.object({
   name: z.string(),
   headlineOrRole: z.string().nullable(),
   company: z.string().nullable(),
+  companyId: z.string().nullable(),
   primaryPlatform: z.string().nullable(),
   profileLinks: z.record(z.string()).nullable(),
   tags: z.array(z.string()),
   categoryId: z.string().nullable(),
   stageId: z.string().nullable(),
+  email: z.string().nullable(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  commonGround: z.string().nullable(),
+  firstMessageDate: z.string().datetime().nullable(),
+  referralGiven: z.boolean(),
+  referralGivenAt: z.string().datetime().nullable(),
+  referralDetails: z.string().nullable(),
+  connectionRequestSentAt: z.string().datetime().nullable(),
+  connectionAcceptedAt: z.string().datetime().nullable(),
+  connectionStatus: z.enum(['not_connected', 'request_sent', 'connected']).nullable(),
+  dmSentAt: z.string().datetime().nullable(),
+  lastFollowUpAt: z.string().datetime().nullable(),
+  contactType: z.string().nullable(),
+  strategyIds: z.array(z.string()),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   conversations: z.array(ContactConversationSummaryDto),
 });
 
-export type ContactDetail = Omit<z.infer<typeof ContactDetailDto>, 'conversations' | 'createdAt' | 'updatedAt'> & {
-  createdAtDate: Date;
-  updatedAtDate: Date;
-  conversations: Array<{
-    id: string;
-    channel: string;
-    categoryName: string | null;
-    stageName: string | null;
-    lastMessageAtDate: Date | null;
-    lastMessageSnippet: string | null;
-    priority: 'low' | 'medium' | 'high';
-    isOutOfSync: boolean;
-  }>;
-};
 
 /**
  * Create contact payload.
@@ -107,11 +114,26 @@ const CreateContactBody = z.object({
   name: z.string().min(1),
   headlineOrRole: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
+  companyId: z.string().uuid().nullable().optional(),
   primaryPlatform: z.string().nullable().optional(),
   profileLinks: z.record(z.string()).nullable().optional(),
   tags: z.array(z.string()).optional(),
-  categoryId: z.string().nullable().optional(),
-  stageId: z.string().nullable().optional(),
+  categoryId: z.string().uuid().nullable().optional(),
+  stageId: z.string().uuid().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable().optional(),
+  commonGround: z.string().nullable().optional(),
+  firstMessageDate: z.string().datetime().nullable().optional(),
+  referralGiven: z.boolean().optional(),
+  referralGivenAt: z.string().datetime().nullable().optional(),
+  referralDetails: z.string().nullable().optional(),
+  connectionRequestSentAt: z.string().datetime().nullable().optional(),
+  connectionAcceptedAt: z.string().datetime().nullable().optional(),
+  connectionStatus: z.enum(['not_connected', 'request_sent', 'connected']).nullable().optional(),
+  dmSentAt: z.string().datetime().nullable().optional(),
+  lastFollowUpAt: z.string().datetime().nullable().optional(),
+  contactType: z.string().nullable().optional(),
+  strategyIds: z.array(z.string()).optional(),
 });
 
 export type CreateContactPayload = z.infer<typeof CreateContactBody>;
@@ -123,11 +145,26 @@ const UpdateContactBody = z.object({
   name: z.string().min(1).optional(),
   headlineOrRole: z.string().nullable().optional(),
   company: z.string().nullable().optional(),
+  companyId: z.string().uuid().nullable().optional(),
   primaryPlatform: z.string().nullable().optional(),
   profileLinks: z.record(z.string()).nullable().optional(),
   tags: z.array(z.string()).optional(),
-  categoryId: z.string().nullable().optional(),
-  stageId: z.string().nullable().optional(),
+  categoryId: z.string().uuid().nullable().optional(),
+  stageId: z.string().uuid().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable().optional(),
+  commonGround: z.string().nullable().optional(),
+  firstMessageDate: z.string().datetime().nullable().optional(),
+  referralGiven: z.boolean().optional(),
+  referralGivenAt: z.string().datetime().nullable().optional(),
+  referralDetails: z.string().nullable().optional(),
+  connectionRequestSentAt: z.string().datetime().nullable().optional(),
+  connectionAcceptedAt: z.string().datetime().nullable().optional(),
+  connectionStatus: z.enum(['not_connected', 'request_sent', 'connected']).nullable().optional(),
+  dmSentAt: z.string().datetime().nullable().optional(),
+  lastFollowUpAt: z.string().datetime().nullable().optional(),
+  contactType: z.string().nullable().optional(),
+  strategyIds: z.array(z.string()).optional(),
 });
 
 export type UpdateContactPayload = z.infer<typeof UpdateContactBody>;
@@ -141,6 +178,9 @@ export async function listContacts(params: {
   categoryId?: string;
   stageId?: string;
   primaryPlatform?: string;
+  warmOrCold?: 'warm' | 'cold';
+  connectionStatus?: 'not_connected' | 'request_sent' | 'connected';
+  contactType?: string;
   page: number;
   pageSize: number;
   sortBy: 'name' | 'company' | 'updatedAt' | 'createdAt';
@@ -175,6 +215,27 @@ export async function listContacts(params: {
   };
 }
 
+export type ContactDetail = Omit<z.infer<typeof ContactDetailDto>, 'conversations' | 'createdAt' | 'updatedAt' | 'firstMessageDate' | 'referralGivenAt' | 'connectionRequestSentAt' | 'connectionAcceptedAt' | 'dmSentAt' | 'lastFollowUpAt'> & {
+  createdAtDate: Date;
+  updatedAtDate: Date;
+  firstMessageDateDate: Date | null;
+  referralGivenAtDate: Date | null;
+  connectionRequestSentAtDate: Date | null;
+  connectionAcceptedAtDate: Date | null;
+  dmSentAtDate: Date | null;
+  lastFollowUpAtDate: Date | null;
+  conversations: Array<{
+    id: string;
+    channel: string;
+    categoryName: string | null;
+    stageName: string | null;
+    lastMessageAtDate: Date | null;
+    lastMessageSnippet: string | null;
+    priority: 'low' | 'medium' | 'high';
+    isOutOfSync: boolean;
+  }>;
+};
+
 /**
  * Fetch a single contact by ID with full detail.
  */
@@ -186,6 +247,12 @@ export async function getContactDetail(id: string): Promise<ContactDetail> {
     ...data,
     createdAtDate: new Date(data.createdAt),
     updatedAtDate: new Date(data.updatedAt),
+    firstMessageDateDate: data.firstMessageDate ? new Date(data.firstMessageDate) : null,
+    referralGivenAtDate: data.referralGivenAt ? new Date(data.referralGivenAt) : null,
+    connectionRequestSentAtDate: data.connectionRequestSentAt ? new Date(data.connectionRequestSentAt) : null,
+    connectionAcceptedAtDate: data.connectionAcceptedAt ? new Date(data.connectionAcceptedAt) : null,
+    dmSentAtDate: data.dmSentAt ? new Date(data.dmSentAt) : null,
+    lastFollowUpAtDate: data.lastFollowUpAt ? new Date(data.lastFollowUpAt) : null,
     conversations: data.conversations.map((conv) => ({
       ...conv,
       lastMessageAtDate: conv.lastMessageAt ? new Date(conv.lastMessageAt) : null,
@@ -217,6 +284,12 @@ export async function updateContact(
     ...data,
     createdAtDate: new Date(data.createdAt),
     updatedAtDate: new Date(data.updatedAt),
+    firstMessageDateDate: data.firstMessageDate ? new Date(data.firstMessageDate) : null,
+    referralGivenAtDate: data.referralGivenAt ? new Date(data.referralGivenAt) : null,
+    connectionRequestSentAtDate: data.connectionRequestSentAt ? new Date(data.connectionRequestSentAt) : null,
+    connectionAcceptedAtDate: data.connectionAcceptedAt ? new Date(data.connectionAcceptedAt) : null,
+    dmSentAtDate: data.dmSentAt ? new Date(data.dmSentAt) : null,
+    lastFollowUpAtDate: data.lastFollowUpAt ? new Date(data.lastFollowUpAt) : null,
     conversations: data.conversations.map((conv) => ({
       ...conv,
       lastMessageAtDate: conv.lastMessageAt ? new Date(conv.lastMessageAt) : null,

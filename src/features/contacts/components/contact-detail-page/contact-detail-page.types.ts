@@ -18,6 +18,7 @@ export type ContactDetailViewProps = {
     headlineOrRole: string | null;
     position: string | null;
     company: string | null;
+    companyId: string | null;
     email: string | null;
     linkedinUrl: string | null;
     connectedOn: string | null;
@@ -25,6 +26,19 @@ export type ContactDetailViewProps = {
     tags: string[];
     categoryId: string | null;
     stageId: string | null;
+    warmOrCold: 'warm' | 'cold' | null;
+    commonGround: string | null;
+    firstMessageDate: string | null;
+    referralGiven: boolean;
+    referralGivenAt: string | null;
+    referralDetails: string | null;
+    connectionRequestSentAt: string | null;
+    connectionAcceptedAt: string | null;
+    connectionStatus: 'not_connected' | 'request_sent' | 'connected' | null;
+    dmSentAt: string | null;
+    lastFollowUpAt: string | null;
+    contactType: string | null;
+    strategyIds: string[];
   };
   editErrors: Partial<Record<keyof ContactDetailViewProps['editValues'], string>>;
   isEditing: boolean;
@@ -34,7 +48,7 @@ export type ContactDetailViewProps = {
   onStartEdit: () => void;
   onChangeEditField: (
     field: keyof ContactDetailViewProps['editValues'],
-    value: string | string[] | null,
+    value: string | string[] | boolean | null,
   ) => void;
   onSave: () => void;
   onCancel: () => void;

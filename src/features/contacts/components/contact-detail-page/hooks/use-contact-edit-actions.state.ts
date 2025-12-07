@@ -39,7 +39,7 @@ export function useContactEditActions(
 
     const handleFieldChange = (
         field: keyof typeof edit.values,
-        value: string | string[] | null,
+        value: string | string[] | boolean | null,
     ) => {
         edit.changeField(field, value);
     };

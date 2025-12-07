@@ -10,6 +10,9 @@ export function useContactsFilters() {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [stageId, setStageId] = useState<string | null>(null);
   const [primaryPlatform, setPrimaryPlatform] = useState<string | null>(null);
+  const [warmOrCold, setWarmOrCold] = useState<'warm' | 'cold' | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'not_connected' | 'request_sent' | 'connected' | null>(null);
+  const [contactType, setContactType] = useState<string>('');
 
   const {
     search,
@@ -52,6 +55,21 @@ export function useContactsFilters() {
     setPage(1);
   };
 
+  const handleWarmOrColdChange = (value: 'warm' | 'cold' | null) => {
+    setWarmOrCold(value);
+    setPage(1);
+  };
+
+  const handleConnectionStatusChange = (value: 'not_connected' | 'request_sent' | 'connected' | null) => {
+    setConnectionStatus(value);
+    setPage(1);
+  };
+
+  const handleContactTypeChange = (value: string) => {
+    setContactType(value);
+    setPage(1);
+  };
+
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
   };
@@ -69,6 +87,9 @@ export function useContactsFilters() {
     categoryId,
     stageId,
     primaryPlatform,
+    warmOrCold,
+    connectionStatus,
+    contactType,
     page,
     pageSize,
     sortBy,
@@ -78,6 +99,9 @@ export function useContactsFilters() {
     handleCategoryChange,
     handleStageChange,
     handlePlatformChange,
+    handleWarmOrColdChange,
+    handleConnectionStatusChange,
+    handleContactTypeChange,
     handlePageChange,
     handleSortChange,
   };

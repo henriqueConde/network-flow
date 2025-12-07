@@ -23,6 +23,9 @@ export function ContactsPageContainer() {
     categoryId,
     stageId,
     primaryPlatform,
+    warmOrCold,
+    connectionStatus,
+    contactType,
     page,
     pageSize,
     sortBy,
@@ -32,6 +35,9 @@ export function ContactsPageContainer() {
     handleCategoryChange,
     handleStageChange,
     handlePlatformChange,
+    handleWarmOrColdChange,
+    handleConnectionStatusChange,
+    handleContactTypeChange,
     handlePageChange,
     handleSortChange,
   } = useContactsFilters();
@@ -46,32 +52,54 @@ export function ContactsPageContainer() {
 
   // Create/Edit dialog
   const contactDialog = useContactDialog(async (values, editingContact) => {
+    // Helper to convert empty strings to null for optional fields
+    const toNullIfEmpty = (val: string | null | undefined) => (val === '' ? null : val);
+    const toNullIfEmptyDate = (val: string | null | undefined) => {
+      if (!val || val === '') return null;
+      try {
+        // Validate it's a valid ISO date string
+        new Date(val);
+        return val;
+      } catch {
+        return null;
+      }
+    };
+
+    const basePayload = {
+      name: values.name,
+      headlineOrRole: toNullIfEmpty(values.headlineOrRole) || null,
+      company: toNullIfEmpty(values.company) || null,
+      companyId: values.companyId || null,
+      primaryPlatform: toNullIfEmpty(values.primaryPlatform) || null,
+      tags: values.tags || [],
+      categoryId: values.categoryId || null,
+      stageId: values.stageId || null,
+      email: toNullIfEmpty(values.email) || null,
+      warmOrCold: values.warmOrCold || null,
+      commonGround: toNullIfEmpty(values.commonGround) || null,
+      firstMessageDate: toNullIfEmptyDate(values.firstMessageDate) || null,
+      referralGiven: values.referralGiven || false,
+      referralGivenAt: toNullIfEmptyDate(values.referralGivenAt) || null,
+      referralDetails: toNullIfEmpty(values.referralDetails) || null,
+      connectionRequestSentAt: toNullIfEmptyDate(values.connectionRequestSentAt) || null,
+      connectionAcceptedAt: toNullIfEmptyDate(values.connectionAcceptedAt) || null,
+      connectionStatus: values.connectionStatus || null,
+      dmSentAt: toNullIfEmptyDate(values.dmSentAt) || null,
+      lastFollowUpAt: toNullIfEmptyDate(values.lastFollowUpAt) || null,
+      contactType: toNullIfEmpty(values.contactType) || null,
+      strategyIds: values.strategyIds || [],
+    };
+
     // Explicitly check if we're editing or creating
     if (editingContact && editingContact.id) {
       // Edit existing contact - use PATCH
       await updateMutation.mutateAsync({
         id: editingContact.id,
-        payload: {
-          name: values.name,
-          headlineOrRole: values.headlineOrRole || null,
-          company: values.company || null,
-          primaryPlatform: values.primaryPlatform || null,
-          tags: values.tags || [],
-          categoryId: values.categoryId || null,
-          stageId: values.stageId || null,
-        },
+        payload: basePayload,
       });
     } else {
       // Create new contact - use POST
-      await createMutation.mutateAsync({
-        name: values.name,
-        headlineOrRole: values.headlineOrRole || null,
-        company: values.company || null,
-        primaryPlatform: values.primaryPlatform || null,
-        tags: values.tags || [],
-        categoryId: values.categoryId || null,
-        stageId: values.stageId || null,
-      });
+      await createMutation.mutateAsync(basePayload);
     }
     contactDialog.close();
   });
@@ -100,6 +128,9 @@ export function ContactsPageContainer() {
     categoryId: categoryId || undefined,
     stageId: stageId || undefined,
     primaryPlatform: primaryPlatform || undefined,
+    warmOrCold: warmOrCold || undefined,
+    connectionStatus: connectionStatus || undefined,
+    contactType: contactType || undefined,
     page,
     pageSize,
     sortBy,
@@ -137,6 +168,9 @@ export function ContactsPageContainer() {
       categoryId={categoryId}
       stageId={stageId}
       primaryPlatform={primaryPlatform}
+      warmOrCold={warmOrCold}
+      connectionStatus={connectionStatus}
+      contactType={contactType}
       sortBy={sortBy}
       sortDir={sortDir}
       availableCategories={categories}
@@ -147,6 +181,9 @@ export function ContactsPageContainer() {
       onCategoryChange={handleCategoryChange}
       onStageChange={handleStageChange}
       onPlatformChange={handlePlatformChange}
+      onWarmOrColdChange={handleWarmOrColdChange}
+      onConnectionStatusChange={handleConnectionStatusChange}
+      onContactTypeChange={handleContactTypeChange}
       onPageChange={handlePageChange}
       onSortChange={handleSortChange}
       onRowClick={handleRowClick}

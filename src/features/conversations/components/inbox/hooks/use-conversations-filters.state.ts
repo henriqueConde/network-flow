@@ -10,6 +10,7 @@ export function useConversationsFilters() {
     const [status, setStatus] = useState<ConversationsInboxFilterStatus>('all');
     const [categoryId, setCategoryId] = useState<string | null>(null);
     const [stageId, setStageId] = useState<string | null>(null);
+    const [emailStatus, setEmailStatus] = useState<'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null>(null);
 
     const {
         search,
@@ -47,6 +48,11 @@ export function useConversationsFilters() {
         setPage(1);
     };
 
+    const handleEmailStatusChange = (value: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null) => {
+        setEmailStatus(value);
+        setPage(1);
+    };
+
     const handlePageChange = (nextPage: number) => {
         setPage(nextPage);
     };
@@ -63,6 +69,7 @@ export function useConversationsFilters() {
         status,
         categoryId,
         stageId,
+        emailStatus,
         page,
         pageSize,
         sortBy,
@@ -71,6 +78,7 @@ export function useConversationsFilters() {
         handleStatusChange,
         handleCategoryChange,
         handleStageChange,
+        handleEmailStatusChange,
         handlePageChange,
         handleSortChange,
     };
