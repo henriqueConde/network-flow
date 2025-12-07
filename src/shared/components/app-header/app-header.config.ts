@@ -11,6 +11,7 @@ export const APP_HEADER_CONFIG = {
       analytics: 'Analytics',
       followups: 'Follow-ups',
       contacts: 'Contacts',
+      strategies: 'Strategies',
     },
   },
   ui: {
@@ -25,6 +26,7 @@ export const APP_HEADER_CONFIG = {
     analytics: '/analytics',
     followups: '/followups',
     contacts: '/contacts',
+    strategies: '/strategies',
   },
 } as const;
 

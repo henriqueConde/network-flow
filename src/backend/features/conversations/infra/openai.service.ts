@@ -12,6 +12,11 @@ const MAX_MESSAGES_IN_CONTEXT = 40;
 /**
  * Messaging playbook used as inspiration for suggested replies.
  * The model should NOT copy these verbatim, but adapt the style and intent.
+ *
+ * This playbook encodes:
+ * - Referral-focused warm/cold outreach
+ * - Follow-ups and last nudges
+ * - Recently-funded-startup outreach (timing-based strategy)
  */
 const MESSAGING_PLAYBOOK = `
 Messaging playbook (use these as inspiration for "suggestedReply"):
@@ -78,21 +83,46 @@ Messaging playbook (use these as inspiration for "suggestedReply"):
    Example vibe:
    - "Please don’t ghost me, man 🙂 A quick ‘yes’, ‘no’ or ‘later’ would really help me know where I stand."
 
+7) Recently funded startup – Timing-based outreach
+   Typical category: "Recently funded startup", "Funded startup", similar
+   Typical stages: "Not contacted", "First touch", "Replied"
+   Context:
+   - The startup has recently raised a funding round (e.g. in the last 3–12 months).
+   - You want to reach them early, before or just as roles are being opened publicly.
+   Core ideas:
+   - Congratulate them briefly on the recent funding (without overdoing it).
+   - Show that you understand what they do (product/space/mission).
+   - Make it clear you're a developer looking for opportunities and that the timing is why you’re reaching out.
+   - Ask if they’re growing the engineering team or planning to hire for your profile soon.
+   If there is already a relevant job posting:
+   - Mention that you applied or are about to apply.
+   - Ask if they’d be open to a quick look at your profile or a referral / quick chat.
+   If there is no visible job posting yet:
+   - Position yourself as an early, proactive candidate.
+   - Ask whether they expect to open roles matching your profile in the near future.
+   Example vibe (again, DO NOT copy verbatim, just match style):
+   - "Hi [Name], congrats on the recent [round] at [Company]! I’m a [level + stack] developer really interested in what you’re building in [space]. With the new funding, I imagine you might be growing the engineering team — I’d love to be considered for any upcoming roles that fit my profile."
+
 General rules:
 - Always be concise, warm, and professional.
 - Make the job-hunting intent clear instead of vague “let’s chat” messages.
 - Prefer a concrete next step: follow up, ask for referral, propose a quick call, send CV/portfolio, or ask a focused question.
 - Match the tone of the existing conversation (more formal vs more casual), but stay respectful.
+- When the category or context suggests a recently funded startup, blend the referral mindset with timing-based outreach:
+  - Mention funding and timing.
+  - Still aim for referrals, intros, or direct interviews with decision-makers.
 - Do NOT copy the example sentences word-for-word. Use them only as style and structure inspiration.
 `;
 
 /**
  * Stage-specific hints derived from the conversation.
- * This is used to tell the model which part of the playbook is most relevant.
+ * This is used to tell the model which part of the playbook is most relevant,
+ * and to combine the referral strategy with the "recently funded startup" timing strategy.
  */
 function getStagePlaybookSnippet(conversation: ConversationDetailDto): string {
     const stage = (conversation.stageName || '').toLowerCase();
     const category = (conversation.categoryName || '').toLowerCase();
+    const notes = (conversation.notes || '').toLowerCase();
 
     // Heuristic for warm vs cold:
     const hasMessages = (conversation.messages?.length ?? 0) > 0;
@@ -103,13 +133,34 @@ function getStagePlaybookSnippet(conversation: ConversationDetailDto): string {
         category.includes('hiring manager') ||
         hasMessages; // if there is already a thread, treat as at least semi-warm
 
+    // Heuristic for "recently funded startup" strategy
+    const isRecentlyFunded =
+        category.includes('recently funded') ||
+        category.includes('funded startup') ||
+        category.includes('startup') && notes.includes('funding') ||
+        notes.includes('recently raised') ||
+        notes.includes('raised a round') ||
+        notes.includes('series a') ||
+        notes.includes('series b') ||
+        notes.includes('seed round');
+
+    // Helper: extra sentence for recently funded startups
+    const recentlyFundedHint = isRecentlyFunded
+        ? `
+Because this looks like a recently funded startup:
+- Mention their recent funding briefly and positively.
+- Show that you understand and are excited about their product/space.
+- Ask if they are growing their engineering team or planning to open roles matching your profile.
+- Draw on the "Recently funded startup – Timing-based outreach" pattern from the messaging playbook.`
+        : '';
+
     if (!stage || stage === 'not contacted' || stage === 'first touch') {
         if (looksWarm) {
             return `
 For this conversation, treat it as an initial outreach to a WARM contact.
 Use the "Initial outreach – Warm contact" style from the messaging playbook:
 - Short, friendly, clear that you're exploring roles or referrals.
-- Ask if they/their team are hiring and, if not, whether they can introduce you to someone who is.`;
+- Ask if they/their team are hiring and, if not, whether they can introduce you to someone who is.${recentlyFundedHint}`;
         }
 
         return `
@@ -117,7 +168,7 @@ For this conversation, treat it as an initial outreach to a COLD contact.
 Use the "Initial outreach – Cold contact" style from the messaging playbook:
 - Introduce yourself and your stack/level.
 - Mention a specific reason you're interested in their company.
-- Highlight any obvious common ground if you see it in the conversation or context.`;
+- Highlight any obvious common ground if you see it in the conversation or context.${recentlyFundedHint}`;
     }
 
     if (stage === 'replied') {
@@ -126,7 +177,7 @@ This conversation already has a reply from the contact.
 Use the "They replied – Move toward a concrete step" and "Explicitly asking for a referral" patterns from the messaging playbook:
 - Thank them for their response.
 - Suggest a concrete next step such as a referral, quick call, or sending your CV/portfolio.
-- Keep the ask specific and easy for them to act on.`;
+- Keep the ask specific and easy for them to act on.${recentlyFundedHint}`;
     }
 
     if (stage === 'dormant' || stage === 'waiting' || stage === 'stalled') {
@@ -134,7 +185,7 @@ Use the "They replied – Move toward a concrete step" and "Explicitly asking fo
 This conversation appears to be dormant or waiting on the other side.
 Use the "Follow-up – Gentle bump" pattern from the messaging playbook:
 - Send a short, polite nudge.
-- If there have already been several follow-ups, you may optionally use the light-hearted "Please don't ghost me, man" style if the tone of the thread is casual enough.`;
+- If there have already been several follow-ups, you may optionally use the light-hearted "Please don't ghost me, man" style if the tone of the thread is casual enough.${recentlyFundedHint}`;
     }
 
     if (stage.includes('interview') || stage.includes('screening')) {
@@ -143,7 +194,7 @@ This conversation is in an interview/screening stage.
 Focus your "suggestedReply" on:
 - Confirming availability, logistics or next steps.
 - Thanking them for their time and reiterating interest.
-You can still draw on the playbook's concise, clear style, but adapt it to interview logistics rather than initial outreach.`;
+You can still draw on the playbook's concise, clear style, but adapt it to interview logistics rather than initial outreach.${recentlyFundedHint}`;
     }
 
     if (stage.includes('offer') || stage.includes('closed')) {
@@ -152,15 +203,15 @@ This conversation looks close to or past an offer stage.
 For "suggestedReply", focus on:
 - Thanking them.
 - Clarifying details, next steps, or gracefully closing the loop.
-Keep it professional and appreciative.`;
+Keep it professional and appreciative.${recentlyFundedHint}`;
     }
 
     // Default fallback
     return `
 Use the messaging playbook for tone and structure:
 - Be concise, warm, and professional.
-- Choose the playbook pattern that best matches the current situation (initial outreach, reply, follow-up, referral ask, etc.).
-- Move the conversation one clear step forward in the opportunity pipeline.`;
+- Choose the playbook pattern that best matches the current situation (initial outreach, reply, follow-up, referral ask, recently-funded-startup outreach, etc.).
+- Move the conversation one clear step forward in the opportunity pipeline.${recentlyFundedHint}`;
 }
 
 /**
@@ -341,11 +392,15 @@ export async function* analyzeConversation(
      - Is clear about the user’s intent (e.g., exploring roles, discussing a specific opportunity, introducing themselves).
    - When constructing "suggestedReply":
      - Choose the most relevant messaging pattern from the "Messaging playbook" in the system message, based on the current stage and whether the contact appears warm or cold.
+     - If the category or context suggests a recently funded startup, incorporate the timing-based approach:
+       - Briefly acknowledge recent funding.
+       - Show genuine interest in their product/space.
+       - Ask if they are growing the engineering team or opening roles for your profile.
      - Adapt the style and structure from the playbook examples, but do NOT copy any example sentence verbatim.
      - Keep the message actionable and easy to copy-paste into LinkedIn or email.
    - Avoid over-promising and keep it honest and realistic.
 
-If there are no prior messages, treat this as an initial outreach and craft an appropriate first message, using the initial outreach patterns from the messaging playbook.
+If there are no prior messages, treat this as an initial outreach and craft an appropriate first message, using the initial outreach patterns from the messaging playbook (and, when relevant, the "Recently funded startup" pattern).
 
 JSON contract (VERY IMPORTANT):
 - You MUST output ONLY valid JSON.

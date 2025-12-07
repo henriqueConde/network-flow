@@ -1,0 +1,375 @@
+'use client';
+
+import { Box, Typography } from '@mui/material';
+import { styles } from '../strategies-page.styles';
+import type { JOB_BOARD_LEAD_SNIPING_STRATEGY_CONFIG } from '../strategies-page.config';
+
+interface JobBoardLeadSnipingStrategyContentProps {
+  config: typeof JOB_BOARD_LEAD_SNIPING_STRATEGY_CONFIG;
+}
+
+export function JobBoardLeadSnipingStrategyContent({ config }: JobBoardLeadSnipingStrategyContentProps) {
+  const { copy } = config;
+
+  return (
+    <>
+      <Box sx={styles.strategyHeader()}>
+        <Typography variant="h4" sx={styles.mainStrategyTitle()}>
+          {copy.title}
+        </Typography>
+        <Typography variant="h6" sx={styles.strategySubtitle()}>
+          {copy.subtitle}
+        </Typography>
+      </Box>
+
+      {/* What This Strategy Is */}
+      <Box sx={styles.section()}>
+        <Typography variant="h5" sx={styles.sectionTitle()}>
+          {copy.sections.whatThisStrategyIs.title}
+        </Typography>
+
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.whatThisStrategyIs.insteadOf.title}
+          </Typography>
+          <Typography variant="body1" sx={styles.sectionContent()}>
+            {copy.sections.whatThisStrategyIs.insteadOf.content}
+          </Typography>
+        </Box>
+
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.whatThisStrategyIs.youDo.title}
+          </Typography>
+          <Typography variant="body1" sx={styles.sectionContent()}>
+            {copy.sections.whatThisStrategyIs.youDo.description}
+          </Typography>
+          <Box sx={styles.sectionContent()}>
+            {copy.sections.whatThisStrategyIs.youDo.items.map((item, index) => (
+              <Typography key={index} component="p" sx={styles.listItem()}>
+                • {item}
+              </Typography>
+            ))}
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.whatThisStrategyIs.youDo.treatAsLeads.title}
+            </Typography>
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.whatThisStrategyIs.youDo.treatAsLeads.description}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.whatThisStrategyIs.youDo.treatAsLeads.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+          <Typography variant="body1" sx={styles.sectionContent()}>
+            {copy.sections.whatThisStrategyIs.youDo.note.split('\n').map((line, index) => (
+              <span key={index}>
+                {line}
+                {index < copy.sections.whatThisStrategyIs.youDo.note.split('\n').length - 1 && <br />}
+              </span>
+            ))}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Why This Works */}
+      <Box sx={styles.section()}>
+        <Typography variant="h5" sx={styles.sectionTitle()}>
+          {copy.sections.whyThisWorks.title}
+        </Typography>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.whyThisWorks.description}
+        </Typography>
+        <Box sx={styles.subsection()}>
+          <Box sx={styles.sectionContent()}>
+            {copy.sections.whyThisWorks.competition.items.map((item, index) => (
+              <Typography key={index} component="p" sx={styles.listItem()}>
+                • {item}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.whyThisWorks.youImproveOdds.title}
+          </Typography>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.whyThisWorks.youImproveOdds.beingEarly.title}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.whyThisWorks.youImproveOdds.beingEarly.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.whyThisWorks.youImproveOdds.notJustCv.title}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.whyThisWorks.youImproveOdds.notJustCv.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.whyThisWorks.note}
+        </Typography>
+      </Box>
+
+      {/* Method 1 */}
+      <Box sx={styles.section()}>
+        <Typography variant="h5" sx={styles.sectionTitle()}>
+          {copy.sections.method1.title}
+        </Typography>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.method1.goal}
+        </Typography>
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.method1.steps.title}
+          </Typography>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method1.steps.step1.title}
+            </Typography>
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.method1.steps.step1.description}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.method1.steps.step1.examples.map((example, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  • {example}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method1.steps.step2.title}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.method1.steps.step2.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  • {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method1.steps.step3.title}
+            </Typography>
+            <Box sx={styles.subsection()}>
+              <Typography variant="subtitle2" sx={styles.subsectionTitle()}>
+                {copy.sections.method1.steps.step3.ignore.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.method1.steps.step3.ignore.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                  • {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+            <Box sx={styles.subsection()}>
+              <Typography variant="subtitle2" sx={styles.subsectionTitle()}>
+                {copy.sections.method1.steps.step3.lookFor.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.method1.steps.step3.lookFor.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                  • {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method1.steps.step4.title}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.method1.steps.step4.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.method1.benefits.title}
+          </Typography>
+          <Box sx={styles.sectionContent()}>
+            {copy.sections.method1.benefits.items.map((item, index) => (
+              <Typography key={index} component="p" sx={styles.listItem()}>
+                • {item}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Method 2 */}
+      <Box sx={styles.section()}>
+        <Typography variant="h5" sx={styles.sectionTitle()}>
+          {copy.sections.method2.title}
+        </Typography>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.method2.goal}
+        </Typography>
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.method2.steps.title}
+          </Typography>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method2.steps.step1.title}
+            </Typography>
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.method2.steps.step1.description}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.method2.steps.step1.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  • {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method2.steps.step2.title}
+            </Typography>
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.method2.steps.step2.description}
+            </Typography>
+            <Box sx={styles.templateBox()}>
+              {copy.sections.method2.steps.step2.example}
+            </Box>
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.method2.steps.step2.explanation}
+            </Typography>
+            <Box sx={styles.subsection()}>
+              <Typography variant="subtitle2" sx={styles.subsectionTitle()}>
+                {copy.sections.method2.steps.step2.changeNumber.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.method2.steps.step2.changeNumber.examples.map((example, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    • {example}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.method2.steps.step2.note.split('\n').map((line, index) => (
+                <span key={index}>
+                  {line}
+                  {index < copy.sections.method2.steps.step2.note.split('\n').length - 1 && <br />}
+                </span>
+              ))}
+            </Typography>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method2.steps.step3.title}
+            </Typography>
+            <Box sx={styles.sectionContent()}>
+              {copy.sections.method2.steps.step3.items.map((item, index) => (
+                <Typography key={index} component="p" sx={styles.listItem()}>
+                  {item}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+          <Box sx={styles.subsection()}>
+            <Typography variant="subtitle1" sx={styles.subsectionTitle()}>
+              {copy.sections.method2.steps.step4.title}
+            </Typography>
+            <Box sx={styles.subsection()}>
+              <Typography variant="subtitle2" sx={styles.subsectionTitle()}>
+                {copy.sections.method2.steps.step4.stepA.title}
+              </Typography>
+              <Typography variant="body1" sx={styles.sectionContent()}>
+                {copy.sections.method2.steps.step4.stepA.content}
+              </Typography>
+            </Box>
+            <Box sx={styles.subsection()}>
+              <Typography variant="subtitle2" sx={styles.subsectionTitle()}>
+                {copy.sections.method2.steps.step4.stepB.title}
+              </Typography>
+              <Typography variant="body1" sx={styles.sectionContent()}>
+                {copy.sections.method2.steps.step4.stepB.description}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.method2.steps.step4.stepB.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.method2.conclusion}
+        </Typography>
+      </Box>
+
+      {/* How To Track */}
+      <Box sx={styles.section()}>
+        <Typography variant="h5" sx={styles.sectionTitle()}>
+          {copy.sections.howToTrack.title}
+        </Typography>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.howToTrack.description}
+        </Typography>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.howToTrack.strategyName}
+        </Typography>
+        <Typography variant="body1" sx={styles.sectionContent()}>
+          {copy.sections.howToTrack.type}
+        </Typography>
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.howToTrack.forEachLead.title}
+          </Typography>
+          <Box sx={styles.sectionContent()}>
+            {copy.sections.howToTrack.forEachLead.items.map((item, index) => (
+              <Typography key={index} component="p" sx={styles.listItem()}>
+                • {item}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+        <Box sx={styles.subsection()}>
+          <Typography variant="h6" sx={styles.subsectionTitle()}>
+            {copy.sections.howToTrack.yourAppCanShow.title}
+          </Typography>
+          <Box sx={styles.sectionContent()}>
+            {copy.sections.howToTrack.yourAppCanShow.items.map((item, index) => (
+              <Typography key={index} component="p" sx={styles.listItem()}>
+                • {item}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+    </>
+  );
+}
+
