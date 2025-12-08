@@ -280,6 +280,101 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Box>
         </Box>
       </Box>
+
+      {/* How to Track in App */}
+      {copy.sections.howToTrackInApp && (
+        <Box sx={styles.section()}>
+          <Typography variant="h5" sx={styles.sectionTitle()}>
+            {copy.sections.howToTrackInApp.title}
+          </Typography>
+          <Typography variant="body1" sx={styles.sectionContent()}>
+            {copy.sections.howToTrackInApp.description}
+          </Typography>
+
+          {copy.sections.howToTrackInApp.step1 && (
+            <Box sx={styles.subsection()}>
+              <Typography variant="h6" sx={styles.subsectionTitle()}>
+                {copy.sections.howToTrackInApp.step1.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.howToTrackInApp.step1.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {copy.sections.howToTrackInApp.step2 && (
+            <Box sx={styles.subsection()}>
+              <Typography variant="h6" sx={styles.subsectionTitle()}>
+                {copy.sections.howToTrackInApp.step2.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.howToTrackInApp.step2.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {copy.sections.howToTrackInApp.step3 && (
+            <Box sx={styles.subsection()}>
+              <Typography variant="h6" sx={styles.subsectionTitle()}>
+                {copy.sections.howToTrackInApp.step3.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.howToTrackInApp.step3.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {copy.sections.howToTrackInApp.step4 && (
+            <Box sx={styles.subsection()}>
+              <Typography variant="h6" sx={styles.subsectionTitle()}>
+                {copy.sections.howToTrackInApp.step4.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.howToTrackInApp.step4.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {copy.sections.howToTrackInApp.step5 && (
+            <Box sx={styles.subsection()}>
+              <Typography variant="h6" sx={styles.subsectionTitle()}>
+                {copy.sections.howToTrackInApp.step5.title}
+              </Typography>
+              <Box sx={styles.sectionContent()}>
+                {copy.sections.howToTrackInApp.step5.items.map((item, index) => (
+                  <Typography key={index} component="p" sx={styles.listItem()}>
+                    {item}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {copy.sections.howToTrackInApp.tip && (
+            <Box sx={styles.subsection()}>
+              <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
+                💡 {copy.sections.howToTrackInApp.tip}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      )}
     </>
   );
 }
