@@ -17,8 +17,6 @@ export type ContactDetailContentProps = {
     connectedOn: string | null;
     primaryPlatform: string | null;
     tags: string[];
-    categoryId: string | null;
-    stageId: string | null;
     warmOrCold: 'warm' | 'cold' | null;
     commonGround: string | null;
     firstMessageDate: string | null;

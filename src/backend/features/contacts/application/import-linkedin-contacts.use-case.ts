@@ -126,8 +126,6 @@ export async function* importLinkedInContacts(
                 primaryPlatform: linkedInUrl ? 'linkedin' : null,
                 profileLinks: Object.keys(profileLinks).length > 0 ? profileLinks : null,
                 tags,
-                categoryId: warmOutreachCategory.id,
-                stageId: null,
             },
         });
 

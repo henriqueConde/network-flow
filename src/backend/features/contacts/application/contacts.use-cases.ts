@@ -18,8 +18,6 @@ export async function listContacts(input: { userId: string } & ListContactsQuery
     userId: input.userId,
     search: input.search,
     company: input.company,
-    categoryId: input.categoryId,
-    stageId: input.stageId,
     primaryPlatform: input.primaryPlatform,
     warmOrCold: input.warmOrCold,
     connectionStatus: input.connectionStatus,
@@ -42,8 +40,6 @@ export async function listContacts(input: { userId: string } & ListContactsQuery
       primaryPlatform: contact.primaryPlatform,
       profileLinks: contact.profileLinks as Record<string, string> | null,
       tags: contact.tags,
-      categoryId: contact.categoryId,
-      stageId: contact.stageId,
       email: contact.email,
       warmOrCold: contact.warmOrCold as 'warm' | 'cold' | null,
       connectionStatus: contact.connectionStatus as 'not_connected' | 'request_sent' | 'connected' | null,
@@ -97,8 +93,6 @@ export async function getContactById(input: { userId: string; contactId: string 
     primaryPlatform: contact.primaryPlatform,
     profileLinks: contact.profileLinks as Record<string, string> | null,
     tags: contact.tags,
-    categoryId: contact.categoryId,
-    stageId: contact.stageId,
     email: contact.email,
     warmOrCold: contact.warmOrCold as 'warm' | 'cold' | null,
     commonGround: contact.commonGround,
@@ -149,8 +143,6 @@ export async function updateContact(input: {
     primaryPlatform?: string | null;
     profileLinks?: Record<string, string> | null;
     tags?: string[];
-    categoryId?: string | null;
-    stageId?: string | null;
     email?: string | null;
     warmOrCold?: 'warm' | 'cold' | null;
     commonGround?: string | null;
@@ -187,12 +179,6 @@ export async function updateContact(input: {
   }
   if (input.body.tags !== undefined) {
     updates.tags = input.body.tags;
-  }
-  if (input.body.categoryId !== undefined) {
-    updates.categoryId = input.body.categoryId;
-  }
-  if (input.body.stageId !== undefined) {
-    updates.stageId = input.body.stageId;
   }
   if (input.body.email !== undefined) {
     updates.email = input.body.email;
@@ -257,8 +243,6 @@ export async function updateContact(input: {
     primaryPlatform: updated.primaryPlatform,
     profileLinks: updated.profileLinks as Record<string, string> | null,
     tags: updated.tags,
-    categoryId: updated.categoryId,
-    stageId: updated.stageId,
     email: updated.email,
     warmOrCold: updated.warmOrCold as 'warm' | 'cold' | null,
     commonGround: updated.commonGround,
@@ -310,8 +294,6 @@ export async function createContact(input: {
       primaryPlatform: input.body.primaryPlatform ?? null,
       profileLinks: input.body.profileLinks ?? null,
       tags: input.body.tags ?? [],
-      categoryId: input.body.categoryId ?? null,
-      stageId: input.body.stageId ?? null,
       email: input.body.email ?? null,
       warmOrCold: input.body.warmOrCold ?? null,
       commonGround: input.body.commonGround ?? null,

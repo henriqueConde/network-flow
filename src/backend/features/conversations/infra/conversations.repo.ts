@@ -373,8 +373,8 @@ export function makeConversationsRepo() {
         opportunityId: conversation.opportunityId ?? null,
         opportunityTitle: conversation.opportunity?.title ?? null,
         channel: conversation.channel,
-        categoryId: conversation.contact.categoryId ?? null, // Use contact's category
-        categoryName: conversation.contact.category?.name ?? null, // Use contact's category
+        categoryId: conversation.categoryId ?? null,
+        categoryName: conversation.category?.name ?? null,
         stageId: conversation.stageId ?? null,
         stageName: conversation.stage?.name ?? null,
         nextActionType: conversation.nextActionType ?? null,

@@ -19,6 +19,8 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
     channel: ConversationChannel.LINKEDIN,
     pastedText: '',
     firstMessageSender: MessageSide.CONTACT,
+    categoryId: undefined,
+    stageId: undefined,
   });
   const [contactSearchInput, setContactSearchInput] = useState('');
   const [opportunitySearchInput, setOpportunitySearchInput] = useState('');

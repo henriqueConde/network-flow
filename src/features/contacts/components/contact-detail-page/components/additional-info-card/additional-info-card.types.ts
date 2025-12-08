@@ -8,8 +8,6 @@ export type AdditionalInfoCardProps = {
   editValues: {
     primaryPlatform: string | null;
     tags: string[];
-    categoryId: string | null;
-    stageId: string | null;
   };
   editErrors: Partial<Record<keyof AdditionalInfoCardProps['editValues'], string>>;
   isEditing: boolean;

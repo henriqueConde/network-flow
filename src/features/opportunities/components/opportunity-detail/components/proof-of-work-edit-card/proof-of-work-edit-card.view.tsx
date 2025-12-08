@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -374,7 +375,13 @@ export function ProofOfWorkEditCard({
                     )}
                     {issue.screenshot && (
                       <Box sx={{ marginTop: 1 }}>
-                        <img src={issue.screenshot} alt="Screenshot" style={{ maxWidth: '100%', height: 'auto', borderRadius: 4 }} />
+                        <Image
+                          src={issue.screenshot}
+                          alt="Screenshot"
+                          width={800}
+                          height={600}
+                          style={{ maxWidth: '100%', height: 'auto', borderRadius: 4 }}
+                        />
                       </Box>
                     )}
                   </Card>

@@ -7,8 +7,6 @@ export const ContactFormSchema = z.object({
   companyId: z.string().uuid().nullable().optional(),
   primaryPlatform: z.string().optional(),
   tags: z.array(z.string()).optional().default([]),
-  categoryId: z.string().uuid().nullable().optional(),
-  stageId: z.string().uuid().nullable().optional(),
   email: z.string().email('Invalid email address').nullable().optional().or(z.literal('')),
   warmOrCold: z.enum(['warm', 'cold']).nullable().optional(),
   commonGround: z.string().optional(),

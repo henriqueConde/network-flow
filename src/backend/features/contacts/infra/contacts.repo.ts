@@ -13,8 +13,6 @@ export function makeContactsRepo() {
       userId: string;
       search?: string;
       company?: string;
-      categoryId?: string;
-      stageId?: string;
       primaryPlatform?: string;
       warmOrCold?: 'warm' | 'cold';
       connectionStatus?: 'not_connected' | 'request_sent' | 'connected';
@@ -28,8 +26,6 @@ export function makeContactsRepo() {
         userId,
         search,
         company,
-        categoryId,
-        stageId,
         primaryPlatform,
         warmOrCold,
         connectionStatus,
@@ -91,64 +87,10 @@ export function makeContactsRepo() {
         where.contactType = contactType;
       }
 
-      // Filter by category or stage - check both contact's own category/stage and conversations
-      if (categoryId || stageId) {
-        const categoryStageFilters: any[] = [];
-
-        // Contact has both category and stage
-        if (categoryId && stageId) {
-          categoryStageFilters.push({
-            categoryId,
-            stageId,
-          });
-          categoryStageFilters.push({
-            conversations: {
-              some: {
-                categoryId,
-                stageId,
-              },
-            },
-          });
-        } else {
-          // Contact has category or stage (or both separately)
-          if (categoryId) {
-            categoryStageFilters.push({ categoryId });
-            categoryStageFilters.push({
-              conversations: {
-                some: { categoryId },
-              },
-            });
-          }
-          if (stageId) {
-            categoryStageFilters.push({ stageId });
-            categoryStageFilters.push({
-              conversations: {
-                some: { stageId },
-              },
-            });
-          }
-        }
-
-        // If we have both search and category/stage filters, combine them with AND
-        if (where.OR && categoryStageFilters.length > 0) {
-          // Search OR condition exists, combine with category/stage filter using AND
-          where.AND = [
-            { OR: where.OR },
-            { OR: categoryStageFilters },
-          ];
-          delete where.OR;
-        } else if (categoryStageFilters.length > 0) {
-          // No search filter, just use category/stage OR
-          where.OR = categoryStageFilters;
-        }
-      }
-
       const [contacts, total] = await Promise.all([
         prisma.contact.findMany({
           where,
           include: {
-            category: true,
-            stage: true,
             conversations: {
               include: {
                 category: true,
@@ -190,8 +132,6 @@ export function makeContactsRepo() {
           userId,
         },
         include: {
-          category: true,
-          stage: true,
           conversations: {
             include: {
               category: true,
@@ -325,8 +265,6 @@ export function makeContactsRepo() {
           primaryPlatform: data.primaryPlatform ?? null,
           profileLinks: profileLinksValue,
           tags: data.tags ?? [],
-          categoryId: data.categoryId ?? null,
-          stageId: data.stageId ?? null,
           email: data.email ?? null,
           warmOrCold: data.warmOrCold ?? null,
           commonGround: data.commonGround ?? null,
@@ -343,8 +281,6 @@ export function makeContactsRepo() {
           strategyIds: data.strategyIds ?? [],
         },
         include: {
-          category: true,
-          stage: true,
           conversations: {
             include: {
               category: true,
@@ -374,8 +310,6 @@ export function makeContactsRepo() {
         primaryPlatform?: string | null;
         profileLinks?: Record<string, string> | null;
         tags?: string[];
-        categoryId?: string | null;
-        stageId?: string | null;
         email?: string | null;
         warmOrCold?: 'warm' | 'cold' | null;
         commonGround?: string | null;
@@ -406,8 +340,6 @@ export function makeContactsRepo() {
       if (updates.companyId !== undefined) updateData.companyId = updates.companyId;
       if (updates.primaryPlatform !== undefined) updateData.primaryPlatform = updates.primaryPlatform;
       if (updates.tags !== undefined) updateData.tags = updates.tags;
-      if (updates.categoryId !== undefined) updateData.categoryId = updates.categoryId;
-      if (updates.stageId !== undefined) updateData.stageId = updates.stageId;
       if (updates.email !== undefined) updateData.email = updates.email;
       if (updates.warmOrCold !== undefined) updateData.warmOrCold = updates.warmOrCold;
       if (updates.commonGround !== undefined) updateData.commonGround = updates.commonGround;
@@ -447,8 +379,6 @@ export function makeContactsRepo() {
           userId,
         },
         include: {
-          category: true,
-          stage: true,
           conversations: {
             include: {
               category: true,

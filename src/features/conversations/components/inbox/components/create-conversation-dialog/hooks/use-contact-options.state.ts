@@ -40,8 +40,6 @@ export function useContactOptions(
       primaryPlatform: null,
       profileLinks: null,
       tags: [],
-      categoryId: null,
-      stageId: null,
       email: null,
       warmOrCold: null,
       connectionStatus: null,

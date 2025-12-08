@@ -3,6 +3,8 @@ import type { CREATE_CONVERSATION_DIALOG_CONFIG } from './create-conversation-di
 import type { ContactListItem } from '@/features/contacts/services/contacts.service';
 import type { OpportunityListItem } from '@/features/opportunities/services/opportunities.service';
 import type { ContactOption } from './hooks/use-contact-options.state';
+import type { Category } from '@/features/categories';
+import type { Stage } from '@/features/stages';
 
 export interface CreateConversationDialogProps {
   isOpen: boolean;
@@ -30,5 +32,7 @@ export interface CreateConversationDialogProps {
   onOpportunitySelect: (opportunityId: string | null) => void;
   opportunities: OpportunityListItem[];
   isSearchingOpportunities: boolean;
+  availableCategories: Category[];
+  availableStages: Stage[];
 }
 

@@ -101,8 +101,6 @@ export function ContactsTable({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>{config.copy.table.platform}</TableCell>
-                  <TableCell sx={{ borderRight: 'none' }}>{config.copy.table.stage}</TableCell>
-                  <TableCell sx={{ borderLeft: 'none', paddingLeft: 1 }}>{config.copy.table.category}</TableCell>
                   <TableCell>Warm/Cold</TableCell>
                   <TableCell>Connection</TableCell>
                   <TableCell>
@@ -143,28 +141,6 @@ export function ContactsTable({
                       {contact.primaryPlatform && (
                         <Chip label={contact.primaryPlatform} size="small" sx={styles.chip()} />
                       )}
-                    </TableCell>
-                    <TableCell sx={{ borderRight: 'none' }}>
-                      {(() => {
-                        if (!contact.stageId) return '—';
-                        const stage = availableStages.find((s) => s.id === contact.stageId);
-                        return stage ? (
-                          <Chip label={stage.name} size="small" sx={styles.chip()} />
-                        ) : (
-                          '—'
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell sx={{ borderLeft: 'none', paddingLeft: 1 }}>
-                      {(() => {
-                        if (!contact.categoryId) return '—';
-                        const category = availableCategories.find((c) => c.id === contact.categoryId);
-                        return category ? (
-                          <Chip label={category.name} size="small" sx={styles.chip()} />
-                        ) : (
-                          '—'
-                        );
-                      })()}
                     </TableCell>
                     <TableCell>
                       {contact.warmOrCold ? (

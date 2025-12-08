@@ -14,8 +14,6 @@ type EditValues = {
   connectedOn: string | null;
   primaryPlatform: string | null;
   tags: string[];
-  categoryId: string | null;
-  stageId: string | null;
   warmOrCold: 'warm' | 'cold' | null;
   commonGround: string | null;
   firstMessageDate: string | null;
@@ -48,8 +46,6 @@ export function useContactEdit(contact: ContactDetail | null) {
     connectedOn: null,
     primaryPlatform: null,
     tags: [],
-    categoryId: null,
-    stageId: null,
     warmOrCold: null,
     commonGround: null,
     firstMessageDate: null,
@@ -88,8 +84,6 @@ export function useContactEdit(contact: ContactDetail | null) {
         connectedOn: null, // This will come from LinkedIn API later
         primaryPlatform: contact.primaryPlatform,
         tags: contact.tags,
-        categoryId: contact.categoryId,
-        stageId: contact.stageId,
         warmOrCold: contact.warmOrCold,
         commonGround: contact.commonGround,
         firstMessageDate: contact.firstMessageDateDate ? contact.firstMessageDateDate.toISOString() : null,
@@ -154,8 +148,6 @@ export function useContactEdit(contact: ContactDetail | null) {
         connectedOn: null,
         primaryPlatform: contact.primaryPlatform,
         tags: contact.tags,
-        categoryId: contact.categoryId,
-        stageId: contact.stageId,
         warmOrCold: contact.warmOrCold,
         commonGround: contact.commonGround,
         firstMessageDate: contact.firstMessageDateDate ? contact.firstMessageDateDate.toISOString() : null,
@@ -203,8 +195,6 @@ export function useContactEdit(contact: ContactDetail | null) {
       primaryPlatform: toNullIfEmpty(values.primaryPlatform) || null,
       profileLinks: Object.keys(profileLinks).length > 0 ? profileLinks : null,
       tags: values.tags,
-      categoryId: values.categoryId || null,
-      stageId: values.stageId || null,
       email: toNullIfEmpty(values.email) || null,
       warmOrCold: values.warmOrCold || null,
       commonGround: toNullIfEmpty(values.commonGround) || null,

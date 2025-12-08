@@ -20,8 +20,6 @@ export function ContactsPageView({
   error,
   search,
   company,
-  categoryId,
-  stageId,
   primaryPlatform,
   warmOrCold,
   connectionStatus,
@@ -33,8 +31,6 @@ export function ContactsPageView({
   config,
   onSearchChange,
   onCompanyChange,
-  onCategoryChange,
-  onStageChange,
   onPlatformChange,
   onWarmOrColdChange,
   onConnectionStatusChange,
@@ -77,19 +73,13 @@ export function ContactsPageView({
       <ContactsFilters
         search={search}
         company={company}
-        categoryId={categoryId}
-        stageId={stageId}
         primaryPlatform={primaryPlatform}
         warmOrCold={warmOrCold}
         connectionStatus={connectionStatus}
         contactType={contactType}
-        availableCategories={availableCategories}
-        availableStages={availableStages}
         config={config}
         onSearchChange={onSearchChange}
         onCompanyChange={onCompanyChange}
-        onCategoryChange={onCategoryChange}
-        onStageChange={onStageChange}
         onPlatformChange={onPlatformChange}
         onWarmOrColdChange={onWarmOrColdChange}
         onConnectionStatusChange={onConnectionStatusChange}

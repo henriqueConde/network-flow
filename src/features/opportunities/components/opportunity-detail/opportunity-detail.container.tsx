@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useOpportunityDetail } from '../../services/opportunities.queries';
 import { useUpdateOpportunity } from '../../services/opportunities.mutations';
@@ -55,14 +56,16 @@ export function OpportunityDetailContainer() {
   const debouncedContactSearch = useDebounce(createDialog.contactSearchInput, 300);
   const debouncedOpportunitySearch = useDebounce(createDialog.opportunitySearchInput, 300);
 
-  // Contact pagination hook - manages pagination state and accumulation
-  const {
-    contactPage,
-    accumulatedContacts,
-    hasMoreContacts,
-    loadMoreContacts,
-    CONTACTS_PAGE_SIZE,
-  } = useContactsPagination(undefined, false, createDialog.isOpen, debouncedContactSearch);
+  // Contact pagination state - manage page externally
+  const [contactPage, setContactPage] = useState(1);
+  const CONTACTS_PAGE_SIZE = 50;
+
+  // Reset page when dialog opens or search changes
+  useEffect(() => {
+    if (createDialog.isOpen) {
+      setContactPage(1);
+    }
+  }, [createDialog.isOpen, debouncedContactSearch]);
 
   // Fetch contacts for autocomplete (only when dialog is open)
   const { data: contactsData, isLoading: isSearchingContacts } = useContactsList({
@@ -71,20 +74,27 @@ export function OpportunityDetailContainer() {
     pageSize: CONTACTS_PAGE_SIZE,
     sortBy: 'name',
     sortDir: 'asc',
-    enabled: createDialog.isOpen,
+    enabled: createDialog.isOpen === true,
   });
 
-  // Update pagination with fetched data
+  // Use the pagination hook to accumulate contacts
   const {
     accumulatedContacts: finalAccumulatedContacts,
     hasMoreContacts: finalHasMoreContacts,
-    loadMoreContacts: finalLoadMoreContacts,
   } = useContactsPagination(
     contactsData,
+    contactPage,
     isSearchingContacts,
     createDialog.isOpen,
     debouncedContactSearch,
   );
+
+  // Function to load more contacts
+  const finalLoadMoreContacts = () => {
+    if (!isSearchingContacts && finalHasMoreContacts) {
+      setContactPage((prev) => prev + 1);
+    }
+  };
 
   // Contact options hook - handles "New contact" option logic
   const { contactOptions, allOptions, searchInputTrimmed } = useContactOptions(
@@ -184,6 +194,8 @@ export function OpportunityDetailContainer() {
         onOpportunitySelect={createDialog.handleOpportunitySelect}
         opportunities={opportunitiesData?.items || []}
         isSearchingOpportunities={isSearchingOpportunities}
+        availableCategories={categories}
+        availableStages={stages}
       />
     </>
   );

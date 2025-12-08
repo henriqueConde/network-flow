@@ -156,36 +156,6 @@ export function CreateEditContactDialog({
           <MenuItem value="twitter">Twitter</MenuItem>
         </TextField>
         <TextField
-          select
-          label="Category"
-          fullWidth
-          size="small"
-          value={values.categoryId || ''}
-          onChange={(e) => onChangeField('categoryId', e.target.value || null)}
-        >
-          <MenuItem value="">None</MenuItem>
-          {availableCategories.map((cat) => (
-            <MenuItem key={cat.id} value={cat.id}>
-              {cat.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Stage"
-          fullWidth
-          size="small"
-          value={values.stageId || ''}
-          onChange={(e) => onChangeField('stageId', e.target.value || null)}
-        >
-          <MenuItem value="">None</MenuItem>
-          {availableStages.map((stage) => (
-            <MenuItem key={stage.id} value={stage.id}>
-              {stage.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
           label="Contact Type"
           fullWidth
           size="small"

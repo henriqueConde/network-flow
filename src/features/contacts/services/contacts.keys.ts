@@ -7,7 +7,11 @@ export const contactsKeys = {
     categoryId?: string;
     stageId?: string;
     primaryPlatform?: string;
+    warmOrCold?: 'warm' | 'cold';
+    connectionStatus?: 'not_connected' | 'request_sent' | 'connected';
+    contactType?: string;
     page: number;
+    pageSize: number;
     sortBy: string;
     sortDir: string;
   }) => [...contactsKeys.lists(), params] as const,

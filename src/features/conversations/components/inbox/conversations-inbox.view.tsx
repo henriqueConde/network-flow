@@ -142,6 +142,8 @@ export function ConversationsInboxView({
         onOpportunitySelect={onOpportunitySelect}
         opportunities={opportunities}
         isSearchingOpportunities={isSearchingOpportunities}
+        availableCategories={availableCategories}
+        availableStages={availableStages}
       />
 
       <DeleteConversationDialog

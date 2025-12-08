@@ -20,8 +20,6 @@ export function ContactsPageContainer() {
   const {
     search,
     company,
-    categoryId,
-    stageId,
     primaryPlatform,
     warmOrCold,
     connectionStatus,
@@ -32,8 +30,6 @@ export function ContactsPageContainer() {
     sortDir,
     handleSearchChange,
     handleCompanyChange,
-    handleCategoryChange,
-    handleStageChange,
     handlePlatformChange,
     handleWarmOrColdChange,
     handleConnectionStatusChange,
@@ -72,8 +68,6 @@ export function ContactsPageContainer() {
       companyId: values.companyId || null,
       primaryPlatform: toNullIfEmpty(values.primaryPlatform) || null,
       tags: values.tags || [],
-      categoryId: values.categoryId || null,
-      stageId: values.stageId || null,
       email: toNullIfEmpty(values.email) || null,
       warmOrCold: values.warmOrCold || null,
       commonGround: toNullIfEmpty(values.commonGround) || null,
@@ -125,8 +119,6 @@ export function ContactsPageContainer() {
   } = useContactsList({
     search: search || undefined,
     company: company || undefined,
-    categoryId: categoryId || undefined,
-    stageId: stageId || undefined,
     primaryPlatform: primaryPlatform || undefined,
     warmOrCold: warmOrCold || undefined,
     connectionStatus: connectionStatus || undefined,
@@ -165,8 +157,6 @@ export function ContactsPageContainer() {
       error={error ? 'Failed to load contacts. Please try again.' : null}
       search={search}
       company={company}
-      categoryId={categoryId}
-      stageId={stageId}
       primaryPlatform={primaryPlatform}
       warmOrCold={warmOrCold}
       connectionStatus={connectionStatus}
@@ -178,8 +168,6 @@ export function ContactsPageContainer() {
       config={CONTACTS_PAGE_CONFIG}
       onSearchChange={handleSearchChange}
       onCompanyChange={handleCompanyChange}
-      onCategoryChange={handleCategoryChange}
-      onStageChange={handleStageChange}
       onPlatformChange={handlePlatformChange}
       onWarmOrColdChange={handleWarmOrColdChange}
       onConnectionStatusChange={handleConnectionStatusChange}

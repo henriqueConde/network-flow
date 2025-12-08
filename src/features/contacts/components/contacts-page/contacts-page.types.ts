@@ -14,8 +14,6 @@ export interface ContactsPageViewProps {
   error: string | null;
   search: string;
   company: string;
-  categoryId: string | null;
-  stageId: string | null;
   primaryPlatform: string | null;
   warmOrCold: 'warm' | 'cold' | null;
   connectionStatus: 'not_connected' | 'request_sent' | 'connected' | null;
@@ -27,8 +25,6 @@ export interface ContactsPageViewProps {
   config: typeof CONTACTS_PAGE_CONFIG;
   onSearchChange: (value: string) => void;
   onCompanyChange: (value: string) => void;
-  onCategoryChange: (value: string | null) => void;
-  onStageChange: (value: string | null) => void;
   onPlatformChange: (value: string | null) => void;
   onWarmOrColdChange: (value: 'warm' | 'cold' | null) => void;
   onConnectionStatusChange: (value: 'not_connected' | 'request_sent' | 'connected' | null) => void;

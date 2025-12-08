@@ -24,8 +24,6 @@ const ContactListItemDto = z.object({
   primaryPlatform: z.string().nullable(),
   profileLinks: z.record(z.string()).nullable(),
   tags: z.array(z.string()),
-  categoryId: z.string().nullable(),
-  stageId: z.string().nullable(),
   email: z.string().nullable(),
   warmOrCold: z.enum(['warm', 'cold']).nullable(),
   connectionStatus: z.enum(['not_connected', 'request_sent', 'connected']).nullable(),

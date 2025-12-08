@@ -14,6 +14,8 @@ export const CreateConversationFormSchema = z.object({
   channel: conversationChannelSchema,
   pastedText: z.string().min(1, 'Conversation text is required'),
   firstMessageSender: messageSideSchema.default('contact'),
+  categoryId: z.string().uuid().optional(),
+  stageId: z.string().uuid().optional(),
 });
 
 export type CreateConversationFormValues = z.infer<typeof CreateConversationFormSchema>;
