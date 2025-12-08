@@ -7,7 +7,6 @@ export type StrategyTrackingCardProps = {
     warmOrCold: 'warm' | 'cold' | null;
     commonGround: string | null;
     contactType: string | null;
-    strategyIds: string[];
   };
   editErrors: Partial<Record<keyof StrategyTrackingCardProps['editValues'], string>>;
   isEditing: boolean;
@@ -15,7 +14,7 @@ export type StrategyTrackingCardProps = {
   config: typeof CONTACT_DETAIL_CONFIG;
   onChangeEditField: (
     field: keyof StrategyTrackingCardProps['editValues'],
-    value: string | string[] | null,
+    value: string | null,
   ) => void;
 };
 

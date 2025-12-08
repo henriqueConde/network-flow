@@ -292,19 +292,6 @@ export function CreateConversationDialog({
         </TextField>
         <TextField
           select
-          label={config.copy.firstMessageSenderLabel}
-          fullWidth
-          size="small"
-          value={values.firstMessageSender}
-          onChange={(e) =>
-            onChangeField('firstMessageSender', e.target.value as typeof values.firstMessageSender)
-          }
-        >
-          <MenuItem value="contact">Contact</MenuItem>
-          <MenuItem value="user">You</MenuItem>
-        </TextField>
-        <TextField
-          select
           label="Category"
           fullWidth
           size="small"
@@ -332,6 +319,20 @@ export function CreateConversationDialog({
               {stage.name}
             </MenuItem>
           ))}
+        </TextField>
+        <TextField
+          select
+          label={config.copy.firstMessageSenderLabel}
+          fullWidth
+          size="small"
+          value={values.firstMessageSender}
+          onChange={(e) =>
+            onChangeField('firstMessageSender', e.target.value as typeof values.firstMessageSender)
+          }
+          helperText="Who sent the first message in this conversation?"
+        >
+          <MenuItem value="contact">Contact</MenuItem>
+          <MenuItem value="user">You</MenuItem>
         </TextField>
         <TextField
           label={config.copy.pastedTextLabel}

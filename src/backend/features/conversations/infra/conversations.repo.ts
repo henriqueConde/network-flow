@@ -64,11 +64,8 @@ export function makeConversationsRepo() {
       }
 
       if (categoryId) {
-        // Filter by contact's category, not conversation's category
-        where.contact = {
-          ...where.contact,
-          categoryId: categoryId,
-        };
+        // Filter by conversation's category
+        where.categoryId = categoryId;
       }
 
       if (stageId) {
@@ -123,15 +120,18 @@ export function makeConversationsRepo() {
               name: true,
               company: true,
               warmOrCold: true,
-              category: {
-                select: {
-                  name: true,
-                },
-              },
             },
           },
-          category: true,
-          stage: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+          stage: {
+            select: {
+              name: true,
+            },
+          },
           challenge: {
             select: {
               id: true,
@@ -161,7 +161,7 @@ export function makeConversationsRepo() {
           contactName: conv.contact.name,
           contactCompany: conv.contact.company ?? null,
           channel: conv.channel,
-          category: conv.contact.category?.name ?? null, // Use contact's category, not conversation's
+          category: conv.category?.name ?? null, // Use conversation's category
           stage: conv.stage?.name ?? null,
           lastMessageAt: conv.lastMessageAt,
           lastMessageSnippet: conv.lastMessageSnippet ?? null,

@@ -62,7 +62,6 @@ export function ContactDetailContent({
               warmOrCold: editValues.warmOrCold,
               commonGround: editValues.commonGround,
               contactType: editValues.contactType,
-              strategyIds: editValues.strategyIds,
             }}
             editErrors={editErrors}
             isEditing={isEditing}

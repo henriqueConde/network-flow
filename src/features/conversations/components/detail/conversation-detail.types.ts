@@ -38,6 +38,8 @@ export type ConversationDetailViewProps = {
   isSaving: boolean;
   // Callbacks
   onBack: () => void;
+  onViewContact: (contactId: string) => void;
+  onViewOpportunity: (opportunityId: string) => void;
   onToggleAutoFollowups: (enabled: boolean) => void;
   onChangeEditField: (
     field: keyof ConversationDetailViewProps['editValues'],

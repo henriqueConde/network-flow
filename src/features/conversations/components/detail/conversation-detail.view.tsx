@@ -24,6 +24,8 @@ export function ConversationDetailView({
   isEditingNotes,
   isSaving,
   onBack,
+  onViewContact,
+  onViewOpportunity,
   onToggleAutoFollowups,
   onChangeEditField,
   onSaveMetadata,
@@ -69,6 +71,7 @@ export function ConversationDetailView({
   return (
     <Box sx={styles.container()}>
       <ConversationDetailHeader
+        contactId={conversation.contactId}
         contactName={conversation.contactName}
         contactCompany={conversation.contactCompany}
         opportunityId={conversation.opportunityId}
@@ -76,6 +79,8 @@ export function ConversationDetailView({
         isOutOfSync={conversation.isOutOfSync}
         config={config}
         onBack={onBack}
+        onViewContact={onViewContact}
+        onViewOpportunity={onViewOpportunity}
         autoFollowupsEnabled={conversation.autoFollowupsEnabled}
         onToggleAutoFollowups={onToggleAutoFollowups}
       />

@@ -8,6 +8,7 @@ import { useUpdateConversation, useAddMessage, useUpdateMessage, useDeleteMessag
 import { useAnalyzeConversationMutation } from '../../services/conversation-ai.mutations';
 import { useConversationEdit } from './hooks/use-conversation-edit.state';
 import { useConversationDetailNavigation } from './hooks/use-conversation-detail-navigation.state';
+import { useRouter } from 'next/navigation';
 import { useConversationEditActions } from './hooks/use-conversation-edit-actions.state';
 import { useConversationAiAnalysis } from './hooks/use-conversation-ai-analysis.state';
 import { useAddReplyActions } from './hooks/use-add-reply-actions.state';
@@ -21,7 +22,16 @@ import { DELETE_MESSAGE_DIALOG_CONFIG } from './components/delete-message-dialog
 
 export function ConversationDetailContainer() {
   // Navigation
+  const router = useRouter();
   const { conversationId, handleBack } = useConversationDetailNavigation();
+
+  const handleViewContact = (contactId: string) => {
+    router.push(`/contacts/${contactId}`);
+  };
+
+  const handleViewOpportunity = (opportunityId: string) => {
+    router.push(`/opportunities/${opportunityId}`);
+  };
 
   // Data fetching
   const { data: conversation, isLoading, error } = useConversationDetail(conversationId);
@@ -79,6 +89,8 @@ export function ConversationDetailContainer() {
       isEditingNotes={edit.isEditingNotes}
       isSaving={updateMutation.isPending}
       onBack={handleBack}
+      onViewContact={handleViewContact}
+      onViewOpportunity={handleViewOpportunity}
       onToggleAutoFollowups={handleToggleAutoFollowups}
       onChangeEditField={editActions.handleFieldChange}
       onSaveMetadata={editActions.handleSaveMetadata}
