@@ -77,6 +77,22 @@ export function ConversationTableRow({
           />
         )}
       </TableCell>
+      <TableCell>
+        {conversation.warmOrCold ? (
+          <Chip
+            label={conversation.warmOrCold.charAt(0).toUpperCase() + conversation.warmOrCold.slice(1)}
+            size="small"
+            color={conversation.warmOrCold === 'warm' ? 'success' : 'default'}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">—</Typography>
+        )}
+      </TableCell>
+      <TableCell>
+        <Typography variant="body2" color="text.secondary">
+          {conversation.challengeName || '—'}
+        </Typography>
+      </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <IconButton
           size="small"

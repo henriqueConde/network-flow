@@ -136,6 +136,7 @@ model Opportunity {
   title           String?   // e.g., "Software Engineer at StartupXYZ" or "Networking with Jane"
   categoryId      String?   @db.Uuid
   stageId         String?   @db.Uuid
+  challengeId     String?   @map("challenge_id") @db.Uuid // Optional link to challenge
   nextActionType  String?   @map("next_action_type")
   nextActionDueAt DateTime? @map("next_action_due_at")
   priority        String?   // "low", "medium", "high", or null for closed
@@ -162,6 +163,7 @@ model Opportunity {
   contact      Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
   category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stage        Stage?        @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  challenge    Challenge?    @relation(fields: [challengeId], references: [id], onDelete: SetNull)
   conversations Conversation[]
   jobPosting   JobPosting?
 
@@ -178,6 +180,7 @@ model Conversation {
   userId              String    @db.Uuid
   contactId           String    @db.Uuid
   opportunityId       String?   @db.Uuid // Links conversation to opportunity (nullable for backwards compatibility)
+  challengeId         String?   @map("challenge_id") @db.Uuid // Optional link to challenge
   channel             String    // e.g., "linkedin", "email", "twitter"
   lastMessageAt       DateTime? @map("last_message_at")
   lastMessageSide     String?   @map("last_message_side") // "user" or "contact"
@@ -215,6 +218,7 @@ model Conversation {
   opportunity       Opportunity?       @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   category          Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stage             Stage?             @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  challenge         Challenge?         @relation(fields: [challengeId], references: [id], onDelete: SetNull)
   messages          Message[]
   linkedInEmailEvents LinkedInEmailEvent[]
   challengeConversations ChallengeConversation[]
@@ -347,6 +351,8 @@ model Challenge {
   user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   challengeContacts   ChallengeContact[]
   challengeConversations ChallengeConversation[]
+  conversations       Conversation[]
+  opportunities       Opportunity[]
 
   @@index([userId])
   @@index([startDate])

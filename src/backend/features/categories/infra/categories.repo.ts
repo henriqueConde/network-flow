@@ -42,14 +42,71 @@ export function makeCategoriesRepo() {
      */
     async ensureDefaultCategories(userId: string) {
       const defaultCategories = [
-        { name: 'Recently funded startup', description: 'Startup that recently raised funding' },
-        { name: 'Cold outreach', description: 'Initial contact without prior relationship' },
-        { name: 'Warm outreach', description: 'Contact through mutual connection or prior interaction' },
-        { name: 'Recruiter', description: 'Professional recruiter or talent acquisition' },
-        { name: 'Hiring manager', description: 'Direct hiring manager or team lead' },
-        { name: 'Speedster', description: 'Fast-moving or high-priority opportunity' },
+        { name: 'SMART Strategy', description: 'Systematic approach to warm and cold referrals' },
+        { name: 'Recently Funded Startup', description: 'Target startups that recently raised money before job ads get flooded' },
+        { name: 'Proof-Of-Work Outreach', description: 'Stand out by fixing real problems or building with the company\'s own product' },
+        { name: 'Loom Email Outreach', description: 'High-signal emails + 1–2 minute Loom videos to get direct replies from decision-makers' },
+        { name: 'Job Board Lead Sniping', description: 'Use LinkedIn jobs as lead generation, not as your main application channel' },
       ];
 
+      // Delete old default categories
+      const oldCategoryNames = [
+        'Cold outreach',
+        'Warm outreach',
+        'Recruiter',
+        'Hiring manager',
+        'Speedster',
+        'Recently funded startup', // Old lowercase version - delete this
+      ];
+
+      // Get all existing categories to check for case-insensitive matches
+      const allExistingCategories = await prisma.category.findMany({
+        where: { userId },
+        select: { id: true, name: true },
+      });
+
+      // Delete old categories (exact match)
+      await prisma.category.deleteMany({
+        where: {
+          userId,
+          name: { in: oldCategoryNames },
+        },
+      });
+
+      // Also delete "Recently funded startup" if it exists with any casing variation
+      // (to handle the case where user might have the old lowercase version)
+      const oldCategoryNamesLower = oldCategoryNames.map((n) => n.toLowerCase());
+      const categoriesToDeleteByCase = allExistingCategories.filter((cat) => {
+        const catNameLower = cat.name.toLowerCase();
+        // Delete if it matches old category names (case-insensitive)
+        return oldCategoryNamesLower.includes(catNameLower);
+      });
+
+      if (categoriesToDeleteByCase.length > 0) {
+        await prisma.category.deleteMany({
+          where: {
+            userId,
+            id: { in: categoriesToDeleteByCase.map((c) => c.id) },
+          },
+        });
+      }
+
+      // For "Recently Funded Startup", also delete any case variation that isn't exactly "Recently Funded Startup"
+      const recentlyFundedVariations = allExistingCategories.filter((cat) => {
+        const catNameLower = cat.name.toLowerCase();
+        return catNameLower === 'recently funded startup' && cat.name !== 'Recently Funded Startup';
+      });
+
+      if (recentlyFundedVariations.length > 0) {
+        await prisma.category.deleteMany({
+          where: {
+            userId,
+            id: { in: recentlyFundedVariations.map((c) => c.id) },
+          },
+        });
+      }
+
+      // Now check what categories exist after deletions
       const existingCategories = await prisma.category.findMany({
         where: { userId },
         select: { name: true },
@@ -58,24 +115,20 @@ export function makeCategoriesRepo() {
       const existingNames = new Set(existingCategories.map((c) => c.name));
       const categoriesToCreate = defaultCategories.filter((category) => !existingNames.has(category.name));
 
-      if (categoriesToCreate.length === 0) {
-        return [];
+      if (categoriesToCreate.length > 0) {
+        await prisma.category.createMany({
+          data: categoriesToCreate.map((category) => ({
+            userId,
+            name: category.name,
+            description: category.description,
+          })),
+        });
       }
 
-      const created = await prisma.category.createMany({
-        data: categoriesToCreate.map((category) => ({
-          userId,
-          name: category.name,
-          description: category.description,
-        })),
-      });
-
-      // Return the newly created categories
+      // Return all categories after migration (deletion and creation)
       return await prisma.category.findMany({
-        where: {
-          userId,
-          name: { in: categoriesToCreate.map((c) => c.name) },
-        },
+        where: { userId },
+        orderBy: { name: 'asc' },
       });
     },
   };

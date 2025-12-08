@@ -79,6 +79,7 @@ export async function PATCH(
       title: body.title,
       categoryId: body.categoryId,
       stageId: body.stageId,
+      challengeId: body.challengeId,
       nextActionType: body.nextActionType,
       nextActionDueAt: body.nextActionDueAt,
       priority: body.priority,

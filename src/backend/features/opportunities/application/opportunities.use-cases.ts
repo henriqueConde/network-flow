@@ -122,6 +122,7 @@ export async function createOpportunity(input: {
   title?: string;
   categoryId?: string;
   stageId?: string;
+  challengeId?: string;
   nextActionType?: string;
   nextActionDueAt?: string;
   priority?: 'low' | 'medium' | 'high' | null;
@@ -135,6 +136,7 @@ export async function createOpportunity(input: {
     title: input.title,
     categoryId: input.categoryId,
     stageId: input.stageId,
+    challengeId: input.challengeId,
     nextActionType: input.nextActionType,
     nextActionDueAt: input.nextActionDueAt ? new Date(input.nextActionDueAt) : undefined,
     priority: input.priority,
@@ -155,6 +157,7 @@ export async function updateOpportunity(input: {
   title?: string;
   categoryId?: string | null;
   stageId?: string | null;
+  challengeId?: string | null;
   nextActionType?: string | null;
   nextActionDueAt?: string | null;
   priority?: 'low' | 'medium' | 'high' | null;
@@ -179,6 +182,7 @@ export async function updateOpportunity(input: {
     title: input.title,
     categoryId: input.categoryId,
     stageId: input.stageId,
+    challengeId: input.challengeId,
     nextActionType: input.nextActionType,
     nextActionDueAt: input.nextActionDueAt ? new Date(input.nextActionDueAt) : null,
     priority: input.priority,

@@ -340,21 +340,6 @@ export function SmartStrategyContent({ config }: SmartStrategyContentProps) {
             </Box>
           )}
 
-          {copy.sections.howToTrackInApp.step6 && (
-            <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step6.title}
-              </Typography>
-              <Box sx={styles.sectionContent()}>
-                {copy.sections.howToTrackInApp.step6.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
-                ))}
-              </Box>
-            </Box>
-          )}
-
           {copy.sections.howToTrackInApp.tip && (
             <Box sx={styles.subsection()}>
               <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>

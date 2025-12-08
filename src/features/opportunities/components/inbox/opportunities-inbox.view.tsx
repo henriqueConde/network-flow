@@ -1,12 +1,41 @@
 'use client';
 
-import { Box, Typography, Button, CircularProgress, Alert, Pagination, TextField, MenuItem, Select, FormControl, InputLabel, Table, TableHead, TableRow, TableCell, TableBody, TableSortLabel, IconButton } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, Pagination, TextField, MenuItem, Select, FormControl, InputLabel, Table, TableHead, TableRow, TableCell, TableBody, TableSortLabel, IconButton, Chip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { OpportunityListItem } from '../../services/opportunities.service';
 import type { Category } from '@/features/categories';
 import type { Stage } from '@/features/stages';
 import { formatTimeAgo } from '@/features/conversations/components/inbox/components/utils/format-time-ago';
-import { OPPORTUNITIES_INBOX_CONFIG } from './opportunities-inbox.config';
+
+type OpportunitiesInboxConfig = {
+  copy: {
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+    createButton: string;
+    categoryFilter: {
+      label: string;
+      all: string;
+    };
+    stageFilter: {
+      label: string;
+      all: string;
+    };
+    table: {
+      contact: string;
+      title: string;
+      stage: string;
+      category: string;
+      nextAction: string;
+      priority: string;
+      lastMessage: string;
+      warmOrCold: string;
+      challenge: string;
+    };
+    emptyState: string;
+    deleteConfirm: string;
+  };
+};
 
 type OpportunitiesInboxViewProps = {
   opportunities: OpportunityListItem[];
@@ -22,7 +51,7 @@ type OpportunitiesInboxViewProps = {
   stageId: string | null;
   availableCategories: Category[];
   availableStages: Stage[];
-  config: typeof OPPORTUNITIES_INBOX_CONFIG;
+  config: OpportunitiesInboxConfig;
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string | null) => void;
   onStageChange: (value: string | null) => void;
@@ -205,6 +234,8 @@ export function OpportunitiesInboxView({
                       {config.copy.table.lastMessage}
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell>{config.copy.table.warmOrCold}</TableCell>
+                  <TableCell>{config.copy.table.challenge}</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -273,6 +304,22 @@ export function OpportunitiesInboxView({
                           —
                         </Typography>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      {opp.warmOrCold ? (
+                        <Chip
+                          label={opp.warmOrCold.charAt(0).toUpperCase() + opp.warmOrCold.slice(1)}
+                          size="small"
+                          color={opp.warmOrCold === 'warm' ? 'success' : 'default'}
+                        />
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">—</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {opp.challengeName || '—'}
+                      </Typography>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <IconButton

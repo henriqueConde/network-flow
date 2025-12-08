@@ -16,6 +16,9 @@ const InterviewInboxItemDto = z.object({
   priority: prioritySchema.nullable(),
   isOutOfSync: z.boolean(),
   needsAttention: z.boolean(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type InterviewInboxItemDto = z.infer<typeof InterviewInboxItemDto>;

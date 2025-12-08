@@ -18,6 +18,9 @@ const OpportunityListItemDto = z.object({
   updatedAt: z.string().datetime(),
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSnippet: z.string().nullable(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type OpportunityListItemDto = z.infer<typeof OpportunityListItemDto>;

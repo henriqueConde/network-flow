@@ -64,7 +64,11 @@ export function makeConversationsRepo() {
       }
 
       if (categoryId) {
-        where.categoryId = categoryId;
+        // Filter by contact's category, not conversation's category
+        where.contact = {
+          ...where.contact,
+          categoryId: categoryId,
+        };
       }
 
       if (stageId) {
@@ -114,9 +118,26 @@ export function makeConversationsRepo() {
       const conversations = await prisma.conversation.findMany({
         where,
         include: {
-          contact: true,
+          contact: {
+            select: {
+              name: true,
+              company: true,
+              warmOrCold: true,
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
           category: true,
           stage: true,
+          challenge: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
         orderBy:
           sortBy === 'priority'
@@ -140,7 +161,7 @@ export function makeConversationsRepo() {
           contactName: conv.contact.name,
           contactCompany: conv.contact.company ?? null,
           channel: conv.channel,
-          category: conv.category?.name ?? null,
+          category: conv.contact.category?.name ?? null, // Use contact's category, not conversation's
           stage: conv.stage?.name ?? null,
           lastMessageAt: conv.lastMessageAt,
           lastMessageSnippet: conv.lastMessageSnippet ?? null,
@@ -148,6 +169,9 @@ export function makeConversationsRepo() {
           priority: (conv.priority as 'low' | 'medium' | 'high' | null) ?? null,
           isOutOfSync: conv.isOutOfSync,
           needsAttention,
+          warmOrCold: conv.contact.warmOrCold as 'warm' | 'cold' | null,
+          challengeId: conv.challenge?.id ?? null,
+          challengeName: conv.challenge?.name ?? null,
         };
       });
     },
@@ -161,6 +185,7 @@ export function makeConversationsRepo() {
       contactName: string;
       contactCompany?: string;
       opportunityId?: string;
+      challengeId?: string;
       channel: ConversationChannelType;
       pastedText: string;
       categoryId?: string;
@@ -174,6 +199,7 @@ export function makeConversationsRepo() {
         contactName,
         contactCompany,
         opportunityId,
+        challengeId,
         channel,
         pastedText,
         categoryId,
@@ -265,6 +291,7 @@ export function makeConversationsRepo() {
           userId,
           contactId: ensuredContact.id,
           opportunityId: opportunity.id,
+          challengeId: challengeId ?? null,
           channel,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
@@ -302,7 +329,16 @@ export function makeConversationsRepo() {
           userId,
         },
         include: {
-          contact: true,
+          contact: {
+            include: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
           category: true,
           stage: true,
           opportunity: true,
@@ -337,8 +373,8 @@ export function makeConversationsRepo() {
         opportunityId: conversation.opportunityId ?? null,
         opportunityTitle: conversation.opportunity?.title ?? null,
         channel: conversation.channel,
-        categoryId: conversation.categoryId ?? null,
-        categoryName: conversation.category?.name ?? null,
+        categoryId: conversation.contact.categoryId ?? null, // Use contact's category
+        categoryName: conversation.contact.category?.name ?? null, // Use contact's category
         stageId: conversation.stageId ?? null,
         stageName: conversation.stage?.name ?? null,
         nextActionType: conversation.nextActionType ?? null,
@@ -417,6 +453,7 @@ export function makeConversationsRepo() {
       updates: {
         categoryId?: string | null;
         stageId?: string | null;
+        challengeId?: string | null;
         nextActionType?: string | null;
         nextActionDueAt?: Date | null;
         priority?: 'low' | 'medium' | 'high' | null;
@@ -504,6 +541,9 @@ export function makeConversationsRepo() {
       }
       if (updates.stageId !== undefined) {
         updateData.stageId = updates.stageId;
+      }
+      if (updates.challengeId !== undefined) {
+        updateData.challengeId = updates.challengeId;
       }
       if (updates.autoFollowupsEnabled !== undefined) {
         updateData.autoFollowupsEnabled = updates.autoFollowupsEnabled;

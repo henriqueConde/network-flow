@@ -35,6 +35,9 @@ export const conversationInboxItemDto = z.object({
   priority: prioritySchema.nullable(),
   isOutOfSync: z.boolean(),
   needsAttention: z.boolean(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type ConversationInboxItemDto = z.infer<typeof conversationInboxItemDto>;
@@ -54,6 +57,9 @@ export const createConversationBody = z.object({
 
   // Optional: link to an existing opportunity
   opportunityId: z.string().uuid().optional(),
+
+  // Optional: link to a challenge
+  challengeId: z.string().uuid().optional(),
 
   // Raw pasted conversation text; for v1 we store it as a single message
   pastedText: z.string().min(1, 'Conversation text is required'),
@@ -151,6 +157,7 @@ export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
 export const updateConversationBody = z.object({
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),

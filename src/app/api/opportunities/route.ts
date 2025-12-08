@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
       title: body.title,
       categoryId: body.categoryId,
       stageId: body.stageId,
+      challengeId: body.challengeId,
       nextActionType: body.nextActionType,
       nextActionDueAt: body.nextActionDueAt,
       priority: body.priority,

@@ -15,6 +15,9 @@ const ConversationInboxItemDto = z.object({
   priority: prioritySchema.nullable(),
   isOutOfSync: z.boolean(),
   needsAttention: z.boolean(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type ConversationInboxItemDto = z.infer<typeof ConversationInboxItemDto>;
@@ -26,6 +29,7 @@ export const CreateConversationBody = z.object({
   contactName: z.string().min(1),
   contactCompany: z.string().optional(),
   opportunityId: z.string().optional(),
+  challengeId: z.string().uuid().optional(),
   channel: conversationChannelSchema.default('linkedin'),
   pastedText: z.string().min(1),
   categoryId: z.string().optional(),
@@ -184,6 +188,7 @@ export type ConversationDetail = Omit<z.infer<typeof ConversationDetailDto>, 'me
 const UpdateConversationBody = z.object({
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),

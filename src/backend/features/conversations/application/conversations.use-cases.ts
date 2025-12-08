@@ -57,6 +57,7 @@ export async function createConversation(input: {
     contactName: parsed.contactName,
     contactCompany: parsed.contactCompany,
     opportunityId: parsed.opportunityId,
+    challengeId: parsed.challengeId,
     channel: parsed.channel,
     pastedText: parsed.pastedText,
     categoryId: parsed.categoryId,
@@ -141,6 +142,7 @@ export async function updateConversation(input: {
   const updates: {
     categoryId?: string | null;
     stageId?: string | null;
+    challengeId?: string | null;
     nextActionType?: string | null;
     nextActionDueAt?: Date | null;
     priority?: 'low' | 'medium' | 'high' | null;
@@ -165,6 +167,9 @@ export async function updateConversation(input: {
   }
   if (input.body.stageId !== undefined) {
     updates.stageId = input.body.stageId;
+  }
+  if (input.body.challengeId !== undefined) {
+    updates.challengeId = input.body.challengeId;
   }
   if (input.body.nextActionType !== undefined) {
     updates.nextActionType = input.body.nextActionType;

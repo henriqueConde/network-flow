@@ -36,6 +36,9 @@ export const opportunityListItemDto = z.object({
   updatedAt: z.string().datetime(),
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSnippet: z.string().nullable(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type OpportunityListItemDto = z.infer<typeof opportunityListItemDto>;
@@ -140,6 +143,7 @@ export const createOpportunityBody = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  challengeId: z.string().uuid().optional(),
   nextActionType: z.string().optional(),
   nextActionDueAt: z.string().datetime().optional(),
   priority: prioritySchema.optional(),
@@ -164,6 +168,7 @@ export const updateOpportunityBody = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),

@@ -278,9 +278,21 @@ export function makeOpportunitiesRepo() {
         prisma.opportunity.findMany({
           where,
           include: {
-            contact: true,
+            contact: {
+              select: {
+                name: true,
+                company: true,
+                warmOrCold: true,
+              },
+            },
             category: true,
             stage: true,
+            challenge: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
             conversations: {
               orderBy: {
                 lastMessageAt: 'desc',
@@ -309,6 +321,9 @@ export function makeOpportunitiesRepo() {
           updatedAt: opp.updatedAt,
           lastMessageAt: opp.conversations[0]?.lastMessageAt ?? null,
           lastMessageSnippet: opp.conversations[0]?.lastMessageSnippet ?? null,
+          warmOrCold: opp.contact.warmOrCold as 'warm' | 'cold' | null,
+          challengeId: opp.challenge?.id ?? null,
+          challengeName: opp.challenge?.name ?? null,
         })),
         total,
         page,
@@ -326,6 +341,7 @@ export function makeOpportunitiesRepo() {
       title?: string;
       categoryId?: string;
       stageId?: string;
+      challengeId?: string;
       nextActionType?: string;
       nextActionDueAt?: Date;
       priority?: 'low' | 'medium' | 'high' | null;
@@ -337,6 +353,7 @@ export function makeOpportunitiesRepo() {
         title,
         categoryId,
         stageId,
+        challengeId,
         nextActionType,
         nextActionDueAt,
         priority,
@@ -350,6 +367,7 @@ export function makeOpportunitiesRepo() {
           title: title ?? null,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
+          challengeId: challengeId ?? null,
           nextActionType: nextActionType ?? null,
           nextActionDueAt: nextActionDueAt ?? null,
           priority: priority ?? null,
@@ -367,6 +385,7 @@ export function makeOpportunitiesRepo() {
       title?: string;
       categoryId?: string | null;
       stageId?: string | null;
+      challengeId?: string | null;
       nextActionType?: string | null;
       nextActionDueAt?: Date | null;
       priority?: 'low' | 'medium' | 'high' | null;
@@ -389,6 +408,7 @@ export function makeOpportunitiesRepo() {
         title,
         categoryId,
         stageId,
+        challengeId,
         nextActionType,
         nextActionDueAt,
         priority,
@@ -423,6 +443,7 @@ export function makeOpportunitiesRepo() {
       if (title !== undefined) updateData.title = title;
       if (categoryId !== undefined) updateData.categoryId = categoryId;
       if (stageId !== undefined) updateData.stageId = stageId;
+      if (challengeId !== undefined) updateData.challengeId = challengeId;
       if (nextActionType !== undefined) updateData.nextActionType = nextActionType;
       if (nextActionDueAt !== undefined) updateData.nextActionDueAt = nextActionDueAt;
       if (priority !== undefined) updateData.priority = priority;
