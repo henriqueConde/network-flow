@@ -1,8 +1,9 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import { styles } from '../strategies-page.styles';
-import type { LOOM_EMAIL_OUTREACH_STRATEGY_CONFIG } from '../strategies-page.config';
+import { styles } from '../../strategies-page.styles';
+import type { LOOM_EMAIL_OUTREACH_STRATEGY_CONFIG } from '../../strategies-page.config';
+import { StrategyItem, SectionTitle, SubsectionTitle, InfoBox, QuoteBox } from '../strategy-content-elements';
 
 interface LoomEmailOutreachStrategyContentProps {
   config: typeof LOOM_EMAIL_OUTREACH_STRATEGY_CONFIG;
@@ -21,13 +22,20 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
           {copy.subtitle}
         </Typography>
         <Typography variant="body1" sx={styles.strategySubtitle()}>
-          {copy.description.split('\n').map((line, index) => (
+          {typeof copy.description === 'string' ? copy.description.split('\n').map((line, index) => (
             <span key={index}>
               {line}
               {index < copy.description.split('\n').length - 1 && <br />}
             </span>
-          ))}
+          )) : copy.description}
         </Typography>
+        {copy.note && typeof copy.note === 'object' && (
+          <InfoBox 
+            text={copy.note.text} 
+            type={copy.note.type}
+            icon={copy.note.icon}
+          />
+        )}
       </Box>
 
       {/* What This Strategy Is */}
@@ -74,13 +82,16 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
               {reason.title}
             </Typography>
             <Typography variant="body1" sx={styles.sectionContent()}>
-              {reason.content.split('\n').map((line, lineIndex) => (
+              {String(reason.content).split('\n').map((line, lineIndex, lines) => (
                 <span key={lineIndex}>
                   {line}
-                  {lineIndex < reason.content.split('\n').length - 1 && <br />}
+                  {lineIndex < lines.length - 1 && <br />}
                 </span>
               ))}
             </Typography>
+            {'quote' in reason && reason.quote && (
+              <QuoteBox text={reason.quote.text} author={reason.quote.author} />
+            )}
           </Box>
         ))}
       </Box>
@@ -391,40 +402,6 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
         </Box>
       </Box>
 
-      {/* Tracking */}
-      <Box sx={styles.section()}>
-        <Typography variant="h5" sx={styles.sectionTitle()}>
-          {copy.sections.tracking.title}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.tracking.description}
-        </Typography>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.tracking.forEachEmail.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.tracking.forEachEmail.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.tracking.thenYouCanSee.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.tracking.thenYouCanSee.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
       {/* How It Fits */}
       <Box sx={styles.section()}>
         <Typography variant="h5" sx={styles.sectionTitle()}>
@@ -465,23 +442,21 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
       {/* How to Track in App */}
       {copy.sections.howToTrackInApp && (
         <Box sx={styles.section()}>
-          <Typography variant="h5" sx={styles.sectionTitle()}>
-            {copy.sections.howToTrackInApp.title}
-          </Typography>
+          <SectionTitle title={copy.sections.howToTrackInApp.title} icon={copy.sections.howToTrackInApp.icon} />
           <Typography variant="body1" sx={styles.sectionContent()}>
             {copy.sections.howToTrackInApp.description}
           </Typography>
 
           {copy.sections.howToTrackInApp.step1 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step1.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step1.title} 
+                icon={copy.sections.howToTrackInApp.step1.icon}
+                link={'link' in copy.sections.howToTrackInApp.step1 ? (copy.sections.howToTrackInApp.step1.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step1.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -489,14 +464,14 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
 
           {copy.sections.howToTrackInApp.step2 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step2.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step2.title} 
+                icon={copy.sections.howToTrackInApp.step2.icon}
+                link={'link' in copy.sections.howToTrackInApp.step2 ? (copy.sections.howToTrackInApp.step2.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step2.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -504,14 +479,14 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
 
           {copy.sections.howToTrackInApp.step3 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step3.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step3.title} 
+                icon={copy.sections.howToTrackInApp.step3.icon}
+                link={'link' in copy.sections.howToTrackInApp.step3 ? (copy.sections.howToTrackInApp.step3.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step3.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -519,14 +494,14 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
 
           {copy.sections.howToTrackInApp.step4 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step4.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step4.title} 
+                icon={copy.sections.howToTrackInApp.step4.icon}
+                link={'link' in copy.sections.howToTrackInApp.step4 ? (copy.sections.howToTrackInApp.step4.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step4.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -534,14 +509,14 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
 
           {copy.sections.howToTrackInApp.step5 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step5.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step5.title} 
+                icon={copy.sections.howToTrackInApp.step5.icon}
+                link={'link' in copy.sections.howToTrackInApp.step5 ? (copy.sections.howToTrackInApp.step5.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step5.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -549,14 +524,14 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
 
           {copy.sections.howToTrackInApp.step6 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step6.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step6.title} 
+                icon={copy.sections.howToTrackInApp.step6.icon}
+                link={'link' in copy.sections.howToTrackInApp.step6 ? (copy.sections.howToTrackInApp.step6.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step6.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -564,9 +539,17 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
 
           {copy.sections.howToTrackInApp.tip && (
             <Box sx={styles.subsection()}>
-              <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
-                💡 {copy.sections.howToTrackInApp.tip}
-              </Typography>
+              {typeof copy.sections.howToTrackInApp.tip === 'string' ? (
+                <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
+                  💡 {copy.sections.howToTrackInApp.tip}
+                </Typography>
+              ) : (
+                <InfoBox 
+                  text={copy.sections.howToTrackInApp.tip.text} 
+                  type={copy.sections.howToTrackInApp.tip.type}
+                  link={copy.sections.howToTrackInApp.tip.link}
+                />
+              )}
             </Box>
           )}
         </Box>

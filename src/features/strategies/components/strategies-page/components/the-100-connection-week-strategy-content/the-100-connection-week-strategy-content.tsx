@@ -1,8 +1,9 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import { styles } from '../strategies-page.styles';
-import type { THE_100_CONNECTION_WEEK_STRATEGY_CONFIG } from '../strategies-page.config';
+import { styles } from '../../strategies-page.styles';
+import type { THE_100_CONNECTION_WEEK_STRATEGY_CONFIG } from '../../strategies-page.config';
+import { StrategyItem, SectionTitle, SubsectionTitle, InfoBox } from '../strategy-content-elements';
 
 interface The100ConnectionWeekStrategyContentProps {
   config: typeof THE_100_CONNECTION_WEEK_STRATEGY_CONFIG;
@@ -143,14 +144,27 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
         <Typography variant="body1" sx={styles.sectionContent()}>
           {copy.sections.conversion3.whyItMatters}
         </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.conversion3.summary.split('\n').map((line, index) => (
-            <span key={index}>
-              {line}
-              {index < copy.sections.conversion3.summary.split('\n').length - 1 && <br />}
-            </span>
-          ))}
-        </Typography>
+        {typeof copy.sections.conversion3.summary === 'string' ? (
+          <Typography variant="body1" sx={styles.sectionContent()}>
+            {(copy.sections.conversion3.summary as string).split('\n').map((line: string, index: number, lines: string[]) => (
+              <span key={index}>
+                {line}
+                {index < lines.length - 1 && <br />}
+              </span>
+            ))}
+          </Typography>
+        ) : (
+          <Box sx={styles.sectionContent()}>
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+              {copy.sections.conversion3.summary.text.split('\n').map((line: string, index: number, lines: string[]) => (
+                <span key={index}>
+                  {line}
+                  {index < lines.length - 1 && <br />}
+                </span>
+              ))}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Endgame */}
@@ -296,23 +310,21 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
       {/* How to Track in App */}
       {copy.sections.howToTrackInApp && (
         <Box sx={styles.section()}>
-          <Typography variant="h5" sx={styles.sectionTitle()}>
-            {copy.sections.howToTrackInApp.title}
-          </Typography>
+          <SectionTitle title={copy.sections.howToTrackInApp.title} icon={copy.sections.howToTrackInApp.icon} />
           <Typography variant="body1" sx={styles.sectionContent()}>
             {copy.sections.howToTrackInApp.description}
           </Typography>
 
           {copy.sections.howToTrackInApp.step1 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step1.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step1.title} 
+                icon={copy.sections.howToTrackInApp.step1.icon}
+                link={'link' in copy.sections.howToTrackInApp.step1 ? copy.sections.howToTrackInApp.step1.link : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step1.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -320,14 +332,14 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
 
           {copy.sections.howToTrackInApp.step2 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step2.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step2.title} 
+                icon={copy.sections.howToTrackInApp.step2.icon}
+                link={'link' in copy.sections.howToTrackInApp.step2 ? copy.sections.howToTrackInApp.step2.link : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step2.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -335,14 +347,14 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
 
           {copy.sections.howToTrackInApp.step3 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step3.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step3.title} 
+                icon={copy.sections.howToTrackInApp.step3.icon}
+                link={'link' in copy.sections.howToTrackInApp.step3 ? copy.sections.howToTrackInApp.step3.link : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step3.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -350,14 +362,14 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
 
           {copy.sections.howToTrackInApp.step4 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step4.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step4.title} 
+                icon={copy.sections.howToTrackInApp.step4.icon}
+                link={'link' in copy.sections.howToTrackInApp.step4 ? (copy.sections.howToTrackInApp.step4.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step4.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -365,14 +377,14 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
 
           {copy.sections.howToTrackInApp.step5 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step5.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step5.title} 
+                icon={copy.sections.howToTrackInApp.step5.icon}
+                link={'link' in copy.sections.howToTrackInApp.step5 ? copy.sections.howToTrackInApp.step5.link : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step5.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -380,14 +392,14 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
 
           {copy.sections.howToTrackInApp.step6 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step6.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step6.title} 
+                icon={copy.sections.howToTrackInApp.step6.icon}
+                link={'link' in copy.sections.howToTrackInApp.step6 ? (copy.sections.howToTrackInApp.step6.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step6.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -395,9 +407,17 @@ export function The100ConnectionWeekStrategyContent({ config }: The100Connection
 
           {copy.sections.howToTrackInApp.tip && (
             <Box sx={styles.subsection()}>
-              <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
-                💡 {copy.sections.howToTrackInApp.tip}
-              </Typography>
+              {typeof copy.sections.howToTrackInApp.tip === 'string' ? (
+                <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
+                  💡 {copy.sections.howToTrackInApp.tip}
+                </Typography>
+              ) : (
+                <InfoBox 
+                  text={copy.sections.howToTrackInApp.tip.text} 
+                  type={copy.sections.howToTrackInApp.tip.type}
+                  link={copy.sections.howToTrackInApp.tip.link}
+                />
+              )}
             </Box>
           )}
         </Box>

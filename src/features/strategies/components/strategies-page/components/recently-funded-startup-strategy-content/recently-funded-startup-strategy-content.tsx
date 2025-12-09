@@ -1,8 +1,9 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import { styles } from '../strategies-page.styles';
-import type { RECENTLY_FUNDED_STARTUP_STRATEGY_CONFIG } from '../strategies-page.config';
+import { styles } from '../../strategies-page.styles';
+import type { RECENTLY_FUNDED_STARTUP_STRATEGY_CONFIG } from '../../strategies-page.config';
+import { StrategyItem, SectionTitle, SubsectionTitle, InfoBox, GoalBox } from '../strategy-content-elements';
 
 interface RecentlyFundedStartupStrategyContentProps {
   config: typeof RECENTLY_FUNDED_STARTUP_STRATEGY_CONFIG;
@@ -24,37 +25,46 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
 
       {/* What It Is */}
       <Box sx={styles.section()}>
-        <Typography variant="h5" sx={styles.sectionTitle()}>
-          {copy.sections.whatItIs.title}
-        </Typography>
+        <SectionTitle title={copy.sections.whatItIs.title} />
 
         <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.whatItIs.goal.title}
-          </Typography>
-          <Typography variant="body1" sx={styles.sectionContent()}>
-            {copy.sections.whatItIs.goal.content}
-          </Typography>
+          <SubsectionTitle 
+            title={copy.sections.whatItIs.goal.title} 
+            icon={copy.sections.whatItIs.goal.icon}
+          />
+          {typeof copy.sections.whatItIs.goal.content === 'string' ? (
+            <Typography variant="body1" sx={styles.sectionContent()}>
+              {copy.sections.whatItIs.goal.content}
+            </Typography>
+          ) : (
+            <GoalBox content={copy.sections.whatItIs.goal.content} />
+          )}
         </Box>
 
         <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.whatItIs.whyItWorks.title}
-          </Typography>
+          <SubsectionTitle 
+            title={copy.sections.whatItIs.whyItWorks.title} 
+            icon={copy.sections.whatItIs.whyItWorks.icon}
+          />
           <Box sx={styles.sectionContent()}>
             {copy.sections.whatItIs.whyItWorks.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
 
         {copy.sections.whatItIs.note && (
           <Box sx={styles.subsection()}>
-            <Typography variant="body1" sx={styles.sectionContent()}>
-              {copy.sections.whatItIs.note}
-            </Typography>
+            {typeof copy.sections.whatItIs.note === 'string' ? (
+              <Typography variant="body1" sx={styles.sectionContent()}>
+                {copy.sections.whatItIs.note}
+              </Typography>
+            ) : (
+              <InfoBox 
+                text={copy.sections.whatItIs.note.text} 
+                type={copy.sections.whatItIs.note.type}
+              />
+            )}
           </Box>
         )}
       </Box>
@@ -75,9 +85,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.prep.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -89,9 +97,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.findStartups.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -103,9 +109,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.forEachStartup.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -117,9 +121,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.findDecisionMakers.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -131,9 +133,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.sendConnectionRequests.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -145,9 +145,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.convertToConversations.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -159,9 +157,7 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
           </Typography>
           <Box sx={styles.sectionContent()}>
             {copy.sections.workflow.followUp.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
+              <StrategyItem key={index} item={item} index={index} />
             ))}
           </Box>
         </Box>
@@ -243,64 +239,24 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
         </Box>
       </Box>
 
-      {/* Tracking Structure */}
-      <Box sx={styles.section()}>
-        <Typography variant="h5" sx={styles.sectionTitle()}>
-          {copy.sections.trackingStructure.title}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.trackingStructure.description}
-        </Typography>
-
-        {/* Company Fields */}
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.trackingStructure.companyFields.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.trackingStructure.companyFields.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-
-        {/* Contact Fields */}
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.trackingStructure.contactFields.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.trackingStructure.contactFields.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
       {/* How to Track in App */}
       {copy.sections.howToTrackInApp && (
         <Box sx={styles.section()}>
-          <Typography variant="h5" sx={styles.sectionTitle()}>
-            {copy.sections.howToTrackInApp.title}
-          </Typography>
+          <SectionTitle title={copy.sections.howToTrackInApp.title} icon={copy.sections.howToTrackInApp.icon} />
           <Typography variant="body1" sx={styles.sectionContent()}>
             {copy.sections.howToTrackInApp.description}
           </Typography>
 
           {copy.sections.howToTrackInApp.step1 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step1.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step1.title} 
+                icon={copy.sections.howToTrackInApp.step1.icon}
+                link={'link' in copy.sections.howToTrackInApp.step1 ? (copy.sections.howToTrackInApp.step1.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step1.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -308,14 +264,14 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
 
           {copy.sections.howToTrackInApp.step2 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step2.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step2.title} 
+                icon={copy.sections.howToTrackInApp.step2.icon}
+                link={'link' in copy.sections.howToTrackInApp.step2 ? (copy.sections.howToTrackInApp.step2.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step2.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -323,14 +279,14 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
 
           {copy.sections.howToTrackInApp.step3 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step3.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step3.title} 
+                icon={copy.sections.howToTrackInApp.step3.icon}
+                link={'link' in copy.sections.howToTrackInApp.step3 ? (copy.sections.howToTrackInApp.step3.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step3.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -338,14 +294,14 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
 
           {copy.sections.howToTrackInApp.step4 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step4.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step4.title} 
+                icon={copy.sections.howToTrackInApp.step4.icon}
+                link={'link' in copy.sections.howToTrackInApp.step4 ? (copy.sections.howToTrackInApp.step4.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step4.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -353,14 +309,14 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
 
           {copy.sections.howToTrackInApp.step5 && (
             <Box sx={styles.subsection()}>
-              <Typography variant="h6" sx={styles.subsectionTitle()}>
-                {copy.sections.howToTrackInApp.step5.title}
-              </Typography>
+              <SubsectionTitle 
+                title={copy.sections.howToTrackInApp.step5.title} 
+                icon={copy.sections.howToTrackInApp.step5.icon}
+                link={'link' in copy.sections.howToTrackInApp.step5 ? (copy.sections.howToTrackInApp.step5.link as { text: string; route: string }) : undefined}
+              />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step5.items.map((item, index) => (
-                  <Typography key={index} component="p" sx={styles.listItem()}>
-                    {item}
-                  </Typography>
+                  <StrategyItem key={index} item={item} index={index} />
                 ))}
               </Box>
             </Box>
@@ -368,9 +324,17 @@ export function RecentlyFundedStartupStrategyContent({ config }: RecentlyFundedS
 
           {copy.sections.howToTrackInApp.tip && (
             <Box sx={styles.subsection()}>
-              <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
-                💡 {copy.sections.howToTrackInApp.tip}
-              </Typography>
+              {typeof copy.sections.howToTrackInApp.tip === 'string' ? (
+                <Typography variant="body2" sx={{ ...styles.sectionContent(), fontStyle: 'italic', fontWeight: 500 }}>
+                  💡 {copy.sections.howToTrackInApp.tip}
+                </Typography>
+              ) : (
+                <InfoBox 
+                  text={copy.sections.howToTrackInApp.tip.text} 
+                  type={copy.sections.howToTrackInApp.tip.type}
+                  link={copy.sections.howToTrackInApp.tip.link}
+                />
+              )}
             </Box>
           )}
         </Box>
