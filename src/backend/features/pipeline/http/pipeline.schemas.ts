@@ -86,6 +86,7 @@ export type MoveOpportunityResponseDto = z.infer<typeof moveOpportunityResponseD
 export const getPipelineBoardQuery = z.object({
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  search: z.string().optional(),
 });
 
 export type GetPipelineBoardQuery = z.infer<typeof getPipelineBoardQuery>;

@@ -78,6 +78,15 @@ const ConversationDetailDto = z.object({
 });
 
 /**
+ * Contact DTO for opportunity detail.
+ */
+const OpportunityContactDto = z.object({
+  id: z.string(),
+  name: z.string(),
+  company: z.string().nullable(),
+});
+
+/**
  * Opportunity detail DTO from API.
  */
 const OpportunityDetailDto = z.object({
@@ -108,6 +117,7 @@ const OpportunityDetailDto = z.object({
   teamResponses: z.any().nullable(), // JSON field - array of { name, response, date }
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  contacts: z.array(OpportunityContactDto),
   conversations: z.array(ConversationDetailDto),
 });
 
@@ -145,7 +155,14 @@ export type ConversationDetail = {
   } | null;
 };
 
-export type OpportunityDetail = Omit<z.infer<typeof OpportunityDetailDto>, 'conversations' | 'createdAt' | 'updatedAt' | 'nextActionDueAt'> & {
+export type OpportunityContact = {
+  id: string;
+  name: string;
+  company: string | null;
+};
+
+export type OpportunityDetail = Omit<z.infer<typeof OpportunityDetailDto>, 'conversations' | 'createdAt' | 'updatedAt' | 'nextActionDueAt' | 'contacts'> & {
+  contacts: OpportunityContact[];
   conversations: ConversationDetail[];
   nextActionDueAtDate: Date | null;
   createdAtDate: Date;
@@ -232,6 +249,7 @@ export async function getOpportunityDetail(id: string): Promise<OpportunityDetai
 
   return {
     ...data,
+    contacts: data.contacts || [],
     nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
     createdAtDate: new Date(data.createdAt),
     updatedAtDate: new Date(data.updatedAt),
@@ -270,28 +288,11 @@ export async function updateOpportunity(
 ): Promise<OpportunityDetail> {
   const body = UpdateOpportunityPayload.parse(payload);
   const res = await client.patch(`/api/opportunities/${id}`, body);
-  const data = OpportunityDetailDto.parse(res.data);
-
-  return {
-    ...data,
-    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
-    createdAtDate: new Date(data.createdAt),
-    updatedAtDate: new Date(data.updatedAt),
-    conversations: data.conversations.map((conv) => ({
-      ...conv,
-      lastMessageAt: conv.lastMessageAt ? new Date(conv.lastMessageAt) : null,
-      messages: conv.messages.map((msg) => ({
-        ...msg,
-        sentAt: new Date(msg.sentAt),
-      })),
-      latestEmailEvent: conv.latestEmailEvent
-        ? {
-          ...conv.latestEmailEvent,
-          emailReceivedAt: new Date(conv.latestEmailEvent.emailReceivedAt),
-        }
-        : null,
-    })),
-  };
+  
+  // The API returns { id, success }, so we need to refetch the full opportunity detail
+  // React Query will handle the refetch automatically via invalidation, but we need to return something
+  // that matches the expected type. We'll refetch it here.
+  return getOpportunityDetail(id);
 }
 
 /**

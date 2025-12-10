@@ -1,15 +1,16 @@
 'use client';
 
-import { Box, Typography, Button, CircularProgress, Alert, Divider, Card, CardContent, Chip } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, Divider, Card, CardContent, Chip, TextField } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
 import type { OpportunityDetail } from '../../services/opportunities.service';
 import { useMemo } from 'react';
-import { ProofOfWorkEditCard } from './components/proof-of-work-edit-card';
 import type { Category } from '@/features/categories';
 import type { Stage } from '@/features/stages';
+import { styles } from './opportunity-detail.styles';
 
 type OpportunityDetailViewProps = {
   opportunity: OpportunityDetail | null;
@@ -51,6 +52,7 @@ type OpportunityDetailViewProps = {
   onConversationClick: (conversationId: string) => void;
   onInterviewClick: (conversationId: string) => void;
   onOpenCreateConversation: () => void;
+  onContactClick: (contactId: string) => void;
 };
 
 export function OpportunityDetailView({
@@ -71,6 +73,7 @@ export function OpportunityDetailView({
   onConversationClick,
   onInterviewClick,
   onOpenCreateConversation,
+  onContactClick,
 }: OpportunityDetailViewProps) {
   // Separate conversations into interviews and all conversations
   // Interviews should appear in BOTH sections (as interviews AND as conversations)
@@ -96,17 +99,19 @@ export function OpportunityDetailView({
 
   if (error || !opportunity) {
     return (
-      <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          sx={{ marginBottom: 2 }}
-        >
-          Back
-        </Button>
-        <Alert severity={!opportunity ? 'info' : 'error'}>
-          {!opportunity ? 'Opportunity not found' : error}
-        </Alert>
+      <Box sx={styles.container()}>
+        <Box sx={styles.headerSection()}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={onBack}
+            sx={{ marginBottom: 2 }}
+          >
+            Back
+          </Button>
+          <Alert severity={!opportunity ? 'info' : 'error'}>
+            {!opportunity ? 'Opportunity not found' : error}
+          </Alert>
+        </Box>
       </Box>
     );
   }
@@ -123,52 +128,105 @@ export function OpportunityDetailView({
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 2 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-        >
-          Back
-        </Button>
-        {!isEditing && (
+    <Box sx={styles.container()}>
+      {/* Header Section */}
+      <Box sx={styles.headerSection()}>
+        <Box sx={styles.headerActions()}>
           <Button
-            startIcon={<EditIcon />}
-            variant="outlined"
-            onClick={onStartEdit}
+            startIcon={<ArrowBackIcon />}
+            onClick={onBack}
           >
-            Edit
+            Back
           </Button>
+          {!isEditing && (
+            <Button
+              startIcon={<EditIcon />}
+              variant="outlined"
+              onClick={onStartEdit}
+            >
+              Edit
+            </Button>
+          )}
+          {isEditing && (
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={onCancel}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={onSave}
+                disabled={isSaving}
+                startIcon={isSaving ? <CircularProgress size={20} /> : null}
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {/* Opportunity Title */}
+        {isEditing ? (
+          <TextField
+            fullWidth
+            label="Opportunity Name"
+            value={editValues.title || ''}
+            onChange={(e) => onChangeEditField('title', e.target.value || null)}
+            error={!!editErrors.title}
+            helperText={editErrors.title}
+            sx={{ marginTop: 2 }}
+            placeholder="Enter opportunity name"
+          />
+        ) : (
+          <Typography variant="h4" sx={styles.title()}>
+            {opportunity.title || opportunity.contactName}
+          </Typography>
         )}
       </Box>
 
-      <Typography variant="h4" gutterBottom>
-        {opportunity.title || opportunity.contactName}
-      </Typography>
-
-      {/* Proof-of-Work Section */}
-      <ProofOfWorkEditCard
-        opportunity={opportunity}
-        editValues={{
-          strategyIds: editValues.strategyIds,
-          proofOfWorkType: editValues.proofOfWorkType,
-          issuesFound: editValues.issuesFound,
-          projectDetails: editValues.projectDetails,
-          loomVideoUrl: editValues.loomVideoUrl,
-          githubRepoUrl: editValues.githubRepoUrl,
-          liveDemoUrl: editValues.liveDemoUrl,
-          sharedChannels: editValues.sharedChannels,
-          teamResponses: editValues.teamResponses,
-        }}
-        editErrors={editErrors}
-        isEditing={isEditing}
-        isSaving={isSaving}
-        availableCategories={availableCategories}
-        availableStages={availableStages}
-        onChangeEditField={onChangeEditField}
-        onSave={onSave}
-        onCancel={onCancel}
-      />
+      {/* Scrollable Content */}
+      <Box sx={styles.scrollableContent()}>
+        {/* Contacts Section */}
+      {opportunity.contacts && opportunity.contacts.length > 0 && (
+        <Box sx={{ marginTop: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Contacts ({opportunity.contacts.length})
+          </Typography>
+          {opportunity.contacts.map((contact) => (
+            <Card key={contact.id} sx={{ marginBottom: 2 }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                    <PersonIcon color="action" />
+                    <Box>
+                      <Typography variant="h6">
+                        {contact.name}
+                      </Typography>
+                      {contact.company && (
+                        <Typography variant="body2" color="text.secondary">
+                          {contact.company}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => onContactClick(contact.id)}
+                    sx={{ ml: 2 }}
+                  >
+                    View Contact
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
 
       <Divider sx={{ my: 3 }} />
 
@@ -289,6 +347,7 @@ export function OpportunityDetailView({
             );
           })
         )}
+      </Box>
       </Box>
     </Box>
   );

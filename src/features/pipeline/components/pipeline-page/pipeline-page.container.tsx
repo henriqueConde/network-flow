@@ -6,6 +6,7 @@ import { usePipelineBoard } from '../../services/pipeline.queries';
 import { useMoveOpportunity } from '../../services/pipeline.mutations';
 import { useStages } from '@/features/stages';
 import { useCategories } from '@/features/categories';
+import { useDebounce } from '@/shared/hooks';
 import { PipelinePageView } from './pipeline-page.view';
 import { PIPELINE_PAGE_CONFIG } from './pipeline-page.config';
 
@@ -13,10 +14,15 @@ export function PipelinePageContainer() {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [stageId, setStageId] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>('');
+
+  // Debounce search to avoid excessive API calls
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data: board, isLoading, error } = usePipelineBoard({
     categoryId: categoryId || undefined,
     stageId: stageId || undefined,
+    search: debouncedSearch.trim() || undefined,
   });
   const { data: stages = [] } = useStages();
   const { data: categories = [] } = useCategories();
@@ -52,8 +58,10 @@ export function PipelinePageContainer() {
       availableCategories={categories}
       categoryId={categoryId}
       stageId={stageId}
+      search={search}
       onCategoryChange={setCategoryId}
       onStageChange={setStageId}
+      onSearchChange={setSearch}
     />
   );
 }

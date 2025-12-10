@@ -177,6 +177,11 @@ export const styles = {
     fontSize: '0.875rem',
     color: theme.palette.text.secondary,
   }),
+  opportunityContact: () => (theme: Theme) => ({
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
+    mt: 0.25,
+  }),
   opportunityMeta: () => (theme: Theme) => ({
     mt: 1,
     pt: 1,

@@ -2,6 +2,9 @@ export const PIPELINE_PAGE_CONFIG = {
   copy: {
     title: 'Pipeline',
     subtitle: 'Your networking and interview funnel',
+    search: {
+      placeholder: 'Search by opportunity title, contact name, or company...',
+    },
     categoryFilter: {
       label: 'Category',
       all: 'All categories',

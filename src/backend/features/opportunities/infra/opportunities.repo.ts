@@ -62,6 +62,17 @@ export function makeOpportunitiesRepo() {
         },
         include: {
           contact: true,
+          conversationContacts: {
+            include: {
+              contact: {
+                select: {
+                  id: true,
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+          },
           stage: true,
           messages: {
             orderBy: {
@@ -84,15 +95,21 @@ export function makeOpportunitiesRepo() {
       // We use the conversations from the query above which includes all conversations for the opportunity
       const allConversationsMap = new Map<string, typeof allContactConversations[0]>();
       
-      // Collect unique contact IDs
+      // Collect unique contact IDs from conversations (both primary contactId and ConversationContact)
       const contactIds = new Set<string>();
+      contactIds.add(opportunity.contactId); // Always include the primary contact
+      
       for (const conv of allContactConversations) {
         allConversationsMap.set(conv.id, conv);
         contactIds.add(conv.contactId);
+        // Also add all contacts from ConversationContact junction table
+        for (const convContact of conv.conversationContacts) {
+          contactIds.add(convContact.contact.id);
+        }
       }
       
       // Fetch contacts - always fetch them manually to ensure they're available
-      const contactsMap = new Map<string, { name: string; company: string | null }>();
+      const contactsMap = new Map<string, { id: string; name: string; company: string | null }>();
       if (contactIds.size > 0) {
         try {
           const contacts = await prisma.contact.findMany({
@@ -109,6 +126,7 @@ export function makeOpportunitiesRepo() {
           
           for (const contact of contacts) {
             contactsMap.set(contact.id, {
+              id: contact.id,
               name: contact.name,
               company: contact.company ?? null,
             });
@@ -158,6 +176,12 @@ export function makeOpportunitiesRepo() {
         teamResponses: opportunity.teamResponses,
         createdAt: opportunity.createdAt,
         updatedAt: opportunity.updatedAt,
+        // Include all unique contacts associated with this opportunity
+        contacts: Array.from(contactsMap.values()).map((contact) => ({
+          id: contact.id,
+          name: contact.name,
+          company: contact.company,
+        })),
         // Include all conversations for this opportunity (explicitly linked or same contact)
         conversations: Array.from(allConversationsMap.values()).map((conv) => {
           // Get contact info from the manually fetched map (more reliable than Prisma include)

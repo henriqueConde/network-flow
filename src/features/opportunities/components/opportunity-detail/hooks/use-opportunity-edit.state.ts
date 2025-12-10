@@ -48,9 +48,9 @@ export function useOpportunityEdit(opportunity: OpportunityDetail | null) {
   });
   const [errors, setErrors] = useState<EditErrors>({});
 
-  // Initialize values from opportunity
+  // Initialize values from opportunity (only when not editing)
   useEffect(() => {
-    if (opportunity) {
+    if (opportunity && !isEditing) {
       setValues({
         title: opportunity.title,
         categoryId: opportunity.categoryId,
@@ -75,7 +75,7 @@ export function useOpportunityEdit(opportunity: OpportunityDetail | null) {
       });
       setErrors({});
     }
-  }, [opportunity]);
+  }, [opportunity, isEditing]);
 
   const changeField = (field: keyof EditValues, value: string | string[] | boolean | any | null) => {
     setValues((prev) => ({ ...prev, [field]: value }));

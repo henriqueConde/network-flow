@@ -16,7 +16,9 @@ export interface PipelinePageViewProps {
   availableCategories: Category[];
   categoryId: string | null;
   stageId: string | null;
+  search: string;
   onCategoryChange: (value: string | null) => void;
   onStageChange: (value: string | null) => void;
+  onSearchChange: (value: string) => void;
 }
 

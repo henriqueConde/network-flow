@@ -145,6 +145,10 @@ export function OpportunityDetailContainer() {
     }
   };
 
+  const handleContactClick = (contactId: string) => {
+    router.push(`/contacts/${contactId}`);
+  };
+
   const handleCloseCreate = () => {
     if (createMutation.isPending) return;
     createDialog.close();
@@ -170,6 +174,7 @@ export function OpportunityDetailContainer() {
         onConversationClick={handleConversationClick}
         onInterviewClick={handleInterviewClick}
         onOpenCreateConversation={handleOpenCreateConversation}
+        onContactClick={handleContactClick}
       />
       <CreateConversationDialog
         isOpen={createDialog.isOpen}

@@ -20,10 +20,14 @@ export function useOpportunityEditActions(
         id: opportunity.id,
         payload,
       });
+      // Exit edit mode immediately after successful save
+      // This will cause the view to switch from TextField back to Typography
       edit.setIsEditing(false);
     } catch (err) {
       // Error handling is done by React Query
+      // Stay in edit mode on error so user can fix and retry
       console.error('Failed to update opportunity:', err);
+      // Don't exit edit mode on error - let user fix and retry
     }
   };
 

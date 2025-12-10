@@ -34,6 +34,7 @@ export async function getOpportunityById(input: {
     liveDemoUrl: opportunity.liveDemoUrl,
     sharedChannels: opportunity.sharedChannels || [],
     teamResponses: opportunity.teamResponses,
+    contacts: opportunity.contacts || [],
     conversations: opportunity.conversations.map((conv) => ({
       id: conv.id,
       // Contact info for each conversation card in opportunity detail

@@ -100,6 +100,15 @@ export const conversationDetailDto = z.object({
 export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
 
 /**
+ * Contact DTO for opportunity detail.
+ */
+const opportunityContactDto = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  company: z.string().nullable(),
+});
+
+/**
  * Response DTO for opportunity detail.
  */
 export const opportunityDetailDto = z.object({
@@ -130,6 +139,7 @@ export const opportunityDetailDto = z.object({
   teamResponses: z.any().nullable(), // JSON field - array of { name, response, date }
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  contacts: z.array(opportunityContactDto),
   conversations: z.array(conversationDetailDto),
 });
 

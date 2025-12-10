@@ -63,11 +63,16 @@ export function SortableOpportunityCard({
       <Box sx={styles.opportunityHeader()}>
         <Box sx={{ flex: 1 }}>
           <Typography variant="subtitle2" sx={styles.opportunityName()}>
-            {opportunity.contactName}
+            {opportunity.title || opportunity.contactName}
           </Typography>
           {opportunity.contactCompany && (
             <Typography variant="body2" sx={styles.opportunityCompany()}>
               {opportunity.contactCompany}
+            </Typography>
+          )}
+          {opportunity.title && (
+            <Typography variant="caption" sx={styles.opportunityContact()}>
+              {opportunity.contactName}
             </Typography>
           )}
         </Box>
