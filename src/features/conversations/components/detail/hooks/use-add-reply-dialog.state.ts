@@ -6,6 +6,7 @@ const AddReplySchema = z.object({
   body: z.string().min(1, 'Message is required'),
   sender: messageSideSchema,
   sentAt: z.string().datetime(),
+  contactId: z.string().uuid().optional(),
 });
 
 type AddReplyFormValues = z.infer<typeof AddReplySchema>;
@@ -18,6 +19,7 @@ export function useAddReplyDialog(onSubmit: (values: AddReplyFormValues) => Prom
     body: '',
     sender: 'user',
     sentAt: new Date().toISOString(),
+    contactId: undefined,
   });
   const [errors, setErrors] = useState<AddReplyErrors>({});
 
@@ -27,6 +29,7 @@ export function useAddReplyDialog(onSubmit: (values: AddReplyFormValues) => Prom
       body: '',
       sender: 'user',
       sentAt: new Date().toISOString(),
+      contactId: undefined,
     });
     setErrors({});
   };
@@ -37,6 +40,7 @@ export function useAddReplyDialog(onSubmit: (values: AddReplyFormValues) => Prom
       body: '',
       sender: 'user',
       sentAt: new Date().toISOString(),
+      contactId: undefined,
     });
     setErrors({});
   };
@@ -45,7 +49,14 @@ export function useAddReplyDialog(onSubmit: (values: AddReplyFormValues) => Prom
     field: keyof AddReplyFormValues,
     value: string | 'user' | 'contact',
   ) => {
-    setValues((prev) => ({ ...prev, [field]: value }));
+    setValues((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Clear contactId when sender changes to 'user'
+      if (field === 'sender' && value === 'user') {
+        updated.contactId = undefined;
+      }
+      return updated;
+    });
     // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {

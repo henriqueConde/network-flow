@@ -32,3 +32,4 @@ export const COMPANIES_PAGE_CONFIG = {
   },
 } as const;
 
+

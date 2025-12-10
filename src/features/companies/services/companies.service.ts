@@ -192,3 +192,4 @@ export async function deleteCompany(id: string): Promise<void> {
   await client.delete(`/api/companies/${id}`);
 }
 
+

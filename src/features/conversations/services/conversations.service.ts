@@ -6,6 +6,7 @@ const ConversationInboxItemDto = z.object({
   id: z.string(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  contactCount: z.number().int().min(1).default(1),
   channel: z.string(),
   category: z.string().nullable(),
   stage: z.string().nullable(),
@@ -26,6 +27,7 @@ export const ConversationInboxListDto = z.array(ConversationInboxItemDto);
 
 export const CreateConversationBody = z.object({
   contactId: z.string().optional(),
+  contactIds: z.array(z.string().uuid()).optional(),
   contactName: z.string().min(1),
   contactCompany: z.string().optional(),
   opportunityId: z.string().optional(),
@@ -36,6 +38,7 @@ export const CreateConversationBody = z.object({
   stageId: z.string().optional(),
   priority: prioritySchema.default('medium'),
   firstMessageSender: messageSideSchema.default('contact'),
+  firstMessageContactId: z.string().uuid().optional(),
 });
 
 export type CreateConversationPayload = z.infer<typeof CreateConversationBody>;
@@ -105,6 +108,8 @@ const MessageDto = z.object({
   sentAt: z.string().datetime(),
   source: z.string(),
   status: z.enum(['pending', 'confirmed']),
+  contactId: z.string().uuid().nullable(),
+  contactName: z.string().nullable(),
 });
 
 /**
@@ -122,9 +127,16 @@ const LinkedInEmailEventDto = z.object({
  */
 const ConversationDetailDto = z.object({
   id: z.string(),
+  // Keep for backwards compatibility
   contactId: z.string(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  // New fields
+  contacts: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    company: z.string().nullable(),
+  })),
   opportunityId: z.string().nullable(),
   opportunityTitle: z.string().nullable(),
   channel: z.string(),
@@ -165,6 +177,8 @@ export type ConversationDetail = Omit<z.infer<typeof ConversationDetailDto>, 'me
     sentAt: Date;
     source: string;
     status: 'pending' | 'confirmed';
+    contactId: string | null;
+    contactName: string | null;
   }>;
   nextActionDueAtDate: Date | null;
   lastMessageAtDate: Date | null;
@@ -217,6 +231,7 @@ const AddMessageBody = z.object({
   body: z.string().min(1),
   sender: messageSideSchema,
   sentAt: z.string().datetime(),
+  contactId: z.string().uuid().optional(),
 });
 
 export type AddMessagePayload = z.infer<typeof AddMessageBody>;
@@ -394,6 +409,72 @@ export async function toggleMessageStatus(
   messageId: string,
 ): Promise<ConversationDetail> {
   const res = await client.post(`/api/conversations/${conversationId}/messages/${messageId}/toggle-status`);
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    responseReceivedAtDate: data.responseReceivedAt ? new Date(data.responseReceivedAt) : null,
+    emailSentAtDate: data.emailSentAt ? new Date(data.emailSentAt) : null,
+    followUp1DateDate: data.followUp1Date ? new Date(data.followUp1Date) : null,
+    followUp2DateDate: data.followUp2Date ? new Date(data.followUp2Date) : null,
+    followUp3DateDate: data.followUp3Date ? new Date(data.followUp3Date) : null,
+    emailFollowUpDatesDates: data.emailFollowUpDates.map((d) => new Date(d)),
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Add a contact to a conversation.
+ */
+export async function addContactToConversation(
+  conversationId: string,
+  contactId: string,
+): Promise<ConversationDetail> {
+  const res = await client.post(`/api/conversations/${conversationId}/contacts`, { contactId });
+  const data = ConversationDetailDto.parse(res.data);
+
+  return {
+    ...data,
+    messages: data.messages.map((msg) => ({
+      ...msg,
+      sentAt: new Date(msg.sentAt),
+    })),
+    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
+    lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    responseReceivedAtDate: data.responseReceivedAt ? new Date(data.responseReceivedAt) : null,
+    emailSentAtDate: data.emailSentAt ? new Date(data.emailSentAt) : null,
+    followUp1DateDate: data.followUp1Date ? new Date(data.followUp1Date) : null,
+    followUp2DateDate: data.followUp2Date ? new Date(data.followUp2Date) : null,
+    followUp3DateDate: data.followUp3Date ? new Date(data.followUp3Date) : null,
+    emailFollowUpDatesDates: data.emailFollowUpDates.map((d) => new Date(d)),
+    latestEmailEvent: data.latestEmailEvent
+      ? {
+          ...data.latestEmailEvent,
+          emailReceivedAt: new Date(data.latestEmailEvent.emailReceivedAt),
+        }
+      : null,
+  };
+}
+
+/**
+ * Remove a contact from a conversation.
+ */
+export async function removeContactFromConversation(
+  conversationId: string,
+  contactId: string,
+): Promise<ConversationDetail> {
+  const res = await client.delete(`/api/conversations/${conversationId}/contacts/${contactId}`);
   const data = ConversationDetailDto.parse(res.data);
 
   return {

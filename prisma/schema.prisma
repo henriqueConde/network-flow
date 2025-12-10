@@ -115,6 +115,8 @@ model Contact {
   conversations Conversation[]
   opportunities Opportunity[]
   challengeContacts ChallengeContact[]
+  conversationContacts ConversationContact[]
+  messages      Message[]
 
   @@index([userId])
   @@index([companyId])
@@ -172,7 +174,7 @@ model Opportunity {
 model Conversation {
   id                  String    @id @default(uuid()) @db.Uuid
   userId              String    @db.Uuid
-  contactId           String    @db.Uuid
+  contactId           String    @db.Uuid // Primary contact (kept for backwards compatibility)
   opportunityId       String?   @db.Uuid // Links conversation to opportunity (nullable for backwards compatibility)
   challengeId         String?   @map("challenge_id") @db.Uuid // Optional link to challenge
   channel             String    // e.g., "linkedin", "email", "twitter"
@@ -216,6 +218,7 @@ model Conversation {
   messages          Message[]
   linkedInEmailEvents LinkedInEmailEvent[]
   challengeConversations ChallengeConversation[]
+  conversationContacts ConversationContact[]
 
   @@index([userId])
   @@index([contactId])
@@ -236,14 +239,17 @@ model Message {
   source        String   // "linkedin_export", "email_notification", "manual_reply", "other"
   status        String   @default("pending") // "pending" or "confirmed" - tracks if user-created messages were actually sent in the original platform
   rawMetadata   Json?    @map("raw_metadata")
+  contactId     String?  @db.Uuid // Nullable: identifies which contact sent this message (if sender is "contact")
   createdAt     DateTime @default(now())
 
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  contact      Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   @@index([conversationId])
   @@index([sentAt])
   @@index([status])
+  @@index([contactId])
   @@map("messages")
 }
 
@@ -384,5 +390,21 @@ model ChallengeConversation {
   @@index([challengeId])
   @@index([conversationId])
   @@map("challenge_conversations")
+}
+
+model ConversationContact {
+  id            String   @id @default(uuid()) @db.Uuid
+  conversationId String  @db.Uuid
+  contactId     String   @db.Uuid
+  addedAt       DateTime @default(now()) @map("added_at")
+  
+  // Relations
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  contact       Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  
+  @@unique([conversationId, contactId])
+  @@index([conversationId])
+  @@index([contactId])
+  @@map("conversation_contacts")
 }
 

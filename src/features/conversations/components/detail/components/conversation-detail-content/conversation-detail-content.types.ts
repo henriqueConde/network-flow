@@ -45,5 +45,10 @@ export type ConversationDetailContentProps = {
   onConfirmMessage?: (messageId: string) => void;
   onEditMessage?: (messageId: string) => void;
   onDeleteMessage?: (messageId: string) => void;
+  // Contact management
+  onAddContact?: () => void;
+  onRemoveContact?: (contactId: string) => void;
+  isAddingContact?: boolean;
+  isRemovingContact?: boolean;
 };
 

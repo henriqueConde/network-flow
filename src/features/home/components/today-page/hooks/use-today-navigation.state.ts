@@ -25,8 +25,10 @@ export function useTodayNavigation() {
   );
 
   const handleOverdueClick = useCallback(
-    (itemId: string, conversationId: string) => {
-      router.push(`/conversations/${conversationId}`);
+    (itemId: string, conversationId?: string) => {
+      if (conversationId) {
+        router.push(`/conversations/${conversationId}`);
+      }
     },
     [router],
   );

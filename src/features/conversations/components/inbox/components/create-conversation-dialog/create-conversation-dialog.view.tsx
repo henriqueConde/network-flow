@@ -13,6 +13,7 @@ import {
   CircularProgress,
   Box,
   Typography,
+  Chip,
 } from '@mui/material';
 import type { CreateConversationDialogProps } from './create-conversation-dialog.types';
 import { styles } from './create-conversation-dialog.styles';
@@ -29,6 +30,7 @@ export function CreateConversationDialog({
   contactSearchInput,
   onContactSearchChange,
   onContactSelect,
+  onContactsSelect,
   contactOptions,
   allContactOptions,
   contactSearchInputTrimmed,
@@ -97,6 +99,7 @@ export function CreateConversationDialog({
       <DialogTitle>{config.copy.title}</DialogTitle>
       <DialogContent sx={styles.createDialogContent()}>
         <Autocomplete
+          multiple
           freeSolo
           open={contactAutocompleteOpen}
           onOpen={() => setContactAutocompleteOpen(true)}
@@ -130,21 +133,29 @@ export function CreateConversationDialog({
             }
           }}
           onChange={(_, newValue) => {
-            if (!newValue || typeof newValue === 'string') {
-              // User typed a string directly (freeSolo)
-              onContactSelect(null, newValue || '');
-            } else if ('isNewContact' in newValue && newValue.isNewContact) {
-              // User selected "New contact" option
-              onContactSelect(null, contactSearchInputTrimmed);
+            // Filter out string values (freeSolo typed values) and new contact options
+            const validContacts = newValue
+              .filter((v): v is typeof allContactOptions[0] => 
+                typeof v !== 'string' && !('isNewContact' in v && v.isNewContact)
+              )
+              .map(v => ({ id: v.id, name: v.name, company: v.company }));
+
+            // Handle new contact creation if there's a string value
+            const stringValue = newValue.find(v => typeof v === 'string');
+            if (stringValue && stringValue.trim()) {
+              // For new contact, use the single contact handler (backwards compat)
+              onContactSelect(null, stringValue);
             } else {
-              // User selected an existing contact
-              onContactSelect(newValue.id, newValue.name, newValue.company);
+              // Update selected contacts
+              onContactsSelect(validContacts);
             }
           }}
           value={
-            values.contactId
-              ? contactOptions.find((c) => c.id === values.contactId) || null
-              : null
+            values.contactIds && values.contactIds.length > 0
+              ? contactOptions.filter((c) => values.contactIds?.includes(c.id))
+              : values.contactId
+                ? contactOptions.filter((c) => c.id === values.contactId)
+                : []
           }
           loading={isSearchingContacts}
           ListboxProps={{
@@ -156,12 +167,12 @@ export function CreateConversationDialog({
           renderInput={(params) => (
             <TextField
               {...params}
-              label={config.copy.contactLabel}
+              label={config.copy.contactLabel + ' (select multiple)'}
               placeholder={config.copy.contactPlaceholder}
               required
               size="small"
               error={!!errors.contactName}
-              helperText={errors.contactName}
+              helperText={errors.contactName || 'Select one or more contacts for this conversation'}
               InputProps={{
                 ...params.InputProps,
                 endAdornment: (
@@ -173,6 +184,25 @@ export function CreateConversationDialog({
               }}
             />
           )}
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => {
+              const { key, ...tagProps } = getTagProps({ index });
+              return (
+                <Chip
+                  key={key}
+                  {...tagProps}
+                  label={
+                    <Box>
+                      <Typography variant="caption" component="span">
+                        {typeof option === 'string' ? option : option.name}
+                      </Typography>
+                    </Box>
+                  }
+                  size="small"
+                />
+              );
+            })
+          }
           renderOption={(props, option) => {
             if (typeof option === 'string') {
               return (
@@ -326,14 +356,54 @@ export function CreateConversationDialog({
           fullWidth
           size="small"
           value={values.firstMessageSender}
-          onChange={(e) =>
-            onChangeField('firstMessageSender', e.target.value as typeof values.firstMessageSender)
-          }
+          onChange={(e) => {
+            onChangeField('firstMessageSender', e.target.value as typeof values.firstMessageSender);
+            // Clear firstMessageContactId when switching to "user"
+            if (e.target.value === 'user') {
+              onChangeField('firstMessageContactId', undefined);
+            }
+          }}
           helperText="Who sent the first message in this conversation?"
         >
           <MenuItem value="contact">Contact</MenuItem>
           <MenuItem value="user">You</MenuItem>
         </TextField>
+        {values.firstMessageSender === 'contact' && 
+         values.contactIds && 
+         values.contactIds.length > 1 && (
+          <TextField
+            select
+            label="Which contact sent the first message?"
+            fullWidth
+            size="small"
+            value={values.firstMessageContactId || values.contactIds[0] || ''}
+            onChange={(e) => onChangeField('firstMessageContactId', e.target.value || undefined)}
+            helperText="Select which contact sent the first message"
+            required
+          >
+            {values.contactIds.map((contactId) => {
+              // Find the contact name from the selected contacts
+              // First try to find in contactOptions (for existing contacts)
+              let contact = contactOptions.find((c) => c.id === contactId);
+              // If not found, try to find in allContactOptions (might be a new contact option)
+              if (!contact) {
+                const option = allContactOptions.find((c) => typeof c !== 'string' && !('isNewContact' in c && c.isNewContact) && c.id === contactId);
+                if (option && typeof option !== 'string') {
+                  contact = option;
+                }
+              }
+              // Fallback: if still not found and it's the first contact (contactId), use contactName
+              const displayName = contact?.name || (contactId === values.contactId ? values.contactName : contactId);
+              const displayCompany = contact?.company || (contactId === values.contactId ? values.contactCompany : undefined);
+              return (
+                <MenuItem key={contactId} value={contactId}>
+                  {displayName}
+                  {displayCompany ? ` (${displayCompany})` : ''}
+                </MenuItem>
+              );
+            })}
+          </TextField>
+        )}
         <TextField
           label={config.copy.pastedTextLabel}
           fullWidth

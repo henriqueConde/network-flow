@@ -15,3 +15,4 @@ export const companiesKeys = {
   detail: (id: string) => [...companiesKeys.details(), id] as const,
 };
 
+

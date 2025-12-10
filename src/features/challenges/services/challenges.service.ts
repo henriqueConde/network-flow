@@ -185,3 +185,4 @@ export async function deleteChallenge(id: string): Promise<void> {
   await client.delete(`/api/challenges/${id}`);
 }
 
+

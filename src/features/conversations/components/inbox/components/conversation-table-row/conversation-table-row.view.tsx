@@ -21,6 +21,11 @@ export function ConversationTableRow({
       <TableCell>
         <Typography variant="body2" fontWeight={500}>
           {conversation.contactName}
+          {conversation.contactCount > 1 && (
+            <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+              +{conversation.contactCount - 1}
+            </Typography>
+          )}
         </Typography>
         {conversation.contactCompany && (
           <Typography variant="caption" color="text.secondary">

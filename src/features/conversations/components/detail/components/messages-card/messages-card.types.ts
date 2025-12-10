@@ -3,6 +3,7 @@ import type { CONVERSATION_DETAIL_CONFIG } from '../../conversation-detail.confi
 
 export type MessagesCardProps = {
   messages: ConversationDetail['messages'];
+  contacts: ConversationDetail['contacts'];
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onOpenAddReply: () => void;
   onConfirmMessage?: (messageId: string) => void;

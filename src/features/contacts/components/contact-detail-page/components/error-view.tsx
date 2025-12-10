@@ -34,3 +34,4 @@ export function ErrorView({ error, isNotFound, config, onBack }: ErrorViewProps)
   );
 }
 
+

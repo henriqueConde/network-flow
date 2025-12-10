@@ -14,3 +14,4 @@ export const jobPostingsKeys = {
   detail: (id: string) => [...jobPostingsKeys.details(), id] as const,
 };
 
+

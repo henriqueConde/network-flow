@@ -97,3 +97,4 @@ export const challengeResponseDto = challengeDetailDto;
 
 export type ChallengeResponseDto = z.infer<typeof challengeResponseDto>;
 
+

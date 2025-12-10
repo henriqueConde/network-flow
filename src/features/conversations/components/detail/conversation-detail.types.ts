@@ -52,13 +52,26 @@ export type ConversationDetailViewProps = {
   onPasteNewMessages: () => void;
   // Add reply dialog
   isAddReplyOpen: boolean;
-  addReplyValues: { body: string; sender: 'user' | 'contact'; sentAt: string };
-  addReplyErrors: Partial<Record<'body' | 'sender' | 'sentAt', string>>;
+  addReplyValues: { body: string; sender: 'user' | 'contact'; sentAt: string; contactId?: string };
+  addReplyErrors: Partial<Record<'body' | 'sender' | 'sentAt' | 'contactId', string>>;
   isAddingReply: boolean;
   onOpenAddReply: () => void;
   onCloseAddReply: () => void;
-  onChangeAddReplyField: (field: 'body' | 'sender' | 'sentAt', value: string | 'user' | 'contact') => void;
+  onChangeAddReplyField: (field: 'body' | 'sender' | 'sentAt' | 'contactId', value: string | 'user' | 'contact') => void;
   onSubmitAddReply: () => void;
+  // Contact management
+  onAddContact?: () => void;
+  onRemoveContact?: (contactId: string) => void;
+  isAddingContact?: boolean;
+  isRemovingContact?: boolean;
+  // Add contact dialog
+  isAddContactDialogOpen?: boolean;
+  onCloseAddContactDialog?: () => void;
+  onConfirmAddContact?: (contactId: string) => void;
+  availableContactsForAdd?: Array<{ id: string; name: string; company?: string | null }>;
+  isLoadingContactsForAdd?: boolean;
+  contactSearchInput?: string;
+  onContactSearchInputChange?: (value: string) => void;
   availableStages: Stage[];
   availableCategories: Category[];
   // AI Assistant props (passed to Add Reply dialog)

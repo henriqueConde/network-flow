@@ -44,3 +44,4 @@ export interface JobPostingsPageViewProps {
   isDeleting: boolean;
 }
 
+

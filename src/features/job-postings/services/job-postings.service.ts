@@ -187,3 +187,4 @@ export async function deleteJobPosting(id: string): Promise<void> {
   await client.delete(`/api/job-postings/${id}`);
 }
 
+

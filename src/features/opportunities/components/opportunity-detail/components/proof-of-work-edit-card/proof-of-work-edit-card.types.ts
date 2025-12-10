@@ -28,3 +28,4 @@ export type ProofOfWorkEditCardProps = {
   onCancel: () => void;
 };
 
+

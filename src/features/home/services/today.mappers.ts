@@ -16,6 +16,7 @@ type TodayActionDto = {
   type: 'reply' | 'follow_up' | 'outreach';
   title: string;
   description?: string;
+  opportunityId: string;
   conversationId?: string;
   contactName: string;
   contactCompany?: string;
@@ -38,7 +39,8 @@ type NewMessageDto = {
 
 type OverdueItemDto = {
   id: string;
-  conversationId: string;
+  opportunityId: string;
+  conversationId?: string;
   contactName: string;
   contactCompany?: string;
   actionType: string;

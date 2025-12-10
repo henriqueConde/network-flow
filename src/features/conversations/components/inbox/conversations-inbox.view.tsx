@@ -46,6 +46,7 @@ export function ConversationsInboxView({
   contactSearchInput,
   onContactSearchChange,
   onContactSelect,
+  onContactsSelect,
   contacts,
   contactOptions,
   allContactOptions,
@@ -131,6 +132,7 @@ export function ConversationsInboxView({
         contactSearchInput={contactSearchInput}
         onContactSearchChange={onContactSearchChange}
         onContactSelect={onContactSelect}
+        onContactsSelect={onContactsSelect}
         contacts={contacts}
         contactOptions={contactOptions}
         allContactOptions={allContactOptions}

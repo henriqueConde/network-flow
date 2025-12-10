@@ -24,8 +24,9 @@ export type ListConversationsQuery = z.infer<typeof listConversationsQuery>;
  */
 export const conversationInboxItemDto = z.object({
   id: z.string().uuid(),
-  contactName: z.string(),
+  contactName: z.string(), // Primary contact name (backwards compat)
   contactCompany: z.string().nullable(),
+  contactCount: z.number().int().min(1).default(1), // New field
   channel: z.string(),
   category: z.string().nullable(),
   stage: z.string().nullable(),
@@ -50,7 +51,8 @@ export const conversationInboxListDto = z.array(conversationInboxItemDto);
  */
 export const createConversationBody = z.object({
   // Either use an existing contact or create a new one
-  contactId: z.string().uuid().optional(),
+  contactId: z.string().uuid().optional(), // Primary contact
+  contactIds: z.array(z.string().uuid()).optional(), // All contacts (if multiple)
   contactName: z.string().min(1, 'Contact name is required'),
   contactCompany: z.string().optional(),
   channel: conversationChannelSchema.default('linkedin'),
@@ -69,6 +71,7 @@ export const createConversationBody = z.object({
   stageId: z.string().uuid().optional(),
   priority: prioritySchema.optional().default('medium'),
   firstMessageSender: messageSideSchema.optional().default('contact'),
+  firstMessageContactId: z.string().uuid().optional(), // Which contact sent the first message (if sender is "contact" and multiple contacts exist)
 });
 
 export type CreateConversationBody = z.infer<typeof createConversationBody>;
@@ -92,6 +95,8 @@ export const messageDto = z.object({
   sentAt: z.string().datetime(),
   source: z.string(),
   status: z.enum(['pending', 'confirmed']),
+  contactId: z.string().uuid().nullable(),
+  contactName: z.string().nullable(), // Included for convenience
 });
 
 export type MessageDto = z.infer<typeof messageDto>;
@@ -114,9 +119,16 @@ export type LinkedInEmailEventDto = z.infer<typeof linkedInEmailEventDto>;
  */
 export const conversationDetailDto = z.object({
   id: z.string().uuid(),
+  // Keep for backwards compatibility
   contactId: z.string().uuid(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  // New fields
+  contacts: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    company: z.string().nullable(),
+  })),
   opportunityId: z.string().uuid().nullable(),
   opportunityTitle: z.string().nullable(),
   channel: z.string(),
@@ -186,6 +198,7 @@ export const addMessageBody = z.object({
   body: z.string().min(1, 'Message body is required'),
   sender: messageSideSchema,
   sentAt: z.string().datetime(),
+  contactId: z.string().uuid().optional(), // Required if sender is "contact" and multiple contacts exist
 });
 
 export type AddMessageBody = z.infer<typeof addMessageBody>;
@@ -199,5 +212,15 @@ export const updateMessageBody = z.object({
 });
 
 export type UpdateMessageBody = z.infer<typeof updateMessageBody>;
+
+/**
+ * Body schema for adding a contact to a conversation.
+ */
+export const addContactToConversationBody = z.object({
+  contactId: z.string().uuid(),
+});
+
+export type AddContactToConversationBody = z.infer<typeof addContactToConversationBody>;
+
 
 

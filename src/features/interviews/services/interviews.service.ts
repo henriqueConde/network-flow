@@ -19,6 +19,7 @@ const InterviewInboxItemDto = z.object({
   warmOrCold: z.enum(['warm', 'cold']).nullable(),
   challengeId: z.string().uuid().nullable(),
   challengeName: z.string().nullable(),
+  contactCount: z.number().int().min(1).default(1),
 });
 
 export type InterviewInboxItemDto = z.infer<typeof InterviewInboxItemDto>;
@@ -52,6 +53,11 @@ const InterviewDetailDto = z.object({
   contactId: z.string(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  contacts: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    company: z.string().nullable(),
+  })),
   channel: z.string(),
   categoryId: z.string().nullable(),
   categoryName: z.string().nullable(),

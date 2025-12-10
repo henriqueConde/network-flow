@@ -7,6 +7,8 @@ import {
   deleteMessage,
   toggleMessageStatus,
   deleteConversation,
+  addContactToConversation,
+  removeContactFromConversation,
   type CreateConversationPayload,
   type UpdateConversationPayload,
   type AddMessagePayload,
@@ -173,4 +175,39 @@ export function useDeleteConversation() {
     },
   });
 }
+
+/**
+ * Mutation hook for adding a contact to a conversation.
+ */
+export function useAddContactToConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ conversationId, contactId }: { conversationId: string; contactId: string }) =>
+      addContactToConversation(conversationId, contactId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Mutation hook for removing a contact from a conversation.
+ */
+export function useRemoveContactFromConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ conversationId, contactId }: { conversationId: string; contactId: string }) =>
+      removeContactFromConversation(conversationId, contactId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+    },
+  });
+}
+
 

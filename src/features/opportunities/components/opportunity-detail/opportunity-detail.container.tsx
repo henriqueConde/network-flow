@@ -183,6 +183,7 @@ export function OpportunityDetailContainer() {
         contactSearchInput={createDialog.contactSearchInput}
         onContactSearchChange={createDialog.handleContactSearchChange}
         onContactSelect={createDialog.handleContactSelect}
+        onContactsSelect={createDialog.handleContactsSelect}
         contacts={finalAccumulatedContacts}
         contactOptions={contactOptions}
         allContactOptions={allOptions}

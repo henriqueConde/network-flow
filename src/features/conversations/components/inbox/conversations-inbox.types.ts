@@ -49,6 +49,7 @@ export interface ConversationsInboxViewProps {
   contactSearchInput: string;
   onContactSearchChange: (value: string) => void;
   onContactSelect: (contactId: string | null, contactName: string, contactCompany?: string | null) => void;
+  onContactsSelect: (contacts: Array<{ id: string; name: string; company?: string | null }>) => void;
   contacts: ContactListItem[];
   contactOptions: ContactListItem[];
   allContactOptions: import('./components/create-conversation-dialog/hooks/use-contact-options.state').ContactOption[];

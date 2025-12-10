@@ -18,6 +18,7 @@ export function useAddReplyActions(
         body: values.body,
         sender: values.sender,
         sentAt: values.sentAt,
+        contactId: values.contactId,
       },
     });
   });

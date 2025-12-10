@@ -46,3 +46,4 @@ export interface CompaniesPageViewProps {
   isDeleting: boolean;
 }
 
+

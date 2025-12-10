@@ -28,3 +28,4 @@ export type EmailTrackingCardProps = {
   onCancel: () => void;
 };
 
+

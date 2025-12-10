@@ -4,3 +4,4 @@ export default function JobPostingsPage() {
   return <JobPostingsPageContainer />;
 }
 
+

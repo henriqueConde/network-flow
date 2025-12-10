@@ -14,3 +14,4 @@ export const JobPostingFormSchema = z.object({
 
 export type JobPostingFormValues = z.infer<typeof JobPostingFormSchema>;
 
+

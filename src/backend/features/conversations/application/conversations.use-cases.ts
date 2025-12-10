@@ -54,6 +54,7 @@ export async function createConversation(input: {
   const conversation = await repo.createConversation({
     userId: input.userId,
     contactId: parsed.contactId,
+    contactIds: parsed.contactIds,
     contactName: parsed.contactName,
     contactCompany: parsed.contactCompany,
     opportunityId: parsed.opportunityId,
@@ -64,6 +65,7 @@ export async function createConversation(input: {
     stageId: parsed.stageId,
     priority: parsed.priority,
     firstMessageSender: parsed.firstMessageSender ?? 'contact',
+    firstMessageContactId: parsed.firstMessageContactId,
   });
 
   return {
@@ -91,6 +93,7 @@ export async function getConversationById(input: {
   // Normalize Dates to ISO strings for DTO
   const dto = {
     ...conversation,
+    contacts: conversation.contacts || [],
     nextActionDueAt: conversation.nextActionDueAt
       ? conversation.nextActionDueAt.toISOString()
       : null,
@@ -285,6 +288,7 @@ export async function addMessage(input: {
     body: input.body.body,
     sender: input.body.sender,
     sentAt,
+    contactId: input.body.contactId,
   });
 
   if (!updated) {
@@ -470,3 +474,82 @@ export async function deleteConversation(input: {
 
   return { success: true };
 }
+
+/**
+ * Use case: add a contact to a conversation.
+ */
+export async function addContactToConversation(input: {
+  userId: string;
+  conversationId: string;
+  body: { contactId: string };
+}) {
+  const repo = makeConversationsRepo();
+  const updated = await repo.addContactToConversation({
+    userId: input.userId,
+    conversationId: input.conversationId,
+    contactId: input.body.contactId,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
+}
+
+/**
+ * Use case: remove a contact from a conversation.
+ */
+export async function removeContactFromConversation(input: {
+  userId: string;
+  conversationId: string;
+  contactId: string;
+}) {
+  const repo = makeConversationsRepo();
+  const updated = await repo.removeContactFromConversation({
+    userId: input.userId,
+    conversationId: input.conversationId,
+    contactId: input.contactId,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
+}
+

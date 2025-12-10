@@ -10,3 +10,4 @@ ALTER TABLE "contacts" DROP COLUMN IF EXISTS "categoryId";
 -- AlterTable
 ALTER TABLE "contacts" DROP COLUMN IF EXISTS "stageId";
 
+

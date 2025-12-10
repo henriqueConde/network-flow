@@ -11,3 +11,4 @@ export interface ConversationsTableProps {
   onOpenDelete: (conversationId: string, contactName: string) => void;
 }
 
+

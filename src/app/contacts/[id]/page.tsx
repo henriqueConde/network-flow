@@ -9,3 +9,4 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
   return <ContactDetailPageContainer contactId={id} />;
 }
 
+

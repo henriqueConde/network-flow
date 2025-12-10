@@ -51,6 +51,7 @@ export function ConversationsInboxContainer() {
   const createDialog = useCreateConversationDialog(async (values) => {
     await createMutation.mutateAsync({
       contactId: values.contactId,
+      contactIds: values.contactIds,
       contactName: values.contactName,
       contactCompany: values.contactCompany || undefined,
       opportunityId: values.opportunityId,
@@ -58,6 +59,7 @@ export function ConversationsInboxContainer() {
       pastedText: values.pastedText,
       priority: 'medium',
       firstMessageSender: values.firstMessageSender,
+      firstMessageContactId: values.firstMessageContactId,
       categoryId: values.categoryId,
       stageId: values.stageId,
     });
@@ -221,6 +223,7 @@ export function ConversationsInboxContainer() {
       contactSearchInput={createDialog.contactSearchInput}
       onContactSearchChange={createDialog.handleContactSearchChange}
       onContactSelect={createDialog.handleContactSelect}
+      onContactsSelect={createDialog.handleContactsSelect}
       contacts={finalAccumulatedContacts}
       contactOptions={contactOptions}
       allContactOptions={allOptions}

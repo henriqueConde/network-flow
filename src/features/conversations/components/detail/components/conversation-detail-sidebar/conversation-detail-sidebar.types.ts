@@ -40,5 +40,10 @@ export type ConversationDetailSidebarProps = {
   onSaveNotes: () => void;
   onCancelMetadata: () => void;
   onCancelNotes: () => void;
+  // Contact management
+  onAddContact?: () => void;
+  onRemoveContact?: (contactId: string) => void;
+  isAddingContact?: boolean;
+  isRemovingContact?: boolean;
 };
 

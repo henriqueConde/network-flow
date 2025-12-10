@@ -9,6 +9,8 @@ export {
   toggleMessageStatus,
   deleteConversation,
   analyzeConversation,
+  addContactToConversation,
+  removeContactFromConversation,
 } from './application/conversations.use-cases';
 
 

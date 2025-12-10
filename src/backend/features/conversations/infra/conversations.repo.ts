@@ -60,6 +60,30 @@ export function makeConversationsRepo() {
               },
             },
           },
+          {
+            conversationContacts: {
+              some: {
+                contact: {
+                  name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          },
+          {
+            conversationContacts: {
+              some: {
+                contact: {
+                  company: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          },
         ];
       }
 
@@ -122,6 +146,16 @@ export function makeConversationsRepo() {
               warmOrCold: true,
             },
           },
+          conversationContacts: {
+            include: {
+              contact: {
+                select: {
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+          },
           category: {
             select: {
               name: true,
@@ -156,10 +190,13 @@ export function makeConversationsRepo() {
         const needsAttention =
           conv.lastMessageSide === 'contact' || hasOverdueAction;
 
+        const contactCount = conv.conversationContacts.length || 1;
+
         return {
           id: conv.id,
           contactName: conv.contact.name,
           contactCompany: conv.contact.company ?? null,
+          contactCount,
           channel: conv.channel,
           category: conv.category?.name ?? null, // Use conversation's category
           stage: conv.stage?.name ?? null,
@@ -182,6 +219,7 @@ export function makeConversationsRepo() {
     async createConversation(params: {
       userId: string;
       contactId?: string;
+      contactIds?: string[];
       contactName: string;
       contactCompany?: string;
       opportunityId?: string;
@@ -192,6 +230,7 @@ export function makeConversationsRepo() {
       stageId?: string;
       priority: 'low' | 'medium' | 'high' | null;
       firstMessageSender: 'user' | 'contact';
+      firstMessageContactId?: string;
     }) {
       const {
         userId,
@@ -285,11 +324,26 @@ export function makeConversationsRepo() {
         }
       }
 
+      // Determine all contacts to add
+      const allContactIds = new Set<string>();
+      allContactIds.add(ensuredContact.id);
+      
+      if (params.contactIds) {
+        // Verify all contact IDs belong to the user
+        const additionalContacts = await prisma.contact.findMany({
+          where: {
+            id: { in: params.contactIds },
+            userId,
+          },
+        });
+        additionalContacts.forEach(c => allContactIds.add(c.id));
+      }
+
       // Create conversation and link it to the opportunity
       const conversation = await prisma.conversation.create({
         data: {
           userId,
-          contactId: ensuredContact.id,
+          contactId: ensuredContact.id, // Primary contact
           opportunityId: opportunity.id,
           challengeId: challengeId ?? null,
           channel,
@@ -302,6 +356,17 @@ export function makeConversationsRepo() {
         },
       });
 
+      // Create ConversationContact entries for all contacts
+      const conversationContacts = Array.from(allContactIds).map((cid) => ({
+        conversationId: conversation.id,
+        contactId: cid,
+        addedAt: now,
+      }));
+
+      await prisma.conversationContact.createMany({
+        data: conversationContacts,
+      });
+
       await prisma.message.create({
         data: {
           conversationId: conversation.id,
@@ -310,6 +375,9 @@ export function makeConversationsRepo() {
           sentAt: now,
           source: 'manual_paste',
           status: 'pending', // Messages start as pending by default
+          contactId: firstMessageSender === 'contact' && params.firstMessageContactId 
+            ? params.firstMessageContactId 
+            : null,
         },
       });
 
@@ -330,19 +398,38 @@ export function makeConversationsRepo() {
         },
         include: {
           contact: {
+            select: {
+              id: true,
+              name: true,
+              company: true,
+            },
+          },
+          conversationContacts: {
             include: {
-              category: {
+              contact: {
+                select: {
+                  id: true,
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+            orderBy: [
+              { addedAt: 'asc' },
+            ],
+          },
+          category: true,
+          stage: true,
+          opportunity: true,
+          messages: {
+            include: {
+              contact: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
             },
-          },
-          category: true,
-          stage: true,
-          opportunity: true,
-          messages: {
             orderBy: {
               sentAt: 'asc',
             },
@@ -365,11 +452,20 @@ export function makeConversationsRepo() {
           ? Boolean((conversation as any).autoFollowupsEnabled)
           : true;
 
+      // Get first contact (for backwards compatibility with contactId/contactName)
+      const firstContact = conversation.conversationContacts[0]?.contact 
+        || conversation.contact;
+
       return {
         id: conversation.id,
         contactId: conversation.contactId,
-        contactName: conversation.contact.name,
-        contactCompany: conversation.contact.company ?? null,
+        contactName: firstContact.name,
+        contactCompany: firstContact.company ?? null,
+        contacts: conversation.conversationContacts.map(cc => ({
+          id: cc.contact.id,
+          name: cc.contact.name,
+          company: cc.contact.company ?? null,
+        })),
         opportunityId: conversation.opportunityId ?? null,
         opportunityTitle: conversation.opportunity?.title ?? null,
         channel: conversation.channel,
@@ -394,6 +490,8 @@ export function makeConversationsRepo() {
           sentAt: msg.sentAt,
           source: msg.source,
           status: msg.status as 'pending' | 'confirmed',
+          contactId: msg.contactId ?? null,
+          contactName: msg.contact?.name ?? null,
         })),
         latestEmailEvent:
           conversation.linkedInEmailEvents.length > 0
@@ -663,8 +761,9 @@ export function makeConversationsRepo() {
       body: string;
       sender: 'user' | 'contact';
       sentAt: Date;
+      contactId?: string;
     }) {
-      const { userId, conversationId, body, sender, sentAt } = params;
+      const { userId, conversationId, body, sender, sentAt, contactId } = params;
 
       // Verify conversation belongs to user
       const conversation = await prisma.conversation.findFirst({
@@ -676,6 +775,20 @@ export function makeConversationsRepo() {
 
       if (!conversation) {
         return null;
+      }
+
+      // Validate contactId if provided
+      if (contactId && sender === 'contact') {
+        // Verify the contact belongs to this conversation
+        const conversationContact = await prisma.conversationContact.findFirst({
+          where: {
+            conversationId,
+            contactId,
+          },
+        });
+        if (!conversationContact) {
+          throw new Error('Contact does not belong to this conversation');
+        }
       }
 
       // Create the message
@@ -691,6 +804,7 @@ export function makeConversationsRepo() {
           sentAt,
           source: 'manual_reply',
           status,
+          contactId: contactId ?? null,
         },
       });
 
@@ -938,6 +1052,127 @@ export function makeConversationsRepo() {
 
       return true;
     },
+
+    /**
+     * Add a contact to a conversation.
+     */
+    async addContactToConversation(params: {
+      userId: string;
+      conversationId: string;
+      contactId: string;
+    }) {
+      const { userId, conversationId, contactId } = params;
+
+      // Verify conversation belongs to user
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      // Verify contact belongs to user
+      const contact = await prisma.contact.findFirst({
+        where: {
+          id: contactId,
+          userId,
+        },
+      });
+
+      if (!contact) {
+        return null;
+      }
+
+      // Check if contact is already in conversation
+      const existing = await prisma.conversationContact.findFirst({
+        where: {
+          conversationId,
+          contactId,
+        },
+      });
+
+      if (existing) {
+        return this.getConversationById({ userId, conversationId });
+      }
+
+      // Add contact to conversation
+      await prisma.conversationContact.create({
+        data: {
+          conversationId,
+          contactId,
+        },
+      });
+
+      return this.getConversationById({ userId, conversationId });
+    },
+
+    /**
+     * Remove a contact from a conversation.
+     * Cannot remove if it's the only contact.
+     */
+    async removeContactFromConversation(params: {
+      userId: string;
+      conversationId: string;
+      contactId: string;
+    }) {
+      const { userId, conversationId, contactId } = params;
+
+      // Verify conversation belongs to user
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      // Get all contacts in conversation
+      const allContacts = await prisma.conversationContact.findMany({
+        where: {
+          conversationId,
+        },
+      });
+
+      if (allContacts.length <= 1) {
+        throw new Error('Cannot remove the only contact from a conversation');
+      }
+
+      const contactToRemove = allContacts.find(cc => cc.contactId === contactId);
+      if (!contactToRemove) {
+        return this.getConversationById({ userId, conversationId });
+      }
+
+      // If removing the contact that conversation.contactId points to, update it to another contact
+      if (conversation.contactId === contactId) {
+        const otherContact = allContacts.find(cc => cc.contactId !== contactId);
+        if (otherContact) {
+          await prisma.conversation.update({
+            where: { id: conversationId },
+            data: { contactId: otherContact.contactId },
+          });
+        }
+      }
+
+      // Remove contact
+      await prisma.conversationContact.delete({
+        where: {
+          conversationId_contactId: {
+            conversationId,
+            contactId,
+          },
+        },
+      });
+
+      return this.getConversationById({ userId, conversationId });
+    },
+
   };
 }
 

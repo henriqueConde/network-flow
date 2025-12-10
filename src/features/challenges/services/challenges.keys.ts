@@ -12,3 +12,4 @@ export const challengesKeys = {
   detail: (id: string) => [...challengesKeys.details(), id] as const,
 };
 
+

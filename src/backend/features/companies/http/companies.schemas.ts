@@ -103,3 +103,4 @@ export const companyResponseDto = companyDetailDto;
 
 export type CompanyResponseDto = z.infer<typeof companyResponseDto>;
 
+
