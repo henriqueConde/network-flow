@@ -18,3 +18,4 @@ export interface InterviewDetailViewProps {
   onRelatedContactClick: (contactId: string) => void;
 }
 
+

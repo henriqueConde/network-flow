@@ -20,6 +20,17 @@ export type ConversationDetailViewProps = {
     priority: 'low' | 'medium' | 'high' | null;
     notes: string | null;
     originalUrl: string | null;
+    strategyIds: string[];
+    responseReceived: boolean;
+    responseReceivedAt: string | null;
+    emailSentAt: string | null;
+    loomVideoUrl: string | null;
+    loomSent: boolean;
+    emailFollowUpDates: string[];
+    emailStatus: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+    followUp1Date: string | null;
+    followUp2Date: string | null;
+    followUp3Date: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailViewProps['editValues'], string>>;
   isEditingMetadata: boolean;
@@ -27,10 +38,12 @@ export type ConversationDetailViewProps = {
   isSaving: boolean;
   // Callbacks
   onBack: () => void;
+  onViewContact: (contactId: string) => void;
+  onViewOpportunity: (opportunityId: string) => void;
   onToggleAutoFollowups: (enabled: boolean) => void;
   onChangeEditField: (
     field: keyof ConversationDetailViewProps['editValues'],
-    value: string | null,
+    value: string | string[] | boolean | null,
   ) => void;
   onSaveMetadata: () => void;
   onSaveNotes: () => void;
@@ -39,13 +52,26 @@ export type ConversationDetailViewProps = {
   onPasteNewMessages: () => void;
   // Add reply dialog
   isAddReplyOpen: boolean;
-  addReplyValues: { body: string; sender: 'user' | 'contact'; sentAt: string };
-  addReplyErrors: Partial<Record<'body' | 'sender' | 'sentAt', string>>;
+  addReplyValues: { body: string; sender: 'user' | 'contact'; sentAt: string; contactId?: string };
+  addReplyErrors: Partial<Record<'body' | 'sender' | 'sentAt' | 'contactId', string>>;
   isAddingReply: boolean;
   onOpenAddReply: () => void;
   onCloseAddReply: () => void;
-  onChangeAddReplyField: (field: 'body' | 'sender' | 'sentAt', value: string | 'user' | 'contact') => void;
+  onChangeAddReplyField: (field: 'body' | 'sender' | 'sentAt' | 'contactId', value: string | 'user' | 'contact') => void;
   onSubmitAddReply: () => void;
+  // Contact management
+  onAddContact?: () => void;
+  onRemoveContact?: (contactId: string) => void;
+  isAddingContact?: boolean;
+  isRemovingContact?: boolean;
+  // Add contact dialog
+  isAddContactDialogOpen?: boolean;
+  onCloseAddContactDialog?: () => void;
+  onConfirmAddContact?: (contactId: string) => void;
+  availableContactsForAdd?: Array<{ id: string; name: string; company?: string | null }>;
+  isLoadingContactsForAdd?: boolean;
+  contactSearchInput?: string;
+  onContactSearchInputChange?: (value: string) => void;
   availableStages: Stage[];
   availableCategories: Category[];
   // AI Assistant props (passed to Add Reply dialog)

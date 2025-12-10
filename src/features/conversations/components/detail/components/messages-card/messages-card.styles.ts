@@ -18,7 +18,7 @@ export const styles = {
     flexDirection: 'column',
     gap: theme.spacing(2),
   }),
-  messageBubble: (isUser: boolean) => (theme: Theme) => ({
+  messageBubble: (isUser: boolean, contactBgColor?: string) => (theme: Theme) => ({
     alignSelf: isUser ? 'flex-end' : 'flex-start',
     maxWidth: '70%',
     minWidth: '200px', // Minimum width to prevent cramped layout
@@ -26,10 +26,12 @@ export const styles = {
     borderRadius: theme.spacing(3),
     backgroundColor: isUser
       ? theme.palette.background.paper
-      : theme.palette.grey[700],
+      : contactBgColor || theme.palette.grey[700],
     color: theme.palette.text.primary,
     border: isUser
       ? `1px solid ${theme.palette.primary.light}`
+      : contactBgColor
+      ? `1px solid ${contactBgColor}`
       : `1px solid ${theme.palette.grey[600]}`,
     display: 'flex',
     flexDirection: 'column',

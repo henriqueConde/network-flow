@@ -1,8 +1,11 @@
 import type { CreateConversationFormValues } from '../../conversations-inbox.schema';
 import type { CREATE_CONVERSATION_DIALOG_CONFIG } from './create-conversation-dialog.config';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
-import type { OpportunityListItem } from '@/features/opportunities/services/opportunities.service';
+import type { ContactListItem } from '@/features/contacts';
+import type { OpportunityListItem } from '@/features/opportunities';
 import type { ContactOption } from './hooks/use-contact-options.state';
+import type { Category } from '@/features/categories';
+import type { Stage } from '@/features/stages';
+import type { ChallengeListItem } from '@/features/challenges';
 
 export interface CreateConversationDialogProps {
   isOpen: boolean;
@@ -19,6 +22,7 @@ export interface CreateConversationDialogProps {
   contactSearchInput: string;
   onContactSearchChange: (value: string) => void;
   onContactSelect: (contactId: string | null, contactName: string, contactCompany?: string | null) => void;
+  onContactsSelect: (contacts: Array<{ id: string; name: string; company?: string | null }>) => void;
   contacts: ContactListItem[];
   contactOptions: ContactListItem[];
   allContactOptions: ContactOption[];
@@ -30,5 +34,8 @@ export interface CreateConversationDialogProps {
   onOpportunitySelect: (opportunityId: string | null) => void;
   opportunities: OpportunityListItem[];
   isSearchingOpportunities: boolean;
+  availableCategories: Category[];
+  availableStages: Stage[];
+  availableChallenges: ChallengeListItem[];
 }
 

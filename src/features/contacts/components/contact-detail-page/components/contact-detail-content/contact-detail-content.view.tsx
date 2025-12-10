@@ -5,6 +5,9 @@ import { BasicInfoCard } from '../basic-info-card';
 import { LinkedInInfoCard } from '../linkedin-info-card';
 import { ConversationsCard } from '../conversations-card';
 import { AdditionalInfoCard } from '../additional-info-card';
+import { StrategyTrackingCard } from '../strategy-tracking-card';
+import { ConnectionLifecycleCard } from '../connection-lifecycle-card';
+import { ReferralTrackingCard } from '../referral-tracking-card';
 import type { ContactDetailContentProps } from './contact-detail-content.types';
 import { styles } from './contact-detail-content.styles';
 
@@ -51,6 +54,51 @@ export function ContactDetailContent({
             config={config}
             onGoToConversation={onGoToConversation}
             onStartConversation={onStartConversation}
+          />
+
+          <StrategyTrackingCard
+            contact={contact}
+            editValues={{
+              warmOrCold: editValues.warmOrCold,
+              commonGround: editValues.commonGround,
+              contactType: editValues.contactType,
+            }}
+            editErrors={editErrors}
+            isEditing={isEditing}
+            isSaving={isSaving}
+            config={config}
+            onChangeEditField={onChangeEditField}
+          />
+
+          <ConnectionLifecycleCard
+            contact={contact}
+            editValues={{
+              connectionStatus: editValues.connectionStatus,
+              connectionRequestSentAt: editValues.connectionRequestSentAt,
+              connectionAcceptedAt: editValues.connectionAcceptedAt,
+              dmSentAt: editValues.dmSentAt,
+              firstMessageDate: editValues.firstMessageDate,
+              lastFollowUpAt: editValues.lastFollowUpAt,
+            }}
+            editErrors={editErrors}
+            isEditing={isEditing}
+            isSaving={isSaving}
+            config={config}
+            onChangeEditField={onChangeEditField}
+          />
+
+          <ReferralTrackingCard
+            contact={contact}
+            editValues={{
+              referralGiven: editValues.referralGiven,
+              referralGivenAt: editValues.referralGivenAt,
+              referralDetails: editValues.referralDetails,
+            }}
+            editErrors={editErrors}
+            isEditing={isEditing}
+            isSaving={isSaving}
+            config={config}
+            onChangeEditField={onChangeEditField}
           />
         </Box>
 

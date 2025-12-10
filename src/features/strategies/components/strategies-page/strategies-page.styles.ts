@@ -117,5 +117,32 @@ export const styles = {
     height: '100%',
     color: theme.palette.text.secondary,
   }),
+  infoBox: () => (theme: Theme) => ({
+    p: 2,
+    mb: 2,
+    borderRadius: 1,
+    bgcolor: theme.palette.info.light,
+    border: `1px solid ${theme.palette.info.main}`,
+    color: theme.palette.info.dark,
+  }),
+  quoteBox: () => (theme: Theme) => ({
+    borderLeft: `4px solid ${theme.palette.primary.main}`,
+    pl: 2,
+    py: 1,
+    mb: 2,
+    bgcolor: theme.palette.background.paper,
+    borderRadius: 1,
+    fontStyle: 'italic',
+  }),
+  goalBox: () => (theme: Theme) => ({
+    p: 2,
+    mb: 2,
+    bgcolor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    borderRadius: 1,
+  }),
+  linkButton: () => (theme: Theme) => ({
+    mt: 1,
+  }),
 } as const;
 

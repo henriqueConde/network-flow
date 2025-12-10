@@ -13,7 +13,7 @@ export function makePipelineRepo() {
      * Get all stages with their opportunities for the pipeline board.
      * Returns stages ordered by their `order` field, with opportunities.
      */
-    async getPipelineBoard(userId: string, filters?: { categoryId?: string; stageId?: string }) {
+    async getPipelineBoard(userId: string, filters?: { categoryId?: string; stageId?: string; search?: string }) {
       // Fetch all stages for the user, ordered by their order field
       const stages = await prisma.stage.findMany({
         where: {
@@ -37,6 +37,35 @@ export function makePipelineRepo() {
         opportunityWhere.stageId = filters.stageId;
       }
 
+      // Add search filter - matches opportunity title, contact name, or company name
+      if (filters?.search && filters.search.trim().length > 0) {
+        const searchTerm = filters.search.trim();
+        opportunityWhere.OR = [
+          {
+            title: {
+              contains: searchTerm,
+              mode: 'insensitive',
+            },
+          },
+          {
+            contact: {
+              name: {
+                contains: searchTerm,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            contact: {
+              company: {
+                contains: searchTerm,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ];
+      }
+
       // Fetch all opportunities with their related data
       const opportunities = await prisma.opportunity.findMany({
         where: opportunityWhere,
@@ -44,6 +73,12 @@ export function makePipelineRepo() {
           contact: true,
           category: true,
           stage: true,
+          challenge: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           conversations: {
             orderBy: {
               lastMessageAt: 'desc',
@@ -76,6 +111,8 @@ export function makePipelineRepo() {
               contactCompany: string | null;
               title: string | null;
               categoryName: string | null;
+              challengeId: string | null;
+              challengeName: string | null;
               lastMessageAt: Date | null;
               nextActionType: string | null;
               nextActionDueAt: Date | null;
@@ -107,9 +144,11 @@ export function makePipelineRepo() {
           contactName: string;
           contactCompany: string | null;
           title: string | null;
-          categoryName: string | null;
-          lastMessageAt: Date | null;
-          nextActionType: string | null;
+              categoryName: string | null;
+              challengeId: string | null;
+              challengeName: string | null;
+              lastMessageAt: Date | null;
+              nextActionType: string | null;
           nextActionDueAt: Date | null;
           priority: 'low' | 'medium' | 'high' | null;
           isOutOfSync: boolean;
@@ -138,6 +177,8 @@ export function makePipelineRepo() {
           contactCompany: opp.contact.company,
           title: opp.title,
           categoryName: opp.category?.name ?? null,
+          challengeId: opp.challenge?.id ?? null,
+          challengeName: opp.challenge?.name ?? null,
           lastMessageAt: mostRecentConversation?.lastMessageAt ?? null,
           nextActionType: opp.nextActionType,
           nextActionDueAt: opp.nextActionDueAt,

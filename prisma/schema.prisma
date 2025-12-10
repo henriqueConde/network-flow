@@ -24,6 +24,9 @@ model User {
   stages             Stage[]
   opportunities      Opportunity[]
   settings           UserSettings?
+  companies          Company[]
+  jobPostings        JobPosting[]
+  challenges         Challenge[]
 
   @@map("users")
 }
@@ -52,7 +55,6 @@ model Category {
   // Relations
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
-  contacts     Contact[]
   opportunities Opportunity[]
 
   @@unique([userId, name])
@@ -71,7 +73,6 @@ model Stage {
   // Relations
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
-  contacts      Contact[]
   opportunities Opportunity[]
 
   @@unique([userId, name])
@@ -83,22 +84,44 @@ model Contact {
   userId          String   @db.Uuid
   name            String
   headlineOrRole  String?  @map("headline_or_role")
-  company         String?
+  company         String?  // Legacy field, kept for backwards compatibility
+  companyId       String?  @map("company_id") @db.Uuid // Link to Company model
   primaryPlatform String?  @map("primary_platform")
   profileLinks    Json?    @map("profile_links") // { linkedin: "url", twitter: "handle" }
   tags            String[] // Array of tags
-  categoryId      String?  @db.Uuid
-  stageId         String?  @db.Uuid
+  
+  // Strategy tracking fields
+  email                    String?   // Email address for Loom Email Outreach
+  warmOrCold               String?   @map("warm_or_cold") // "warm" | "cold" for SMART strategy
+  commonGround             String?   @map("common_ground") @db.Text // Shared connections/background
+  firstMessageDate         DateTime? @map("first_message_date") // When first outreach was sent
+  referralGiven            Boolean   @default(false) @map("referral_given")
+  referralGivenAt          DateTime? @map("referral_given_at")
+  referralDetails          String?   @map("referral_details") @db.Text
+  connectionRequestSentAt  DateTime? @map("connection_request_sent_at")
+  connectionAcceptedAt     DateTime? @map("connection_accepted_at")
+  connectionStatus         String?   @map("connection_status") // "not_connected" | "request_sent" | "connected"
+  dmSentAt                 DateTime? @map("dm_sent_at")
+  lastFollowUpAt           DateTime? @map("last_follow_up_at")
+  contactType              String?   @map("contact_type") // "hiring_manager" | "recruiter" | "founder" | "other"
+  strategyIds              String[]  @map("strategy_ids") // Array of strategy IDs this contact is linked to
+  
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   // Relations
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  stage         Stage?        @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  companyRelation Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
   conversations Conversation[]
   opportunities Opportunity[]
+  challengeContacts ChallengeContact[]
+  conversationContacts ConversationContact[]
+  messages      Message[]
 
+  @@index([userId])
+  @@index([companyId])
+  @@index([warmOrCold])
+  @@index([connectionStatus])
   @@map("contacts")
 }
 
@@ -109,12 +132,25 @@ model Opportunity {
   title           String?   // e.g., "Software Engineer at StartupXYZ" or "Networking with Jane"
   categoryId      String?   @db.Uuid
   stageId         String?   @db.Uuid
+  challengeId     String?   @map("challenge_id") @db.Uuid // Optional link to challenge
   nextActionType  String?   @map("next_action_type")
   nextActionDueAt DateTime? @map("next_action_due_at")
   priority        String?   // "low", "medium", "high", or null for closed
   summary         String?   // AI-generated summary of the overall opportunity
   notes           String?   // User's personal notes about the opportunity
   autoFollowupsEnabled Boolean @default(true) @map("auto_followups_enabled")
+  
+  // Strategy tracking fields
+  strategyIds              String[]  @map("strategy_ids") // Array of strategy IDs
+  proofOfWorkType          String?   @map("proof_of_work_type") // "proof_of_work_bugs" | "proof_of_work_build" | "other"
+  issuesFound              Json?     @map("issues_found") // Array of issues with screenshots/notes
+  projectDetails           String?   @map("project_details") @db.Text
+  loomVideoUrl             String?   @map("loom_video_url")
+  githubRepoUrl            String?   @map("github_repo_url")
+  liveDemoUrl              String?   @map("live_demo_url")
+  sharedChannels           String[]  @map("shared_channels") // ["slack", "linkedin", "discord", etc.]
+  teamResponses            Json?     @map("team_responses") // Array of responses from team members
+  
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -123,20 +159,24 @@ model Opportunity {
   contact      Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
   category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stage        Stage?        @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  challenge    Challenge?    @relation(fields: [challengeId], references: [id], onDelete: SetNull)
   conversations Conversation[]
+  jobPosting   JobPosting?
 
   @@index([userId])
   @@index([contactId])
   @@index([userId, stageId])
   @@index([nextActionDueAt])
+  @@index([proofOfWorkType])
   @@map("opportunities")
 }
 
 model Conversation {
   id                  String    @id @default(uuid()) @db.Uuid
   userId              String    @db.Uuid
-  contactId           String    @db.Uuid
+  contactId           String    @db.Uuid // Primary contact (kept for backwards compatibility)
   opportunityId       String?   @db.Uuid // Links conversation to opportunity (nullable for backwards compatibility)
+  challengeId         String?   @map("challenge_id") @db.Uuid // Optional link to challenge
   channel             String    // e.g., "linkedin", "email", "twitter"
   lastMessageAt       DateTime? @map("last_message_at")
   lastMessageSide     String?   @map("last_message_side") // "user" or "contact"
@@ -151,6 +191,20 @@ model Conversation {
   notes               String?   // User's personal notes
   originalUrl         String?   @map("original_url") // URL to the original conversation (e.g., LinkedIn)
   autoFollowupsEnabled Boolean  @default(true) @map("auto_followups_enabled")
+  
+  // Strategy tracking fields
+  strategyIds              String[]  @map("strategy_ids") // Array of strategy IDs
+  responseReceived         Boolean   @default(false) @map("response_received")
+  responseReceivedAt       DateTime? @map("response_received_at")
+  emailSentAt              DateTime? @map("email_sent_at") // When email was sent (separate from LinkedIn)
+  loomVideoUrl             String?   @map("loom_video_url") // Link to Loom video sent
+  loomSent                 Boolean   @default(false) @map("loom_sent")
+  emailFollowUpDates       DateTime[] @map("email_follow_up_dates") // Array of follow-up dates
+  emailStatus              String?   @map("email_status") // "no_reply" | "replied" | "call_scheduled" | "rejected" | "in_process"
+  followUp1Date            DateTime? @map("follow_up_1_date")
+  followUp2Date            DateTime? @map("follow_up_2_date")
+  followUp3Date            DateTime? @map("follow_up_3_date")
+  
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -160,8 +214,11 @@ model Conversation {
   opportunity       Opportunity?       @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   category          Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stage             Stage?             @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  challenge         Challenge?         @relation(fields: [challengeId], references: [id], onDelete: SetNull)
   messages          Message[]
   linkedInEmailEvents LinkedInEmailEvent[]
+  challengeConversations ChallengeConversation[]
+  conversationContacts ConversationContact[]
 
   @@index([userId])
   @@index([contactId])
@@ -169,6 +226,7 @@ model Conversation {
   @@index([userId, channel])
   @@index([userId, stageId])
   @@index([nextActionDueAt])
+  @@index([emailStatus])
   @@map("conversations")
 }
 
@@ -181,14 +239,17 @@ model Message {
   source        String   // "linkedin_export", "email_notification", "manual_reply", "other"
   status        String   @default("pending") // "pending" or "confirmed" - tracks if user-created messages were actually sent in the original platform
   rawMetadata   Json?    @map("raw_metadata")
+  contactId     String?  @db.Uuid // Nullable: identifies which contact sent this message (if sender is "contact")
   createdAt     DateTime @default(now())
 
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  contact      Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   @@index([conversationId])
   @@index([sentAt])
   @@index([status])
+  @@index([contactId])
   @@map("messages")
 }
 
@@ -211,5 +272,141 @@ model LinkedInEmailEvent {
   @@index([emailReceivedAt])
   @@index([matchedConversationId])
   @@map("linkedin_email_events")
+}
+
+model Company {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  name              String
+  industry          String?
+  fundingRound      String?  @map("funding_round") // "Seed" | "Series A" | "Series B" | etc.
+  fundingDate       DateTime? @map("funding_date")
+  fundingSource     String?  @map("funding_source") // "Crunchbase" | "article" | "growth list" | "other"
+  careersPageUrl    String?  @map("careers_page_url")
+  hasRelevantRole   Boolean  @default(false) @map("has_relevant_role")
+  roleTitle         String?  @map("role_title")
+  applied           Boolean  @default(false)
+  applicationDate   DateTime? @map("application_date")
+  notes             String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts  Contact[]
+  jobPostings JobPosting[]
+
+  @@index([userId])
+  @@index([fundingDate])
+  @@index([fundingRound])
+  @@map("companies")
+}
+
+model JobPosting {
+  id                  String    @id @default(uuid()) @db.Uuid
+  userId              String    @db.Uuid
+  companyId           String?   @map("company_id") @db.Uuid
+  jobTitle            String    @map("job_title")
+  jobUrl              String    @map("job_url")
+  postedAt            DateTime? @map("posted_at")
+  applicantsWhenFound String?   @map("applicants_when_found") // "0", "<25", "100+", etc.
+  source              String    // "linkedin_post" | "linkedin_job" | "other"
+  opportunityId       String?   @unique @map("opportunity_id") @db.Uuid // Link to opportunity if converted
+  outreachDone        Boolean   @default(false) @map("outreach_done")
+  outreachChannels    String[]  @map("outreach_channels") // ["dm", "email", "loom", etc.]
+  contactsFound       Json?     @map("contacts_found") // Array of contact IDs or names
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company     Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([postedAt])
+  @@index([source])
+  @@map("job_postings")
+}
+
+model Challenge {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  name              String   // e.g., "100-Connection Week"
+  startDate         DateTime @map("start_date")
+  endDate           DateTime @map("end_date")
+  goal              Int      // e.g., 100
+  outreachesPerDay  Int?     @map("outreaches_per_day") // Minimum daily outreaches goal
+  outreachesCount   Int      @default(0) @map("outreaches_count")
+  acceptsCount      Int      @default(0) @map("accepts_count")
+  repliesCount      Int      @default(0) @map("replies_count")
+  callsCount        Int      @default(0) @map("calls_count")
+  interviewsCount   Int      @default(0) @map("interviews_count")
+  screeningsScheduledOpportunityIds Json? @map("screenings_scheduled_opportunity_ids") // Array of opportunity IDs that have been counted
+  notes             String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeContacts   ChallengeContact[]
+  challengeConversations ChallengeConversation[]
+  conversations       Conversation[]
+  opportunities       Opportunity[]
+
+  @@index([userId])
+  @@index([startDate])
+  @@index([endDate])
+  @@map("challenges")
+}
+
+model ChallengeContact {
+  id          String   @id @default(uuid()) @db.Uuid
+  challengeId String   @map("challenge_id") @db.Uuid
+  contactId   String   @map("contact_id") @db.Uuid
+  createdAt   DateTime @default(now())
+
+  // Relations
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  contact   Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, contactId])
+  @@index([challengeId])
+  @@index([contactId])
+  @@map("challenge_contacts")
+}
+
+model ChallengeConversation {
+  id            String   @id @default(uuid()) @db.Uuid
+  challengeId   String   @map("challenge_id") @db.Uuid
+  conversationId String  @map("conversation_id") @db.Uuid
+  createdAt     DateTime @default(now())
+
+  // Relations
+  challenge   Challenge   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, conversationId])
+  @@index([challengeId])
+  @@index([conversationId])
+  @@map("challenge_conversations")
+}
+
+model ConversationContact {
+  id            String   @id @default(uuid()) @db.Uuid
+  conversationId String  @db.Uuid
+  contactId     String   @db.Uuid
+  addedAt       DateTime @default(now()) @map("added_at")
+  
+  // Relations
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  contact       Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  
+  @@unique([conversationId, contactId])
+  @@index([conversationId])
+  @@index([contactId])
+  @@map("conversation_contacts")
 }
 

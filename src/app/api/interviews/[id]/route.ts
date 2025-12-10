@@ -88,10 +88,6 @@ export async function GET(
           company: contact.company,
           id: { not: conversation.contactId },
         },
-        include: {
-          category: true,
-          stage: true,
-        },
         take: 10,
       });
     }
@@ -116,8 +112,8 @@ export async function GET(
         name: c.name,
         headlineOrRole: c.headlineOrRole,
         company: c.company,
-        category: c.category?.name ?? null,
-        stage: c.stage?.name ?? null,
+        category: null,
+        stage: null,
       })),
     };
 

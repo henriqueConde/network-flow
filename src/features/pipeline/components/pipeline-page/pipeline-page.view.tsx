@@ -10,9 +10,11 @@ import {
   ListItemText,
   TextField,
   IconButton,
+  InputAdornment,
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useState, useRef, useEffect } from 'react';
 import {
   DndContext,
@@ -69,8 +71,10 @@ export function PipelinePageView({
   availableCategories,
   categoryId,
   stageId,
+  search,
   onCategoryChange,
   onStageChange,
+  onSearchChange,
 }: PipelinePageViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -219,8 +223,13 @@ export function PipelinePageView({
     );
   }
 
+  // Filter stages when stageId filter is applied - show only the selected stage column
+  const filteredStages = stageId
+    ? board.stages.filter((stage) => stage.id === stageId)
+    : board.stages;
+
   // Get all opportunity IDs for sortable context
-  const allOpportunityIds = board.stages.flatMap((stage) =>
+  const allOpportunityIds = filteredStages.flatMap((stage) =>
     stage.opportunities.map((opp) => opp.id),
   );
 
@@ -244,7 +253,28 @@ export function PipelinePageView({
           <Typography variant="body1" sx={styles.subtitle()}>
             {config.copy.subtitle}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+            <TextField
+              placeholder={config.copy.search.placeholder}
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              size="small"
+              sx={{ minWidth: 300, flex: 1 }}
+              InputProps={{
+                endAdornment: search ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => onSearchChange('')}
+                      edge="end"
+                      aria-label="Clear search"
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
             <TextField
               select
               size="small"
@@ -290,7 +320,7 @@ export function PipelinePageView({
               </IconButton>
             )}
             <Box ref={boardRef} sx={styles.board()}>
-              {board.stages.map((stage) => (
+              {filteredStages.map((stage) => (
               <DroppableColumn
                 key={stage.id}
                 stageId={stage.id}

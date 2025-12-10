@@ -27,6 +27,8 @@ export const pipelineOpportunityDto = z.object({
   contactCompany: z.string().nullable(),
   title: z.string().nullable(),
   categoryName: z.string().nullable(),
+  challengeId: z.string().uuid().nullable().optional(),
+  challengeName: z.string().nullable().optional(),
   lastMessageAt: z.string().datetime().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
@@ -86,6 +88,7 @@ export type MoveOpportunityResponseDto = z.infer<typeof moveOpportunityResponseD
 export const getPipelineBoardQuery = z.object({
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  search: z.string().optional(),
 });
 
 export type GetPipelineBoardQuery = z.infer<typeof getPipelineBoardQuery>;

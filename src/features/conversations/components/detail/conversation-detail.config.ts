@@ -94,6 +94,20 @@ export const CONVERSATION_DETAIL_CONFIG = {
       label: 'Auto follow-ups',
       helper: 'Automatically draft follow-up messages every 2 days (up to 3) when this opportunity is not moving forward.',
     },
+    contacts: {
+      title: 'Participants',
+      addContact: 'Add Contact',
+      removeContact: 'Remove',
+      empty: 'No contacts',
+    },
+    addContactDialog: {
+      title: 'Add Contact to Conversation',
+      contactLabel: 'Contact',
+      contactPlaceholder: 'Search for a contact...',
+      cancel: 'Cancel',
+      add: 'Add',
+      allContactsAdded: 'All your contacts are already in this conversation.',
+    },
   },
 } as const;
 

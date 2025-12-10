@@ -124,11 +124,30 @@ export function AddReplyDialog({
           sx={{ mt: 2 }}
         >
           <MenuItem value="user">{config.copy.messages.userLabel}</MenuItem>
-          <MenuItem value="contact">
-            {conversation?.contactName}
-            {conversation?.contactCompany ? ` (${conversation.contactCompany})` : ''}
-          </MenuItem>
+          <MenuItem value="contact">Contact</MenuItem>
         </TextField>
+        {values.sender === 'contact' && conversation && conversation.contacts && conversation.contacts.length > 0 && (
+          <TextField
+            select
+            label="From Contact"
+            fullWidth
+            size="small"
+            value={values.contactId || conversation.contacts[0]?.id || ''}
+            onChange={(e) => onChangeField('contactId', e.target.value)}
+            error={!!errors.contactId}
+            helperText={errors.contactId || 'Select which contact sent this message'}
+            disabled={isAddingReply}
+            required
+            sx={{ mt: 2 }}
+          >
+            {conversation.contacts.map((contact) => (
+              <MenuItem key={contact.id} value={contact.id}>
+                {contact.name}
+                {contact.company ? ` (${contact.company})` : ''}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
         <TextField
           label={config.copy.addReplyDialog.sentAtLabel}
           type="datetime-local"

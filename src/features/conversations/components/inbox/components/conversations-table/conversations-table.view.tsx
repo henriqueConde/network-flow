@@ -61,6 +61,8 @@ export function ConversationsTable({
             </TableSortLabel>
           </TableCell>
           <TableCell>{config.copy.table.status}</TableCell>
+          <TableCell>{config.copy.table.warmOrCold}</TableCell>
+          <TableCell>{config.copy.table.challenge}</TableCell>
           <TableCell>Actions</TableCell>
         </TableRow>
       </TableHead>

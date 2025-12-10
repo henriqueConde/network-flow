@@ -55,8 +55,6 @@ export function ContactDetailPageContainer({ contactId }: ContactDetailPageConta
       pastedText: values.pastedText,
       firstMessageSender: values.firstMessageSender,
       priority: 'medium',
-      categoryId: contact.categoryId || undefined,
-      stageId: contact.stageId || undefined,
     });
 
     startConversationDialog.close();

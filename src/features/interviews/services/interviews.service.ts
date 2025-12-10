@@ -1,7 +1,7 @@
 import { client } from '@/shared/services/http/client';
 import { z } from 'zod';
 import { conversationChannelSchema, prioritySchema, messageSideSchema } from '@/shared/types';
-import type { ConversationInboxItem, ConversationDetail } from '@/features/conversations/services/conversations.service';
+import type { ConversationInboxItem, ConversationDetail } from '@/features/conversations';
 
 const InterviewInboxItemDto = z.object({
   id: z.string(),
@@ -16,6 +16,10 @@ const InterviewInboxItemDto = z.object({
   priority: prioritySchema.nullable(),
   isOutOfSync: z.boolean(),
   needsAttention: z.boolean(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
+  contactCount: z.number().int().min(1).default(1),
 });
 
 export type InterviewInboxItemDto = z.infer<typeof InterviewInboxItemDto>;
@@ -49,11 +53,18 @@ const InterviewDetailDto = z.object({
   contactId: z.string(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  contacts: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    company: z.string().nullable(),
+  })),
   channel: z.string(),
   categoryId: z.string().nullable(),
   categoryName: z.string().nullable(),
   stageId: z.string().nullable(),
   stageName: z.string().nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema,
@@ -87,6 +98,8 @@ export type InterviewDetail = Omit<
   ConversationDetail,
   'messages' | 'latestEmailEvent' | 'opportunityId' | 'opportunityTitle' | 'autoFollowupsEnabled'
 > & {
+  challengeId: string | null;
+  challengeName: string | null;
   messages: Array<{
     id: string;
     sender: 'user' | 'contact';
@@ -174,6 +187,17 @@ export async function getInterviewDetail(id: string): Promise<InterviewDetail> {
     })),
     nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
     lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    responseReceivedAtDate: null,
+    emailSentAtDate: null,
+    followUp1DateDate: null,
+    followUp2DateDate: null,
+    followUp3DateDate: null,
+    emailFollowUpDatesDates: [],
+    strategyIds: (data as any).strategyIds || [],
+    responseReceived: (data as any).responseReceived || false,
+    loomVideoUrl: (data as any).loomVideoUrl || null,
+    loomSent: (data as any).loomSent || false,
+    emailStatus: (data as any).emailStatus || null,
     latestEmailEvent: data.latestEmailEvent
       ? {
           ...data.latestEmailEvent,
@@ -207,6 +231,17 @@ export async function updateInterview(
     })),
     nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
     lastMessageAtDate: data.lastMessageAt ? new Date(data.lastMessageAt) : null,
+    responseReceivedAtDate: null,
+    emailSentAtDate: null,
+    followUp1DateDate: null,
+    followUp2DateDate: null,
+    followUp3DateDate: null,
+    emailFollowUpDatesDates: [],
+    strategyIds: (data as any).strategyIds || [],
+    responseReceived: (data as any).responseReceived || false,
+    loomVideoUrl: (data as any).loomVideoUrl || null,
+    loomSent: (data as any).loomSent || false,
+    emailStatus: (data as any).emailStatus || null,
     latestEmailEvent: data.latestEmailEvent
       ? {
           ...data.latestEmailEvent,

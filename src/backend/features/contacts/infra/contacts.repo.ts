@@ -13,9 +13,10 @@ export function makeContactsRepo() {
       userId: string;
       search?: string;
       company?: string;
-      categoryId?: string;
-      stageId?: string;
       primaryPlatform?: string;
+      warmOrCold?: 'warm' | 'cold';
+      connectionStatus?: 'not_connected' | 'request_sent' | 'connected';
+      contactType?: string;
       page: number;
       pageSize: number;
       sortBy: 'name' | 'company' | 'updatedAt' | 'createdAt';
@@ -25,9 +26,10 @@ export function makeContactsRepo() {
         userId,
         search,
         company,
-        categoryId,
-        stageId,
         primaryPlatform,
+        warmOrCold,
+        connectionStatus,
+        contactType,
         page,
         pageSize,
         sortBy,
@@ -73,64 +75,22 @@ export function makeContactsRepo() {
         where.primaryPlatform = primaryPlatform;
       }
 
-      // Filter by category or stage - check both contact's own category/stage and conversations
-      if (categoryId || stageId) {
-        const categoryStageFilters: any[] = [];
+      if (warmOrCold) {
+        where.warmOrCold = warmOrCold;
+      }
 
-        // Contact has both category and stage
-        if (categoryId && stageId) {
-          categoryStageFilters.push({
-            categoryId,
-            stageId,
-          });
-          categoryStageFilters.push({
-            conversations: {
-              some: {
-                categoryId,
-                stageId,
-              },
-            },
-          });
-        } else {
-          // Contact has category or stage (or both separately)
-          if (categoryId) {
-            categoryStageFilters.push({ categoryId });
-            categoryStageFilters.push({
-              conversations: {
-                some: { categoryId },
-              },
-            });
-          }
-          if (stageId) {
-            categoryStageFilters.push({ stageId });
-            categoryStageFilters.push({
-              conversations: {
-                some: { stageId },
-              },
-            });
-          }
-        }
+      if (connectionStatus) {
+        where.connectionStatus = connectionStatus;
+      }
 
-        // If we have both search and category/stage filters, combine them with AND
-        if (where.OR && categoryStageFilters.length > 0) {
-          // Search OR condition exists, combine with category/stage filter using AND
-          where.AND = [
-            { OR: where.OR },
-            { OR: categoryStageFilters },
-          ];
-          delete where.OR;
-        } else if (categoryStageFilters.length > 0) {
-          // No search filter, just use category/stage OR
-          where.OR = categoryStageFilters;
-        }
+      if (contactType) {
+        where.contactType = contactType;
       }
 
       const [contacts, total] = await Promise.all([
         prisma.contact.findMany({
           where,
           include: {
-            category: true,
-            stage: true,
             conversations: {
               include: {
                 category: true,
@@ -172,8 +132,6 @@ export function makeContactsRepo() {
           userId,
         },
         include: {
-          category: true,
-          stage: true,
           conversations: {
             include: {
               category: true,
@@ -268,11 +226,26 @@ export function makeContactsRepo() {
         name: string;
         headlineOrRole?: string | null;
         company?: string | null;
+        companyId?: string | null;
         primaryPlatform?: string | null;
         profileLinks?: Record<string, string> | null;
         tags?: string[];
         categoryId?: string | null;
         stageId?: string | null;
+        email?: string | null;
+        warmOrCold?: 'warm' | 'cold' | null;
+        commonGround?: string | null;
+        firstMessageDate?: Date | null;
+        referralGiven?: boolean;
+        referralGivenAt?: Date | null;
+        referralDetails?: string | null;
+        connectionRequestSentAt?: Date | null;
+        connectionAcceptedAt?: Date | null;
+        connectionStatus?: 'not_connected' | 'request_sent' | 'connected' | null;
+        dmSentAt?: Date | null;
+        lastFollowUpAt?: Date | null;
+        contactType?: string | null;
+        strategyIds?: string[];
       };
     }) {
       const { userId, data } = params;
@@ -288,15 +261,26 @@ export function makeContactsRepo() {
           name: data.name,
           headlineOrRole: data.headlineOrRole ?? null,
           company: data.company ?? null,
+          companyId: data.companyId ?? null,
           primaryPlatform: data.primaryPlatform ?? null,
           profileLinks: profileLinksValue,
           tags: data.tags ?? [],
-          categoryId: data.categoryId ?? null,
-          stageId: data.stageId ?? null,
+          email: data.email ?? null,
+          warmOrCold: data.warmOrCold ?? null,
+          commonGround: data.commonGround ?? null,
+          firstMessageDate: data.firstMessageDate ?? null,
+          referralGiven: data.referralGiven ?? false,
+          referralGivenAt: data.referralGivenAt ?? null,
+          referralDetails: data.referralDetails ?? null,
+          connectionRequestSentAt: data.connectionRequestSentAt ?? null,
+          connectionAcceptedAt: data.connectionAcceptedAt ?? null,
+          connectionStatus: data.connectionStatus ?? null,
+          dmSentAt: data.dmSentAt ?? null,
+          lastFollowUpAt: data.lastFollowUpAt ?? null,
+          contactType: data.contactType ?? null,
+          strategyIds: data.strategyIds ?? [],
         },
         include: {
-          category: true,
-          stage: true,
           conversations: {
             include: {
               category: true,
@@ -322,20 +306,54 @@ export function makeContactsRepo() {
         name?: string;
         headlineOrRole?: string | null;
         company?: string | null;
+        companyId?: string | null;
         primaryPlatform?: string | null;
         profileLinks?: Record<string, string> | null;
         tags?: string[];
-        categoryId?: string | null;
-        stageId?: string | null;
+        email?: string | null;
+        warmOrCold?: 'warm' | 'cold' | null;
+        commonGround?: string | null;
+        firstMessageDate?: Date | null;
+        referralGiven?: boolean;
+        referralGivenAt?: Date | null;
+        referralDetails?: string | null;
+        connectionRequestSentAt?: Date | null;
+        connectionAcceptedAt?: Date | null;
+        connectionStatus?: 'not_connected' | 'request_sent' | 'connected' | null;
+        dmSentAt?: Date | null;
+        lastFollowUpAt?: Date | null;
+        contactType?: string | null;
+        strategyIds?: string[];
       };
     }) {
       const { userId, contactId, updates } = params;
 
       // Handle JSON field null values properly for Prisma
       const updateData: any = {
-        ...updates,
         updatedAt: new Date(),
       };
+
+      // Only include fields that are explicitly provided
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.headlineOrRole !== undefined) updateData.headlineOrRole = updates.headlineOrRole;
+      if (updates.company !== undefined) updateData.company = updates.company;
+      if (updates.companyId !== undefined) updateData.companyId = updates.companyId;
+      if (updates.primaryPlatform !== undefined) updateData.primaryPlatform = updates.primaryPlatform;
+      if (updates.tags !== undefined) updateData.tags = updates.tags;
+      if (updates.email !== undefined) updateData.email = updates.email;
+      if (updates.warmOrCold !== undefined) updateData.warmOrCold = updates.warmOrCold;
+      if (updates.commonGround !== undefined) updateData.commonGround = updates.commonGround;
+      if (updates.firstMessageDate !== undefined) updateData.firstMessageDate = updates.firstMessageDate;
+      if (updates.referralGiven !== undefined) updateData.referralGiven = updates.referralGiven;
+      if (updates.referralGivenAt !== undefined) updateData.referralGivenAt = updates.referralGivenAt;
+      if (updates.referralDetails !== undefined) updateData.referralDetails = updates.referralDetails;
+      if (updates.connectionRequestSentAt !== undefined) updateData.connectionRequestSentAt = updates.connectionRequestSentAt;
+      if (updates.connectionAcceptedAt !== undefined) updateData.connectionAcceptedAt = updates.connectionAcceptedAt;
+      if (updates.connectionStatus !== undefined) updateData.connectionStatus = updates.connectionStatus;
+      if (updates.dmSentAt !== undefined) updateData.dmSentAt = updates.dmSentAt;
+      if (updates.lastFollowUpAt !== undefined) updateData.lastFollowUpAt = updates.lastFollowUpAt;
+      if (updates.contactType !== undefined) updateData.contactType = updates.contactType;
+      if (updates.strategyIds !== undefined) updateData.strategyIds = updates.strategyIds;
 
       if ('profileLinks' in updates && updates.profileLinks !== undefined) {
         updateData.profileLinks = updates.profileLinks === null
@@ -361,8 +379,6 @@ export function makeContactsRepo() {
           userId,
         },
         include: {
-          category: true,
-          stage: true,
           conversations: {
             include: {
               category: true,

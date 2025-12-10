@@ -21,6 +21,12 @@ export function makeOpportunitiesRepo() {
           contact: true,
           category: true,
           stage: true,
+          challenge: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           conversations: {
             include: {
               stage: true,
@@ -62,6 +68,17 @@ export function makeOpportunitiesRepo() {
         },
         include: {
           contact: true,
+          conversationContacts: {
+            include: {
+              contact: {
+                select: {
+                  id: true,
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+          },
           stage: true,
           messages: {
             orderBy: {
@@ -84,15 +101,21 @@ export function makeOpportunitiesRepo() {
       // We use the conversations from the query above which includes all conversations for the opportunity
       const allConversationsMap = new Map<string, typeof allContactConversations[0]>();
       
-      // Collect unique contact IDs
+      // Collect unique contact IDs from conversations (both primary contactId and ConversationContact)
       const contactIds = new Set<string>();
+      contactIds.add(opportunity.contactId); // Always include the primary contact
+      
       for (const conv of allContactConversations) {
         allConversationsMap.set(conv.id, conv);
         contactIds.add(conv.contactId);
+        // Also add all contacts from ConversationContact junction table
+        for (const convContact of conv.conversationContacts) {
+          contactIds.add(convContact.contact.id);
+        }
       }
       
       // Fetch contacts - always fetch them manually to ensure they're available
-      const contactsMap = new Map<string, { name: string; company: string | null }>();
+      const contactsMap = new Map<string, { id: string; name: string; company: string | null }>();
       if (contactIds.size > 0) {
         try {
           const contacts = await prisma.contact.findMany({
@@ -109,6 +132,7 @@ export function makeOpportunitiesRepo() {
           
           for (const contact of contacts) {
             contactsMap.set(contact.id, {
+              id: contact.id,
               name: contact.name,
               company: contact.company ?? null,
             });
@@ -141,14 +165,31 @@ export function makeOpportunitiesRepo() {
         categoryName: opportunity.category?.name ?? null,
         stageId: opportunity.stageId ?? null,
         stageName: opportunity.stage?.name ?? null,
+        challengeId: opportunity.challengeId ?? null,
+        challengeName: (opportunity as any).challenge?.name ?? null,
         nextActionType: opportunity.nextActionType ?? null,
         nextActionDueAt: opportunity.nextActionDueAt,
         priority: opportunity.priority as 'low' | 'medium' | 'high' | null,
         summary: opportunity.summary ?? null,
         notes: opportunity.notes ?? null,
         autoFollowupsEnabled,
+        strategyIds: opportunity.strategyIds || [],
+        proofOfWorkType: opportunity.proofOfWorkType as 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null,
+        issuesFound: opportunity.issuesFound,
+        projectDetails: opportunity.projectDetails ?? null,
+        loomVideoUrl: opportunity.loomVideoUrl ?? null,
+        githubRepoUrl: opportunity.githubRepoUrl ?? null,
+        liveDemoUrl: opportunity.liveDemoUrl ?? null,
+        sharedChannels: opportunity.sharedChannels || [],
+        teamResponses: opportunity.teamResponses,
         createdAt: opportunity.createdAt,
         updatedAt: opportunity.updatedAt,
+        // Include all unique contacts associated with this opportunity
+        contacts: Array.from(contactsMap.values()).map((contact) => ({
+          id: contact.id,
+          name: contact.name,
+          company: contact.company,
+        })),
         // Include all conversations for this opportunity (explicitly linked or same contact)
         conversations: Array.from(allConversationsMap.values()).map((conv) => {
           // Get contact info from the manually fetched map (more reliable than Prisma include)
@@ -200,6 +241,7 @@ export function makeOpportunitiesRepo() {
       search?: string;
       categoryId?: string;
       stageId?: string;
+      proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other';
       page: number;
       pageSize: number;
       sortBy: 'updatedAt' | 'nextActionDueAt' | 'priority';
@@ -210,6 +252,7 @@ export function makeOpportunitiesRepo() {
         search,
         categoryId,
         stageId,
+        proofOfWorkType,
         page,
         pageSize,
         sortBy,
@@ -255,6 +298,10 @@ export function makeOpportunitiesRepo() {
         where.stageId = stageId;
       }
 
+      if (proofOfWorkType) {
+        where.proofOfWorkType = proofOfWorkType;
+      }
+
       const skip = (page - 1) * pageSize;
       const orderBy: any = {};
       orderBy[sortBy] = sortDir;
@@ -263,9 +310,21 @@ export function makeOpportunitiesRepo() {
         prisma.opportunity.findMany({
           where,
           include: {
-            contact: true,
+            contact: {
+              select: {
+                name: true,
+                company: true,
+                warmOrCold: true,
+              },
+            },
             category: true,
             stage: true,
+            challenge: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
             conversations: {
               orderBy: {
                 lastMessageAt: 'desc',
@@ -294,6 +353,9 @@ export function makeOpportunitiesRepo() {
           updatedAt: opp.updatedAt,
           lastMessageAt: opp.conversations[0]?.lastMessageAt ?? null,
           lastMessageSnippet: opp.conversations[0]?.lastMessageSnippet ?? null,
+          warmOrCold: opp.contact.warmOrCold as 'warm' | 'cold' | null,
+          challengeId: opp.challenge?.id ?? null,
+          challengeName: opp.challenge?.name ?? null,
         })),
         total,
         page,
@@ -311,6 +373,7 @@ export function makeOpportunitiesRepo() {
       title?: string;
       categoryId?: string;
       stageId?: string;
+      challengeId?: string;
       nextActionType?: string;
       nextActionDueAt?: Date;
       priority?: 'low' | 'medium' | 'high' | null;
@@ -322,6 +385,7 @@ export function makeOpportunitiesRepo() {
         title,
         categoryId,
         stageId,
+        challengeId,
         nextActionType,
         nextActionDueAt,
         priority,
@@ -335,6 +399,7 @@ export function makeOpportunitiesRepo() {
           title: title ?? null,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
+          challengeId: challengeId ?? null,
           nextActionType: nextActionType ?? null,
           nextActionDueAt: nextActionDueAt ?? null,
           priority: priority ?? null,
@@ -352,12 +417,22 @@ export function makeOpportunitiesRepo() {
       title?: string;
       categoryId?: string | null;
       stageId?: string | null;
+      challengeId?: string | null;
       nextActionType?: string | null;
       nextActionDueAt?: Date | null;
       priority?: 'low' | 'medium' | 'high' | null;
       summary?: string | null;
       notes?: string | null;
       autoFollowupsEnabled?: boolean;
+      strategyIds?: string[];
+      proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null;
+      issuesFound?: any; // JSON field
+      projectDetails?: string | null;
+      loomVideoUrl?: string | null;
+      githubRepoUrl?: string | null;
+      liveDemoUrl?: string | null;
+      sharedChannels?: string[];
+      teamResponses?: any; // JSON field
     }) {
       const {
         userId,
@@ -365,12 +440,22 @@ export function makeOpportunitiesRepo() {
         title,
         categoryId,
         stageId,
+        challengeId,
         nextActionType,
         nextActionDueAt,
         priority,
         summary,
         notes,
         autoFollowupsEnabled,
+        strategyIds,
+        proofOfWorkType,
+        issuesFound,
+        projectDetails,
+        loomVideoUrl,
+        githubRepoUrl,
+        liveDemoUrl,
+        sharedChannels,
+        teamResponses,
       } = params;
 
       // Verify the opportunity belongs to the user
@@ -390,19 +475,74 @@ export function makeOpportunitiesRepo() {
       if (title !== undefined) updateData.title = title;
       if (categoryId !== undefined) updateData.categoryId = categoryId;
       if (stageId !== undefined) updateData.stageId = stageId;
+      if (challengeId !== undefined) updateData.challengeId = challengeId;
       if (nextActionType !== undefined) updateData.nextActionType = nextActionType;
       if (nextActionDueAt !== undefined) updateData.nextActionDueAt = nextActionDueAt;
       if (priority !== undefined) updateData.priority = priority;
       if (summary !== undefined) updateData.summary = summary;
       if (notes !== undefined) updateData.notes = notes;
       if (autoFollowupsEnabled !== undefined) updateData.autoFollowupsEnabled = autoFollowupsEnabled;
+      if (strategyIds !== undefined) updateData.strategyIds = strategyIds;
+      if (proofOfWorkType !== undefined) updateData.proofOfWorkType = proofOfWorkType;
+      if (issuesFound !== undefined) updateData.issuesFound = issuesFound;
+      if (projectDetails !== undefined) updateData.projectDetails = projectDetails;
+      if (loomVideoUrl !== undefined) updateData.loomVideoUrl = loomVideoUrl || null;
+      if (githubRepoUrl !== undefined) updateData.githubRepoUrl = githubRepoUrl || null;
+      if (liveDemoUrl !== undefined) updateData.liveDemoUrl = liveDemoUrl || null;
+      if (sharedChannels !== undefined) updateData.sharedChannels = sharedChannels;
+      if (teamResponses !== undefined) updateData.teamResponses = teamResponses;
 
-      return await prisma.opportunity.update({
+      const updated = await prisma.opportunity.update({
         where: {
           id: opportunityId,
         },
         data: updateData,
       });
+
+      // If stage was changed to "Screening scheduled" and opportunity is linked to a challenge,
+      // increment the challenge's callsCount (screenings scheduled count)
+      if (stageId !== undefined && stageId !== null && stageId !== existing.stageId && existing.challengeId) {
+        const stage = await prisma.stage.findUnique({
+          where: {
+            id: stageId,
+          },
+        });
+
+        if (stage && stage.name === 'Screening scheduled') {
+          const challenge = await prisma.challenge.findUnique({
+            where: {
+              id: existing.challengeId,
+            },
+            select: {
+              screeningsScheduledOpportunityIds: true,
+            },
+          });
+
+          if (challenge) {
+            // Get the current list of counted opportunity IDs (default to empty array)
+            const countedIds: string[] = Array.isArray(challenge.screeningsScheduledOpportunityIds)
+              ? (challenge.screeningsScheduledOpportunityIds as string[])
+              : [];
+
+            // Only increment if this opportunity hasn't been counted yet
+            if (!countedIds.includes(opportunityId)) {
+              await prisma.challenge.update({
+                where: {
+                  id: existing.challengeId,
+                },
+                data: {
+                  callsCount: {
+                    increment: 1,
+                  },
+                  screeningsScheduledOpportunityIds: [...countedIds, opportunityId],
+                },
+              });
+            }
+          }
+        }
+      }
+
+      return updated;
     },
 
     /**
@@ -430,6 +570,7 @@ export function makeOpportunitiesRepo() {
 
       // If stageId is provided, verify it belongs to the user and check if it's a closed stage
       let isClosedStage = false;
+      let stageName: string | null = null;
       if (stageId) {
         const stage = await prisma.stage.findFirst({
           where: {
@@ -442,6 +583,7 @@ export function makeOpportunitiesRepo() {
           return null;
         }
 
+        stageName = stage.name;
         // Check if the stage name starts with "Closed"
         isClosedStage = stage.name.toLowerCase().startsWith('closed');
       }
@@ -476,6 +618,41 @@ export function makeOpportunitiesRepo() {
           stageId,
         },
       });
+
+      // If moving to "Screening scheduled" stage and opportunity is linked to a challenge,
+      // increment the challenge's callsCount (screenings scheduled count)
+      if (stageName === 'Screening scheduled' && opportunity.challengeId) {
+        const challenge = await prisma.challenge.findUnique({
+          where: {
+            id: opportunity.challengeId,
+          },
+          select: {
+            screeningsScheduledOpportunityIds: true,
+          },
+        });
+
+        if (challenge) {
+          // Get the current list of counted opportunity IDs (default to empty array)
+          const countedIds: string[] = Array.isArray(challenge.screeningsScheduledOpportunityIds)
+            ? (challenge.screeningsScheduledOpportunityIds as string[])
+            : [];
+
+          // Only increment if this opportunity hasn't been counted yet
+          if (!countedIds.includes(opportunityId)) {
+            await prisma.challenge.update({
+              where: {
+                id: opportunity.challengeId,
+              },
+              data: {
+                callsCount: {
+                  increment: 1,
+                },
+                screeningsScheduledOpportunityIds: [...countedIds, opportunityId],
+              },
+            });
+          }
+        }
+      }
 
       return await prisma.opportunity.findUnique({
         where: {

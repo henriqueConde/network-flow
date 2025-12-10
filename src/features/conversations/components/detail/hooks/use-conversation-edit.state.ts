@@ -9,6 +9,17 @@ type EditValues = {
   priority: 'low' | 'medium' | 'high' | null | null;
   notes: string | null;
   originalUrl: string | null;
+  strategyIds: string[];
+  responseReceived: boolean;
+  responseReceivedAt: string | null;
+  emailSentAt: string | null;
+  loomVideoUrl: string | null;
+  loomSent: boolean;
+  emailFollowUpDates: string[];
+  emailStatus: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+  followUp1Date: string | null;
+  followUp2Date: string | null;
+  followUp3Date: string | null;
 };
 
 type EditErrors = Partial<Record<keyof EditValues, string>>;
@@ -24,6 +35,17 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
     priority: 'medium' as 'low' | 'medium' | 'high' | null,
     notes: null,
     originalUrl: null,
+    strategyIds: [],
+    responseReceived: false,
+    responseReceivedAt: null,
+    emailSentAt: null,
+    loomVideoUrl: null,
+    loomSent: false,
+    emailFollowUpDates: [],
+    emailStatus: null,
+    followUp1Date: null,
+    followUp2Date: null,
+    followUp3Date: null,
   });
   const [errors, setErrors] = useState<EditErrors>({});
 
@@ -34,18 +56,39 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
         categoryId: conversation.categoryId,
         stageId: conversation.stageId,
         nextActionType: conversation.nextActionType,
-        nextActionDueAt: conversation.nextActionDueAt
-          ? new Date(conversation.nextActionDueAt).toISOString()
+        nextActionDueAt: conversation.nextActionDueAtDate
+          ? conversation.nextActionDueAtDate.toISOString()
           : null,
         priority: conversation.priority,
         notes: conversation.notes,
         originalUrl: conversation.originalUrl,
+        strategyIds: conversation.strategyIds || [],
+        responseReceived: conversation.responseReceived || false,
+        responseReceivedAt: conversation.responseReceivedAtDate
+          ? conversation.responseReceivedAtDate.toISOString()
+          : null,
+        emailSentAt: conversation.emailSentAtDate
+          ? conversation.emailSentAtDate.toISOString()
+          : null,
+        loomVideoUrl: conversation.loomVideoUrl,
+        loomSent: conversation.loomSent || false,
+        emailFollowUpDates: conversation.emailFollowUpDatesDates.map((d) => d.toISOString()),
+        emailStatus: conversation.emailStatus,
+        followUp1Date: conversation.followUp1DateDate
+          ? conversation.followUp1DateDate.toISOString()
+          : null,
+        followUp2Date: conversation.followUp2DateDate
+          ? conversation.followUp2DateDate.toISOString()
+          : null,
+        followUp3Date: conversation.followUp3DateDate
+          ? conversation.followUp3DateDate.toISOString()
+          : null,
       });
       setErrors({});
     }
   }, [conversation]);
 
-  const changeField = (field: keyof EditValues, value: string | null) => {
+  const changeField = (field: keyof EditValues, value: string | string[] | boolean | null) => {
     setValues((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
@@ -72,11 +115,32 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
         categoryId: conversation.categoryId,
         stageId: conversation.stageId,
         nextActionType: conversation.nextActionType,
-        nextActionDueAt: conversation.nextActionDueAt
-          ? new Date(conversation.nextActionDueAt).toISOString()
+        nextActionDueAt: conversation.nextActionDueAtDate
+          ? conversation.nextActionDueAtDate.toISOString()
           : null,
         priority: conversation.priority,
         originalUrl: conversation.originalUrl,
+        strategyIds: conversation.strategyIds || [],
+        responseReceived: conversation.responseReceived || false,
+        responseReceivedAt: conversation.responseReceivedAtDate
+          ? conversation.responseReceivedAtDate.toISOString()
+          : null,
+        emailSentAt: conversation.emailSentAtDate
+          ? conversation.emailSentAtDate.toISOString()
+          : null,
+        loomVideoUrl: conversation.loomVideoUrl,
+        loomSent: conversation.loomSent || false,
+        emailFollowUpDates: conversation.emailFollowUpDatesDates.map((d) => d.toISOString()),
+        emailStatus: conversation.emailStatus,
+        followUp1Date: conversation.followUp1DateDate
+          ? conversation.followUp1DateDate.toISOString()
+          : null,
+        followUp2Date: conversation.followUp2DateDate
+          ? conversation.followUp2DateDate.toISOString()
+          : null,
+        followUp3Date: conversation.followUp3DateDate
+          ? conversation.followUp3DateDate.toISOString()
+          : null,
       }));
     }
     // Clear only metadata-related errors
@@ -118,6 +182,17 @@ export function useConversationEdit(conversation: ConversationDetail | null) {
       priority: values.priority,
       notes: values.notes,
       originalUrl: values.originalUrl,
+      strategyIds: values.strategyIds,
+      responseReceived: values.responseReceived,
+      responseReceivedAt: values.responseReceivedAt,
+      emailSentAt: values.emailSentAt,
+      loomVideoUrl: values.loomVideoUrl || null,
+      loomSent: values.loomSent,
+      emailFollowUpDates: values.emailFollowUpDates,
+      emailStatus: values.emailStatus,
+      followUp1Date: values.followUp1Date,
+      followUp2Date: values.followUp2Date,
+      followUp3Date: values.followUp3Date,
     };
   };
 

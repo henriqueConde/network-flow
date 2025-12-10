@@ -1,14 +1,40 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, Avatar, Menu, MenuItem, Divider, IconButton } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import type { AppHeaderViewProps } from './app-header.types';
 import { styles } from './app-header.styles';
 
 export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewProps) {
   const pathname = usePathname();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  // Extract initials from email
+  const getInitials = (email: string | null | undefined): string => {
+    if (!email) return 'U';
+    const parts = email.split('@')[0].split(/[._-]/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSignOut = () => {
+    handleClose();
+    onSignOut();
+  };
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -130,6 +156,51 @@ export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewPro
             </Typography>
           </Link>
           <Link
+            href={config.routes.companies}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.companies) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.companies) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.companies}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes['job-postings']}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes['job-postings']) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes['job-postings']) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation['job-postings']}
+            </Typography>
+          </Link>
+          <Link
+            href={config.routes.challenges}
+            style={{ textDecoration: 'none' }}
+            className={isActive(config.routes.challenges) ? 'active' : ''}
+          >
+            <Typography
+              component="span"
+              sx={[
+                styles.navLink(),
+                isActive(config.routes.challenges) && styles.navLinkActive(),
+              ]}
+            >
+              {config.copy.navigation.challenges}
+            </Typography>
+          </Link>
+          <Link
             href={config.routes.strategies}
             style={{ textDecoration: 'none' }}
             className={isActive(config.routes.strategies) ? 'active' : ''}
@@ -161,19 +232,45 @@ export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewPro
           </Link>
         </Box>
         <Box sx={styles.rightSection()}>
-          {userEmail && (
-            <Typography sx={styles.userEmail()} component="span">
-              {userEmail}
-            </Typography>
-          )}
-          <Button
-            variant="outlined"
-            onClick={onSignOut}
-            startIcon={<LogoutIcon />}
-            sx={styles.signOutButton()}
+          <IconButton
+            onClick={handleClick}
+            size="small"
+            sx={styles.profileButton()}
+            aria-controls={open ? 'profile-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
           >
-            {config.copy.signOut}
-          </Button>
+            <Avatar sx={styles.avatar()}>
+              {getInitials(userEmail)}
+            </Avatar>
+          </IconButton>
+          <Menu
+            id="profile-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            onClick={handleClose}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            PaperProps={{
+              sx: styles.menuPaper(),
+            }}
+          >
+            {userEmail && (
+              <MenuItem disabled sx={styles.menuItem()}>
+                <Typography variant="body2" sx={styles.menuEmail()}>
+                  {userEmail}
+                </Typography>
+              </MenuItem>
+            )}
+            {userEmail && <Divider />}
+            <MenuItem onClick={handleSignOut} sx={styles.menuItem()}>
+              <LogoutIcon sx={styles.menuIcon()} />
+              <Typography variant="body2">
+                {config.copy.signOut}
+              </Typography>
+            </MenuItem>
+          </Menu>
         </Box>
       </Toolbar>
     </AppBar>

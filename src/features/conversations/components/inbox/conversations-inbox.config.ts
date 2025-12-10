@@ -25,6 +25,8 @@ export const CONVERSATIONS_INBOX_CONFIG = {
       lastMessage: 'Last message',
       priority: 'Priority',
       status: 'Status',
+      warmOrCold: 'Warm/Cold',
+      challenge: 'Challenge',
     },
     emptyState: 'No conversations yet. Create your first one to get started.',
   },

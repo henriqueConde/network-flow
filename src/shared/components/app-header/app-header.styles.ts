@@ -29,13 +29,41 @@ export const styles = {
     alignItems: 'center',
     gap: 2,
   }),
-  userEmail: () => (theme: Theme) => ({
-    color: theme.palette.text.secondary,
-    fontSize: '0.875rem',
-    marginRight: theme.spacing(2),
+  profileButton: () => (theme: Theme) => ({
+    padding: theme.spacing(0.5),
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
   }),
-  signOutButton: () => () => ({
-    minWidth: 100,
+  avatar: () => (theme: Theme) => ({
+    width: 32,
+    height: 32,
+    fontSize: '0.875rem',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    cursor: 'pointer',
+  }),
+  menuPaper: () => (theme: Theme) => ({
+    marginTop: theme.spacing(1),
+    minWidth: 200,
+    boxShadow: theme.shadows[3],
+  }),
+  menuItem: () => (theme: Theme) => ({
+    padding: theme.spacing(1, 2),
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    '&.Mui-disabled': {
+      opacity: 1,
+    },
+  }),
+  menuEmail: () => (theme: Theme) => ({
+    color: theme.palette.text.primary,
+    fontWeight: 500,
+  }),
+  menuIcon: () => (theme: Theme) => ({
+    fontSize: '1.125rem',
+    color: theme.palette.text.secondary,
   }),
   navLinks: () => (theme: Theme) => ({
     display: 'flex',

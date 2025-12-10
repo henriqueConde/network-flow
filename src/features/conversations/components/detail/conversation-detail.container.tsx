@@ -4,10 +4,12 @@ import { ConversationDetailView } from './conversation-detail.view';
 import { CONVERSATION_DETAIL_CONFIG } from './conversation-detail.config';
 import { EDIT_MESSAGE_DIALOG_CONFIG } from './components/edit-message-dialog/edit-message-dialog.config';
 import { useConversationDetail } from '../../services/conversations.queries';
-import { useUpdateConversation, useAddMessage, useUpdateMessage, useDeleteMessage, useToggleMessageStatus } from '../../services/conversations.mutations';
+import { useUpdateConversation, useAddMessage, useUpdateMessage, useDeleteMessage, useToggleMessageStatus, useAddContactToConversation, useRemoveContactFromConversation } from '../../services/conversations.mutations';
 import { useAnalyzeConversationMutation } from '../../services/conversation-ai.mutations';
+import { useContactsList } from '@/features/contacts/services/contacts.queries';
 import { useConversationEdit } from './hooks/use-conversation-edit.state';
 import { useConversationDetailNavigation } from './hooks/use-conversation-detail-navigation.state';
+import { useRouter } from 'next/navigation';
 import { useConversationEditActions } from './hooks/use-conversation-edit-actions.state';
 import { useConversationAiAnalysis } from './hooks/use-conversation-ai-analysis.state';
 import { useAddReplyActions } from './hooks/use-add-reply-actions.state';
@@ -18,10 +20,21 @@ import { useStages } from '@/features/stages';
 import { useCategories } from '@/features/categories';
 import { DeleteMessageDialog } from './components/delete-message-dialog/delete-message-dialog.view';
 import { DELETE_MESSAGE_DIALOG_CONFIG } from './components/delete-message-dialog/delete-message-dialog.config';
+import { useState } from 'react';
+import { useDebounce } from '@/shared/hooks';
 
 export function ConversationDetailContainer() {
   // Navigation
+  const router = useRouter();
   const { conversationId, handleBack } = useConversationDetailNavigation();
+
+  const handleViewContact = (contactId: string) => {
+    router.push(`/contacts/${contactId}`);
+  };
+
+  const handleViewOpportunity = (opportunityId: string) => {
+    router.push(`/opportunities/${opportunityId}`);
+  };
 
   // Data fetching
   const { data: conversation, isLoading, error } = useConversationDetail(conversationId);
@@ -35,6 +48,8 @@ export function ConversationDetailContainer() {
   const deleteMessageMutation = useDeleteMessage();
   const toggleMessageStatusMutation = useToggleMessageStatus();
   const analyzeMutation = useAnalyzeConversationMutation();
+  const addContactMutation = useAddContactToConversation();
+  const removeContactMutation = useRemoveContactFromConversation();
 
   // UI state hooks
   const conversationOrNull = conversation ?? null;
@@ -65,6 +80,50 @@ export function ConversationDetailContainer() {
     });
   };
 
+  // Contact management
+  const [isAddContactDialogOpen, setIsAddContactDialogOpen] = useState(false);
+  const [contactSearchInput, setContactSearchInput] = useState('');
+  const debouncedContactSearch = useDebounce(contactSearchInput, 300);
+
+  // Fetch contacts for add contact dialog
+  const { data: contactsData, isLoading: isLoadingContactsForAdd } = useContactsList({
+    search: debouncedContactSearch.trim() || undefined,
+    page: 1,
+    pageSize: 50,
+    sortBy: 'name',
+    sortDir: 'asc',
+    enabled: isAddContactDialogOpen,
+  });
+
+  const handleAddContact = () => {
+    setIsAddContactDialogOpen(true);
+    setContactSearchInput('');
+  };
+
+  const handleCloseAddContactDialog = () => {
+    setIsAddContactDialogOpen(false);
+    setContactSearchInput('');
+  };
+
+  const handleConfirmAddContact = async (contactId: string) => {
+    if (!conversationId) return;
+    await addContactMutation.mutateAsync({
+      conversationId,
+      contactId,
+    });
+    setIsAddContactDialogOpen(false);
+    setContactSearchInput('');
+  };
+
+  const handleRemoveContact = async (contactId: string) => {
+    if (!conversationId) return;
+    await removeContactMutation.mutateAsync({
+      conversationId,
+      contactId,
+    });
+  };
+
+
   return (
     <>
     <ConversationDetailView
@@ -79,6 +138,8 @@ export function ConversationDetailContainer() {
       isEditingNotes={edit.isEditingNotes}
       isSaving={updateMutation.isPending}
       onBack={handleBack}
+      onViewContact={handleViewContact}
+      onViewOpportunity={handleViewOpportunity}
       onToggleAutoFollowups={handleToggleAutoFollowups}
       onChangeEditField={editActions.handleFieldChange}
       onSaveMetadata={editActions.handleSaveMetadata}
@@ -112,6 +173,17 @@ export function ConversationDetailContainer() {
       onCloseEditMessage={editMessageDialog.close}
       onChangeEditMessageField={editMessageDialog.changeField}
       onSubmitEditMessage={editMessageDialog.submit}
+      onAddContact={handleAddContact}
+      onRemoveContact={handleRemoveContact}
+      isAddingContact={addContactMutation.isPending}
+      isRemovingContact={removeContactMutation.isPending}
+      isAddContactDialogOpen={isAddContactDialogOpen}
+      onCloseAddContactDialog={handleCloseAddContactDialog}
+      onConfirmAddContact={handleConfirmAddContact}
+      availableContactsForAdd={contactsData?.contacts || []}
+      isLoadingContactsForAdd={isLoadingContactsForAdd}
+      contactSearchInput={contactSearchInput}
+      onContactSearchInputChange={setContactSearchInput}
     />
     <DeleteMessageDialog
       isOpen={deleteMessageId !== null}

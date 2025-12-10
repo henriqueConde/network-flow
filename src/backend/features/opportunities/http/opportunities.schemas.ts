@@ -8,6 +8,7 @@ export const listOpportunitiesQuery = z.object({
   search: z.string().trim().optional(),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).optional(),
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
   sortBy: z
@@ -35,6 +36,9 @@ export const opportunityListItemDto = z.object({
   updatedAt: z.string().datetime(),
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSnippet: z.string().nullable(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type OpportunityListItemDto = z.infer<typeof opportunityListItemDto>;
@@ -96,6 +100,15 @@ export const conversationDetailDto = z.object({
 export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
 
 /**
+ * Contact DTO for opportunity detail.
+ */
+const opportunityContactDto = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  company: z.string().nullable(),
+});
+
+/**
  * Response DTO for opportunity detail.
  */
 export const opportunityDetailDto = z.object({
@@ -109,14 +122,26 @@ export const opportunityDetailDto = z.object({
   categoryName: z.string().nullable(),
   stageId: z.string().uuid().nullable(),
   stageName: z.string().nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema.nullable(),
   summary: z.string().nullable(),
   notes: z.string().nullable(),
   autoFollowupsEnabled: z.boolean(),
+  strategyIds: z.array(z.string()),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable(),
+  issuesFound: z.any().nullable(), // JSON field - array of { issue, screenshot?, notes? }
+  projectDetails: z.string().nullable(),
+  loomVideoUrl: z.string().url().nullable(),
+  githubRepoUrl: z.string().url().nullable(),
+  liveDemoUrl: z.string().url().nullable(),
+  sharedChannels: z.array(z.string()),
+  teamResponses: z.any().nullable(), // JSON field - array of { name, response, date }
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  contacts: z.array(opportunityContactDto),
   conversations: z.array(conversationDetailDto),
 });
 
@@ -130,6 +155,7 @@ export const createOpportunityBody = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  challengeId: z.string().uuid().optional(),
   nextActionType: z.string().optional(),
   nextActionDueAt: z.string().datetime().optional(),
   priority: prioritySchema.optional(),
@@ -154,12 +180,22 @@ export const updateOpportunityBody = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),
   summary: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   autoFollowupsEnabled: z.boolean().optional(),
+  strategyIds: z.array(z.string()).optional(),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable().optional(),
+  issuesFound: z.any().optional(), // JSON field
+  projectDetails: z.string().nullable().optional(),
+  loomVideoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  githubRepoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  liveDemoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  sharedChannels: z.array(z.string()).optional(),
+  teamResponses: z.any().optional(), // JSON field
 });
 
 export type UpdateOpportunityBody = z.infer<typeof updateOpportunityBody>;

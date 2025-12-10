@@ -13,6 +13,17 @@ export type ConversationDetailSidebarProps = {
     priority: 'low' | 'medium' | 'high' | null;
     notes: string | null;
     originalUrl: string | null;
+    strategyIds: string[];
+    responseReceived: boolean;
+    responseReceivedAt: string | null;
+    emailSentAt: string | null;
+    loomVideoUrl: string | null;
+    loomSent: boolean;
+    emailFollowUpDates: string[];
+    emailStatus: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+    followUp1Date: string | null;
+    followUp2Date: string | null;
+    followUp3Date: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailSidebarProps['editValues'], string>>;
   isEditingMetadata: boolean;
@@ -23,11 +34,16 @@ export type ConversationDetailSidebarProps = {
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onChangeEditField: (
     field: keyof ConversationDetailSidebarProps['editValues'],
-    value: string | null,
+    value: string | string[] | boolean | null,
   ) => void;
   onSaveMetadata: () => void;
   onSaveNotes: () => void;
   onCancelMetadata: () => void;
   onCancelNotes: () => void;
+  // Contact management
+  onAddContact?: () => void;
+  onRemoveContact?: (contactId: string) => void;
+  isAddingContact?: boolean;
+  isRemovingContact?: boolean;
 };
 

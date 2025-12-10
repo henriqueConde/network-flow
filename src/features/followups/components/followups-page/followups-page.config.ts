@@ -31,3 +31,4 @@ export const FOLLOWUPS_PAGE_CONFIG = {
   },
 } as const;
 
+

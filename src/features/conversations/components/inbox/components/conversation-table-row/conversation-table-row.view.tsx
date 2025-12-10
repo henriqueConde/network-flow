@@ -21,6 +21,11 @@ export function ConversationTableRow({
       <TableCell>
         <Typography variant="body2" fontWeight={500}>
           {conversation.contactName}
+          {conversation.contactCount > 1 && (
+            <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+              +{conversation.contactCount - 1}
+            </Typography>
+          )}
         </Typography>
         {conversation.contactCompany && (
           <Typography variant="caption" color="text.secondary">
@@ -76,6 +81,22 @@ export function ConversationTableRow({
             sx={styles.chipOutOfSync()}
           />
         )}
+      </TableCell>
+      <TableCell>
+        {conversation.warmOrCold ? (
+          <Chip
+            label={conversation.warmOrCold.charAt(0).toUpperCase() + conversation.warmOrCold.slice(1)}
+            size="small"
+            color={conversation.warmOrCold === 'warm' ? 'success' : 'default'}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">—</Typography>
+        )}
+      </TableCell>
+      <TableCell>
+        <Typography variant="body2" color="text.secondary">
+          {conversation.challengeName || '—'}
+        </Typography>
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <IconButton

@@ -13,6 +13,17 @@ export type ConversationDetailContentProps = {
     priority: 'low' | 'medium' | 'high' | null;
     notes: string | null;
     originalUrl: string | null;
+    strategyIds: string[];
+    responseReceived: boolean;
+    responseReceivedAt: string | null;
+    emailSentAt: string | null;
+    loomVideoUrl: string | null;
+    loomSent: boolean;
+    emailFollowUpDates: string[];
+    emailStatus: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+    followUp1Date: string | null;
+    followUp2Date: string | null;
+    followUp3Date: string | null;
   };
   editErrors: Partial<Record<keyof ConversationDetailContentProps['editValues'], string>>;
   isEditingMetadata: boolean;
@@ -25,7 +36,7 @@ export type ConversationDetailContentProps = {
   onOpenAddReply: () => void;
   onChangeEditField: (
     field: keyof ConversationDetailContentProps['editValues'],
-    value: string | null,
+    value: string | string[] | boolean | null,
   ) => void;
   onSaveMetadata: () => void;
   onSaveNotes: () => void;
@@ -34,5 +45,10 @@ export type ConversationDetailContentProps = {
   onConfirmMessage?: (messageId: string) => void;
   onEditMessage?: (messageId: string) => void;
   onDeleteMessage?: (messageId: string) => void;
+  // Contact management
+  onAddContact?: () => void;
+  onRemoveContact?: (contactId: string) => void;
+  isAddingContact?: boolean;
+  isRemovingContact?: boolean;
 };
 

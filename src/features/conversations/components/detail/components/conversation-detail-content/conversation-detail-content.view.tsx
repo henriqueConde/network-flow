@@ -27,6 +27,10 @@ export function ConversationDetailContent({
   onConfirmMessage,
   onEditMessage,
   onDeleteMessage,
+  onAddContact,
+  onRemoveContact,
+  isAddingContact,
+  isRemovingContact,
 }: ConversationDetailContentProps) {
   return (
     <Box sx={styles.scrollableContent()}>
@@ -43,6 +47,7 @@ export function ConversationDetailContent({
         <Box sx={styles.mainColumn()}>
           <MessagesCard 
             messages={conversation.messages} 
+            contacts={conversation.contacts}
             config={config} 
             onOpenAddReply={onOpenAddReply}
             onConfirmMessage={onConfirmMessage}
@@ -51,7 +56,7 @@ export function ConversationDetailContent({
           />
         </Box>
 
-        {/* Sidebar: Metadata, Summary, Notes */}
+        {/* Sidebar: Contacts, Metadata, Summary, Notes */}
         <ConversationDetailSidebar
           conversation={conversation}
           editValues={editValues}
@@ -67,6 +72,10 @@ export function ConversationDetailContent({
           onSaveNotes={onSaveNotes}
           onCancelMetadata={onCancelMetadata}
           onCancelNotes={onCancelNotes}
+          onAddContact={onAddContact}
+          onRemoveContact={onRemoveContact}
+          isAddingContact={isAddingContact}
+          isRemovingContact={isRemovingContact}
         />
       </Box>
     </Box>

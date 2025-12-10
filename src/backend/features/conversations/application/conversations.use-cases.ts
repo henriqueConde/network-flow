@@ -24,6 +24,7 @@ export async function listConversations(
     status: input.status,
     categoryId: input.categoryId,
     stageId: input.stageId,
+    emailStatus: input.emailStatus,
     page: input.page,
     pageSize: input.pageSize,
     sortBy: input.sortBy,
@@ -53,15 +54,18 @@ export async function createConversation(input: {
   const conversation = await repo.createConversation({
     userId: input.userId,
     contactId: parsed.contactId,
+    contactIds: parsed.contactIds,
     contactName: parsed.contactName,
     contactCompany: parsed.contactCompany,
     opportunityId: parsed.opportunityId,
+    challengeId: parsed.challengeId,
     channel: parsed.channel,
     pastedText: parsed.pastedText,
     categoryId: parsed.categoryId,
     stageId: parsed.stageId,
     priority: parsed.priority,
     firstMessageSender: parsed.firstMessageSender ?? 'contact',
+    firstMessageContactId: parsed.firstMessageContactId,
   });
 
   return {
@@ -89,11 +93,28 @@ export async function getConversationById(input: {
   // Normalize Dates to ISO strings for DTO
   const dto = {
     ...conversation,
+    contacts: conversation.contacts || [],
     nextActionDueAt: conversation.nextActionDueAt
       ? conversation.nextActionDueAt.toISOString()
       : null,
     lastMessageAt: conversation.lastMessageAt
       ? conversation.lastMessageAt.toISOString()
+      : null,
+    responseReceivedAt: conversation.responseReceivedAt
+      ? conversation.responseReceivedAt.toISOString()
+      : null,
+    emailSentAt: conversation.emailSentAt
+      ? conversation.emailSentAt.toISOString()
+      : null,
+    emailFollowUpDates: conversation.emailFollowUpDates.map((date) => date.toISOString()),
+    followUp1Date: conversation.followUp1Date
+      ? conversation.followUp1Date.toISOString()
+      : null,
+    followUp2Date: conversation.followUp2Date
+      ? conversation.followUp2Date.toISOString()
+      : null,
+    followUp3Date: conversation.followUp3Date
+      ? conversation.followUp3Date.toISOString()
       : null,
     messages: conversation.messages.map((msg) => ({
       ...msg,
@@ -124,11 +145,24 @@ export async function updateConversation(input: {
   const updates: {
     categoryId?: string | null;
     stageId?: string | null;
+    challengeId?: string | null;
     nextActionType?: string | null;
     nextActionDueAt?: Date | null;
     priority?: 'low' | 'medium' | 'high' | null;
     notes?: string | null;
     originalUrl?: string | null;
+    autoFollowupsEnabled?: boolean;
+    strategyIds?: string[];
+    responseReceived?: boolean;
+    responseReceivedAt?: Date | null;
+    emailSentAt?: Date | null;
+    loomVideoUrl?: string | null;
+    loomSent?: boolean;
+    emailFollowUpDates?: Date[];
+    emailStatus?: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+    followUp1Date?: Date | null;
+    followUp2Date?: Date | null;
+    followUp3Date?: Date | null;
   } = {};
 
   if (input.body.categoryId !== undefined) {
@@ -136,6 +170,9 @@ export async function updateConversation(input: {
   }
   if (input.body.stageId !== undefined) {
     updates.stageId = input.body.stageId;
+  }
+  if (input.body.challengeId !== undefined) {
+    updates.challengeId = input.body.challengeId;
   }
   if (input.body.nextActionType !== undefined) {
     updates.nextActionType = input.body.nextActionType;
@@ -153,6 +190,52 @@ export async function updateConversation(input: {
   }
   if (input.body.originalUrl !== undefined) {
     updates.originalUrl = input.body.originalUrl;
+  }
+  if (input.body.autoFollowupsEnabled !== undefined) {
+    updates.autoFollowupsEnabled = input.body.autoFollowupsEnabled;
+  }
+  if (input.body.strategyIds !== undefined) {
+    updates.strategyIds = input.body.strategyIds;
+  }
+  if (input.body.responseReceived !== undefined) {
+    updates.responseReceived = input.body.responseReceived;
+  }
+  if (input.body.responseReceivedAt !== undefined) {
+    updates.responseReceivedAt = input.body.responseReceivedAt
+      ? new Date(input.body.responseReceivedAt)
+      : null;
+  }
+  if (input.body.emailSentAt !== undefined) {
+    updates.emailSentAt = input.body.emailSentAt
+      ? new Date(input.body.emailSentAt)
+      : null;
+  }
+  if (input.body.loomVideoUrl !== undefined) {
+    updates.loomVideoUrl = input.body.loomVideoUrl === '' ? null : input.body.loomVideoUrl;
+  }
+  if (input.body.loomSent !== undefined) {
+    updates.loomSent = input.body.loomSent;
+  }
+  if (input.body.emailFollowUpDates !== undefined) {
+    updates.emailFollowUpDates = input.body.emailFollowUpDates.map((date) => new Date(date));
+  }
+  if (input.body.emailStatus !== undefined) {
+    updates.emailStatus = input.body.emailStatus;
+  }
+  if (input.body.followUp1Date !== undefined) {
+    updates.followUp1Date = input.body.followUp1Date
+      ? new Date(input.body.followUp1Date)
+      : null;
+  }
+  if (input.body.followUp2Date !== undefined) {
+    updates.followUp2Date = input.body.followUp2Date
+      ? new Date(input.body.followUp2Date)
+      : null;
+  }
+  if (input.body.followUp3Date !== undefined) {
+    updates.followUp3Date = input.body.followUp3Date
+      ? new Date(input.body.followUp3Date)
+      : null;
   }
 
   // Repository will handle checking if stage is closed and setting priority/nextAction to null
@@ -205,6 +288,7 @@ export async function addMessage(input: {
     body: input.body.body,
     sender: input.body.sender,
     sentAt,
+    contactId: input.body.contactId,
   });
 
   if (!updated) {
@@ -390,3 +474,82 @@ export async function deleteConversation(input: {
 
   return { success: true };
 }
+
+/**
+ * Use case: add a contact to a conversation.
+ */
+export async function addContactToConversation(input: {
+  userId: string;
+  conversationId: string;
+  body: { contactId: string };
+}) {
+  const repo = makeConversationsRepo();
+  const updated = await repo.addContactToConversation({
+    userId: input.userId,
+    conversationId: input.conversationId,
+    contactId: input.body.contactId,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
+}
+
+/**
+ * Use case: remove a contact from a conversation.
+ */
+export async function removeContactFromConversation(input: {
+  userId: string;
+  conversationId: string;
+  contactId: string;
+}) {
+  const repo = makeConversationsRepo();
+  const updated = await repo.removeContactFromConversation({
+    userId: input.userId,
+    conversationId: input.conversationId,
+    contactId: input.contactId,
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  // Normalize Dates to ISO strings for DTO
+  const dto = {
+    ...updated,
+    nextActionDueAt: updated.nextActionDueAt ? updated.nextActionDueAt.toISOString() : null,
+    lastMessageAt: updated.lastMessageAt ? updated.lastMessageAt.toISOString() : null,
+    messages: updated.messages.map((msg) => ({
+      ...msg,
+      sentAt: msg.sentAt.toISOString(),
+    })),
+    latestEmailEvent: updated.latestEmailEvent
+      ? {
+        ...updated.latestEmailEvent,
+        emailReceivedAt: updated.latestEmailEvent.emailReceivedAt.toISOString(),
+      }
+      : null,
+  };
+
+  return conversationDetailDto.parse(dto);
+}
+

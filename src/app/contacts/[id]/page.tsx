@@ -1,4 +1,4 @@
-import { ContactDetailPageContainer } from '@/features/contacts';
+import { ContactDetailPageContainer } from '@/features/contacts/components/contact-detail-page/contact-detail-page.container';
 
 type ContactDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -8,4 +8,5 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
   const { id } = await params;
   return <ContactDetailPageContainer contactId={id} />;
 }
+
 

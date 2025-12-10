@@ -10,6 +10,7 @@ import {
   ConversationDetailContent,
   AddReplyDialog,
   EditMessageDialog,
+  AddContactDialog,
 } from './components';
 
 export function ConversationDetailView({
@@ -24,6 +25,8 @@ export function ConversationDetailView({
   isEditingNotes,
   isSaving,
   onBack,
+  onViewContact,
+  onViewOpportunity,
   onToggleAutoFollowups,
   onChangeEditField,
   onSaveMetadata,
@@ -57,6 +60,17 @@ export function ConversationDetailView({
   onCloseEditMessage,
   onChangeEditMessageField,
   onSubmitEditMessage,
+  onAddContact,
+  onRemoveContact,
+  isAddingContact,
+  isRemovingContact,
+  isAddContactDialogOpen,
+  onCloseAddContactDialog,
+  onConfirmAddContact,
+  availableContactsForAdd,
+  isLoadingContactsForAdd,
+  contactSearchInput,
+  onContactSearchInputChange,
 }: ConversationDetailViewProps) {
   if (isLoading) {
     return <LoadingView />;
@@ -69,6 +83,7 @@ export function ConversationDetailView({
   return (
     <Box sx={styles.container()}>
       <ConversationDetailHeader
+        contactId={conversation.contactId}
         contactName={conversation.contactName}
         contactCompany={conversation.contactCompany}
         opportunityId={conversation.opportunityId}
@@ -76,6 +91,8 @@ export function ConversationDetailView({
         isOutOfSync={conversation.isOutOfSync}
         config={config}
         onBack={onBack}
+        onViewContact={onViewContact}
+        onViewOpportunity={onViewOpportunity}
         autoFollowupsEnabled={conversation.autoFollowupsEnabled}
         onToggleAutoFollowups={onToggleAutoFollowups}
       />
@@ -100,6 +117,10 @@ export function ConversationDetailView({
         onConfirmMessage={onConfirmMessage}
         onEditMessage={onEditMessage}
         onDeleteMessage={onDeleteMessage}
+        onAddContact={onAddContact}
+        onRemoveContact={onRemoveContact}
+        isAddingContact={isAddingContact}
+        isRemovingContact={isRemovingContact}
       />
 
       <AddReplyDialog
@@ -130,6 +151,20 @@ export function ConversationDetailView({
         onChangeField={onChangeEditMessageField}
         onSubmit={onSubmitEditMessage}
       />
+
+      {isAddContactDialogOpen && onCloseAddContactDialog && onConfirmAddContact && (
+        <AddContactDialog
+          isOpen={isAddContactDialogOpen}
+          onClose={onCloseAddContactDialog}
+          onConfirm={onConfirmAddContact}
+          contacts={availableContactsForAdd || []}
+          existingContactIds={conversation.contacts?.map(c => c.id) || []}
+          isLoading={isLoadingContactsForAdd || false}
+          config={config}
+          searchInput={contactSearchInput}
+          onSearchInputChange={onContactSearchInputChange}
+        />
+      )}
     </Box>
   );
 }

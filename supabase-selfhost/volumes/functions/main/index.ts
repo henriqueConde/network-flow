@@ -6,3 +6,4 @@ Deno.serve(async (req) => {
   return new Response('Edge Functions are not configured', { status: 501 });
 });
 
+

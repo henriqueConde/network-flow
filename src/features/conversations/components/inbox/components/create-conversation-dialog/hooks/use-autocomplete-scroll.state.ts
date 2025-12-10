@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 
 /**
  * UI state hook for autocomplete infinite scroll.
@@ -10,6 +10,16 @@ export function useAutocompleteScroll(
   isLoading: boolean,
   onLoadMore?: () => void,
 ) {
+  // Guard to avoid firing multiple load-more requests for a single "bottom reach"
+  const hasPendingLoadMoreRef = useRef(false);
+
+  // When loading finishes, allow another load-more on the next bottom reach
+  useEffect(() => {
+    if (!isLoading) {
+      hasPendingLoadMoreRef.current = false;
+    }
+  }, [isLoading]);
+
   const handleScroll = useCallback(
     (event: React.UIEvent<HTMLUListElement>) => {
       if (!onLoadMore) return;
@@ -23,8 +33,10 @@ export function useAutocompleteScroll(
       if (
         scrollHeight - scrollTop - clientHeight < 100 &&
         hasMore &&
-        !isLoading
+        !isLoading &&
+        !hasPendingLoadMoreRef.current
       ) {
+        hasPendingLoadMoreRef.current = true;
         onLoadMore();
       }
     },

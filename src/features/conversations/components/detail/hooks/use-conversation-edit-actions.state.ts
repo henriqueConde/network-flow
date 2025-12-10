@@ -51,7 +51,7 @@ export function useConversationEditActions(
     edit.cancelEditingNotes();
   };
 
-  const handleFieldChange = (field: keyof typeof edit.values, value: string | null) => {
+  const handleFieldChange = (field: keyof typeof edit.values, value: string | string[] | boolean | null) => {
     // Determine which section this field belongs to
     const metadataFields: (keyof typeof edit.values)[] = [
       'categoryId',
@@ -60,6 +60,17 @@ export function useConversationEditActions(
       'nextActionDueAt',
       'priority',
       'originalUrl',
+      'strategyIds',
+      'responseReceived',
+      'responseReceivedAt',
+      'emailSentAt',
+      'loomVideoUrl',
+      'loomSent',
+      'emailFollowUpDates',
+      'emailStatus',
+      'followUp1Date',
+      'followUp2Date',
+      'followUp3Date',
     ];
     const notesFields: (keyof typeof edit.values)[] = ['notes'];
 

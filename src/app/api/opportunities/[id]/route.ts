@@ -79,11 +79,22 @@ export async function PATCH(
       title: body.title,
       categoryId: body.categoryId,
       stageId: body.stageId,
+      challengeId: body.challengeId,
       nextActionType: body.nextActionType,
       nextActionDueAt: body.nextActionDueAt,
       priority: body.priority,
       summary: body.summary,
       notes: body.notes,
+      autoFollowupsEnabled: body.autoFollowupsEnabled,
+      strategyIds: body.strategyIds,
+      proofOfWorkType: body.proofOfWorkType,
+      issuesFound: body.issuesFound,
+      projectDetails: body.projectDetails,
+      loomVideoUrl: body.loomVideoUrl,
+      githubRepoUrl: body.githubRepoUrl,
+      liveDemoUrl: body.liveDemoUrl,
+      sharedChannels: body.sharedChannels,
+      teamResponses: body.teamResponses,
     });
 
     if (!result) {

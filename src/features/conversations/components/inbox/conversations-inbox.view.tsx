@@ -22,13 +22,16 @@ export function ConversationsInboxView({
   status,
   categoryId,
   stageId,
+  emailStatus,
   availableCategories,
   availableStages,
+  availableChallenges,
   config,
   onSearchChange,
   onStatusChange,
   onCategoryChange,
   onStageChange,
+  onEmailStatusChange,
   onPageChange,
   onSortChange,
   onRowClick,
@@ -44,6 +47,7 @@ export function ConversationsInboxView({
   contactSearchInput,
   onContactSearchChange,
   onContactSelect,
+  onContactsSelect,
   contacts,
   contactOptions,
   allContactOptions,
@@ -71,6 +75,7 @@ export function ConversationsInboxView({
         status={status}
         categoryId={categoryId}
         stageId={stageId}
+        emailStatus={emailStatus}
         availableCategories={availableCategories}
         availableStages={availableStages}
         config={config}
@@ -78,6 +83,7 @@ export function ConversationsInboxView({
         onStatusChange={onStatusChange}
         onCategoryChange={onCategoryChange}
         onStageChange={onStageChange}
+        onEmailStatusChange={onEmailStatusChange}
       />
 
       {isLoading && (
@@ -127,6 +133,7 @@ export function ConversationsInboxView({
         contactSearchInput={contactSearchInput}
         onContactSearchChange={onContactSearchChange}
         onContactSelect={onContactSelect}
+        onContactsSelect={onContactsSelect}
         contacts={contacts}
         contactOptions={contactOptions}
         allContactOptions={allContactOptions}
@@ -138,6 +145,9 @@ export function ConversationsInboxView({
         onOpportunitySelect={onOpportunitySelect}
         opportunities={opportunities}
         isSearchingOpportunities={isSearchingOpportunities}
+        availableCategories={availableCategories}
+        availableStages={availableStages}
+        availableChallenges={availableChallenges}
       />
 
       <DeleteConversationDialog

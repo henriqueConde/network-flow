@@ -1,30 +1,82 @@
 'use client';
 
-import { Box, Typography, Button, Card, CardContent, CircularProgress, Alert, Chip } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, Divider, Card, CardContent, Chip, TextField, MenuItem } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
 import type { OpportunityDetail } from '../../services/opportunities.service';
 import { useMemo } from 'react';
+import type { Category } from '@/features/categories';
+import type { Stage } from '@/features/stages';
+import { styles } from './opportunity-detail.styles';
 
 type OpportunityDetailViewProps = {
   opportunity: OpportunityDetail | null;
   isLoading: boolean;
   error: string | null;
+  availableCategories: Category[];
+  availableStages: Stage[];
+  availableChallenges: Array<{ id: string; name: string }>;
+  editValues: {
+    title: string | null;
+    categoryId: string | null;
+    stageId: string | null;
+    challengeId: string | null;
+    nextActionType: string | null;
+    nextActionDueAt: string | null;
+    priority: 'low' | 'medium' | 'high' | null;
+    summary: string | null;
+    notes: string | null;
+    autoFollowupsEnabled: boolean;
+    strategyIds: string[];
+    proofOfWorkType: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other' | null;
+    issuesFound: any;
+    projectDetails: string | null;
+    loomVideoUrl: string | null;
+    githubRepoUrl: string | null;
+    liveDemoUrl: string | null;
+    sharedChannels: string[];
+    teamResponses: any;
+  };
+  editErrors: Partial<Record<keyof OpportunityDetailViewProps['editValues'], string>>;
+  isEditing: boolean;
+  isSaving: boolean;
   onBack: () => void;
+  onStartEdit: () => void;
+  onChangeEditField: (
+    field: keyof OpportunityDetailViewProps['editValues'],
+    value: string | string[] | boolean | any | null,
+  ) => void;
+  onSave: () => void;
+  onCancel: () => void;
   onConversationClick: (conversationId: string) => void;
   onInterviewClick: (conversationId: string) => void;
   onOpenCreateConversation: () => void;
+  onContactClick: (contactId: string) => void;
 };
 
 export function OpportunityDetailView({
   opportunity,
   isLoading,
   error,
+  availableCategories,
+  availableStages,
+  availableChallenges,
+  editValues,
+  editErrors,
+  isEditing,
+  isSaving,
   onBack,
+  onStartEdit,
+  onChangeEditField,
+  onSave,
+  onCancel,
   onConversationClick,
   onInterviewClick,
   onOpenCreateConversation,
+  onContactClick,
 }: OpportunityDetailViewProps) {
   // Separate conversations into interviews and all conversations
   // Interviews should appear in BOTH sections (as interviews AND as conversations)
@@ -50,17 +102,19 @@ export function OpportunityDetailView({
 
   if (error || !opportunity) {
     return (
-      <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          sx={{ marginBottom: 2 }}
-        >
-          Back
-        </Button>
-        <Alert severity={!opportunity ? 'info' : 'error'}>
-          {!opportunity ? 'Opportunity not found' : error}
-        </Alert>
+      <Box sx={styles.container()}>
+        <Box sx={styles.headerSection()}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={onBack}
+            sx={{ marginBottom: 2 }}
+          >
+            Back
+          </Button>
+          <Alert severity={!opportunity ? 'info' : 'error'}>
+            {!opportunity ? 'Opportunity not found' : error}
+          </Alert>
+        </Box>
       </Box>
     );
   }
@@ -77,18 +131,227 @@ export function OpportunityDetailView({
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={onBack}
-        sx={{ marginBottom: 2 }}
-      >
-        Back
-      </Button>
+    <Box sx={styles.container()}>
+      {/* Header Section */}
+      <Box sx={styles.headerSection()}>
+        <Box sx={styles.headerActions()}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={onBack}
+          >
+            Back
+          </Button>
+          {!isEditing && (
+            <Button
+              startIcon={<EditIcon />}
+              variant="outlined"
+              onClick={onStartEdit}
+            >
+              Edit
+            </Button>
+          )}
+          {isEditing && (
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={onCancel}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={onSave}
+                disabled={isSaving}
+                startIcon={isSaving ? <CircularProgress size={20} /> : null}
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </Box>
+          )}
+        </Box>
 
-      <Typography variant="h4" gutterBottom>
-        {opportunity.title || opportunity.contactName}
-      </Typography>
+        {/* Opportunity Title */}
+        {isEditing ? (
+          <TextField
+            fullWidth
+            label="Opportunity Name"
+            value={editValues.title || ''}
+            onChange={(e) => onChangeEditField('title', e.target.value || null)}
+            error={!!editErrors.title}
+            helperText={editErrors.title}
+            sx={{ marginTop: 2 }}
+            placeholder="Enter opportunity name"
+          />
+        ) : (
+          <Typography variant="h4" sx={styles.title()}>
+            {opportunity.title || opportunity.contactName}
+          </Typography>
+        )}
+      </Box>
+
+      {/* Scrollable Content */}
+      <Box sx={styles.scrollableContent()}>
+        {/* Metadata Section */}
+        <Card sx={{ marginBottom: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Details
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Category
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.categoryId || ''}
+                      onChange={(e) => onChangeEditField('categoryId', e.target.value || null)}
+                      error={!!editErrors.categoryId}
+                      helperText={editErrors.categoryId}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      {availableCategories.map((category) => (
+                        <MenuItem key={category.id} value={category.id}>
+                          {category.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    opportunity.categoryName || '—'
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Stage
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.stageId || ''}
+                      onChange={(e) => onChangeEditField('stageId', e.target.value || null)}
+                      error={!!editErrors.stageId}
+                      helperText={editErrors.stageId}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      {availableStages.map((stage) => (
+                        <MenuItem key={stage.id} value={stage.id}>
+                          {stage.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    opportunity.stageName || '—'
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Challenge
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.challengeId || ''}
+                      onChange={(e) => onChangeEditField('challengeId', e.target.value || null)}
+                      error={!!editErrors.challengeId}
+                      helperText={editErrors.challengeId}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      {availableChallenges.map((challenge) => (
+                        <MenuItem key={challenge.id} value={challenge.id}>
+                          {challenge.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    opportunity.challengeName || '—'
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Priority
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.priority || ''}
+                      onChange={(e) => onChangeEditField('priority', e.target.value as 'low' | 'medium' | 'high' | null)}
+                      error={!!editErrors.priority}
+                      helperText={editErrors.priority}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="low">Low</MenuItem>
+                      <MenuItem value="medium">Medium</MenuItem>
+                      <MenuItem value="high">High</MenuItem>
+                    </TextField>
+                  ) : (
+                    opportunity.priority || '—'
+                  )}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Contacts Section */}
+      {opportunity.contacts && opportunity.contacts.length > 0 && (
+        <Box sx={{ marginTop: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Contacts ({opportunity.contacts.length})
+          </Typography>
+          {opportunity.contacts.map((contact) => (
+            <Card key={contact.id} sx={{ marginBottom: 2 }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                    <PersonIcon color="action" />
+                    <Box>
+                      <Typography variant="h6">
+                        {contact.name}
+                      </Typography>
+                      {contact.company && (
+                        <Typography variant="body2" color="text.secondary">
+                          {contact.company}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => onContactClick(contact.id)}
+                    sx={{ ml: 2 }}
+                  >
+                    View Contact
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
+
+      <Divider sx={{ my: 3 }} />
 
       {/* Interviews Section */}
       {interviews.length > 0 && (
@@ -207,6 +470,7 @@ export function OpportunityDetailView({
             );
           })
         )}
+      </Box>
       </Box>
     </Box>
   );

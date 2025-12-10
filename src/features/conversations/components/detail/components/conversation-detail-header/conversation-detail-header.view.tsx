@@ -3,11 +3,11 @@
 import { Box, Typography, Button, Chip, Link, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LaunchIcon from '@mui/icons-material/Launch';
-import { useRouter } from 'next/navigation';
 import type { ConversationDetailHeaderProps } from './conversation-detail-header.types';
 import { styles } from './conversation-detail-header.styles';
 
 export function ConversationDetailHeader({
+  contactId,
   contactName,
   contactCompany,
   opportunityId,
@@ -15,11 +15,11 @@ export function ConversationDetailHeader({
   isOutOfSync,
   config,
   onBack,
+  onViewContact,
+  onViewOpportunity,
   autoFollowupsEnabled,
   onToggleAutoFollowups,
 }: ConversationDetailHeaderProps) {
-  const router = useRouter();
-
   return (
     <Box sx={styles.headerSection()}>
       <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={styles.backButton()}>
@@ -28,9 +28,20 @@ export function ConversationDetailHeader({
 
       <Box sx={styles.header()}>
         <Box>
-          <Typography variant="h4" sx={styles.title()}>
-            {contactName}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h4" sx={styles.title()}>
+              {contactName}
+            </Typography>
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => onViewContact(contactId)}
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main' }}
+            >
+              View Contact
+              <LaunchIcon fontSize="small" />
+            </Link>
+          </Box>
           {contactCompany && (
             <Typography variant="body2" color="text.secondary">
               {contactCompany}
@@ -44,7 +55,7 @@ export function ConversationDetailHeader({
               <Link
                 component="button"
                 variant="body2"
-                onClick={() => router.push(`/opportunities/${opportunityId}`)}
+                onClick={() => onViewOpportunity(opportunityId)}
                 sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
               >
                 {opportunityTitle || 'View Opportunity'}

@@ -9,6 +9,7 @@ export function ErrorView({ error, isNotFound, config, onBack }: ErrorViewProps)
   return (
     <Box sx={styles.container()}>
       <ConversationDetailHeader
+        contactId=""
         contactName=""
         contactCompany={null}
         opportunityId={null}
@@ -16,6 +17,8 @@ export function ErrorView({ error, isNotFound, config, onBack }: ErrorViewProps)
         isOutOfSync={false}
         config={config}
         onBack={onBack}
+        onViewContact={() => {}}
+        onViewOpportunity={() => {}}
         autoFollowupsEnabled={true}
         onToggleAutoFollowups={() => {}}
       />

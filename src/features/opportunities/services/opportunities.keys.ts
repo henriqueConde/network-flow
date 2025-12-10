@@ -7,3 +7,4 @@ export const opportunitiesKeys = {
   detail: (id: string) => [...opportunitiesKeys.details(), id] as const,
 };
 
+

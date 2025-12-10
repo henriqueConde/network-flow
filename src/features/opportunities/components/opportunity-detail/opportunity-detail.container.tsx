@@ -1,8 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useOpportunityDetail } from '../../services/opportunities.queries';
+import { useUpdateOpportunity } from '../../services/opportunities.mutations';
 import { OpportunityDetailView } from './opportunity-detail.view';
+import { useOpportunityEdit } from './hooks/use-opportunity-edit.state';
+import { useOpportunityEditActions } from './hooks/use-opportunity-edit-actions.state';
 import { useCreateConversation } from '@/features/conversations/services/conversations.mutations';
 import { useCreateConversationDialog } from '@/features/conversations/components/inbox/hooks/use-create-conversation-dialog.state';
 import { CreateConversationDialog } from '@/features/conversations/components/inbox/components/create-conversation-dialog';
@@ -13,6 +17,9 @@ import { useDebounce } from '@/shared/hooks';
 import { useContactsPagination } from '@/features/conversations/components/inbox/hooks/use-contacts-pagination.state';
 import { useContactOptions } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-contact-options.state';
 import { useAutocompleteScroll } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-autocomplete-scroll.state';
+import { useCategories } from '@/features/categories';
+import { useStages } from '@/features/stages';
+import { useChallengesList } from '@/features/challenges/services/challenges.queries';
 
 export function OpportunityDetailContainer() {
   const params = useParams();
@@ -20,6 +27,21 @@ export function OpportunityDetailContainer() {
   const opportunityId = params?.id as string;
 
   const { data: opportunity, isLoading, error } = useOpportunityDetail(opportunityId);
+  const { data: categories = [] } = useCategories();
+  const { data: stages = [] } = useStages();
+  const { data: challengesData } = useChallengesList({
+    page: 1,
+    pageSize: 100, // Maximum allowed by API
+    sortBy: 'name',
+    sortDir: 'asc',
+  });
+  const availableChallenges = challengesData?.challenges || [];
+
+  // Edit state
+  const updateMutation = useUpdateOpportunity();
+  const opportunityOrNull = opportunity ?? null;
+  const edit = useOpportunityEdit(opportunityOrNull);
+  const editActions = useOpportunityEditActions(opportunityOrNull, edit, updateMutation);
 
   const createMutation = useCreateConversation();
 
@@ -42,14 +64,16 @@ export function OpportunityDetailContainer() {
   const debouncedContactSearch = useDebounce(createDialog.contactSearchInput, 300);
   const debouncedOpportunitySearch = useDebounce(createDialog.opportunitySearchInput, 300);
 
-  // Contact pagination hook - manages pagination state and accumulation
-  const {
-    contactPage,
-    accumulatedContacts,
-    hasMoreContacts,
-    loadMoreContacts,
-    CONTACTS_PAGE_SIZE,
-  } = useContactsPagination(undefined, false, createDialog.isOpen, debouncedContactSearch);
+  // Contact pagination state - manage page externally
+  const [contactPage, setContactPage] = useState(1);
+  const CONTACTS_PAGE_SIZE = 50;
+
+  // Reset page when dialog opens or search changes
+  useEffect(() => {
+    if (createDialog.isOpen) {
+      setContactPage(1);
+    }
+  }, [createDialog.isOpen, debouncedContactSearch]);
 
   // Fetch contacts for autocomplete (only when dialog is open)
   const { data: contactsData, isLoading: isSearchingContacts } = useContactsList({
@@ -58,20 +82,27 @@ export function OpportunityDetailContainer() {
     pageSize: CONTACTS_PAGE_SIZE,
     sortBy: 'name',
     sortDir: 'asc',
-    enabled: createDialog.isOpen,
+    enabled: createDialog.isOpen === true,
   });
 
-  // Update pagination with fetched data
+  // Use the pagination hook to accumulate contacts
   const {
     accumulatedContacts: finalAccumulatedContacts,
     hasMoreContacts: finalHasMoreContacts,
-    loadMoreContacts: finalLoadMoreContacts,
   } = useContactsPagination(
     contactsData,
+    contactPage,
     isSearchingContacts,
     createDialog.isOpen,
     debouncedContactSearch,
   );
+
+  // Function to load more contacts
+  const finalLoadMoreContacts = () => {
+    if (!isSearchingContacts && finalHasMoreContacts) {
+      setContactPage((prev) => prev + 1);
+    }
+  };
 
   // Contact options hook - handles "New contact" option logic
   const { contactOptions, allOptions, searchInputTrimmed } = useContactOptions(
@@ -122,6 +153,10 @@ export function OpportunityDetailContainer() {
     }
   };
 
+  const handleContactClick = (contactId: string) => {
+    router.push(`/contacts/${contactId}`);
+  };
+
   const handleCloseCreate = () => {
     if (createMutation.isPending) return;
     createDialog.close();
@@ -133,10 +168,22 @@ export function OpportunityDetailContainer() {
         opportunity={opportunity ?? null}
         isLoading={isLoading}
         error={error ? 'Failed to load opportunity. Please try again.' : null}
+        availableCategories={categories}
+        availableStages={stages}
+        availableChallenges={availableChallenges}
+        editValues={edit.values}
+        editErrors={edit.errors}
+        isEditing={edit.isEditing}
+        isSaving={updateMutation.isPending}
         onBack={handleBack}
+        onStartEdit={edit.startEditing}
+        onChangeEditField={editActions.handleFieldChange}
+        onSave={editActions.handleSave}
+        onCancel={editActions.handleCancel}
         onConversationClick={handleConversationClick}
         onInterviewClick={handleInterviewClick}
         onOpenCreateConversation={handleOpenCreateConversation}
+        onContactClick={handleContactClick}
       />
       <CreateConversationDialog
         isOpen={createDialog.isOpen}
@@ -150,6 +197,7 @@ export function OpportunityDetailContainer() {
         contactSearchInput={createDialog.contactSearchInput}
         onContactSearchChange={createDialog.handleContactSearchChange}
         onContactSelect={createDialog.handleContactSelect}
+        onContactsSelect={createDialog.handleContactsSelect}
         contacts={finalAccumulatedContacts}
         contactOptions={contactOptions}
         allContactOptions={allOptions}
@@ -161,6 +209,9 @@ export function OpportunityDetailContainer() {
         onOpportunitySelect={createDialog.handleOpportunitySelect}
         opportunities={opportunitiesData?.items || []}
         isSearchingOpportunities={isSearchingOpportunities}
+        availableCategories={categories}
+        availableStages={stages}
+        availableChallenges={availableChallenges}
       />
     </>
   );

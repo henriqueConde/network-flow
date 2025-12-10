@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { ConversationsInboxView } from './conversations-inbox.view';
 import { useConversationsInbox } from '../../services/conversations.queries';
 import { useCreateConversation, useDeleteConversation } from '../../services/conversations.mutations';
@@ -11,6 +12,7 @@ import { useDeleteConversationDialog } from './hooks/use-delete-conversation-dia
 import { useContactsPagination } from './hooks/use-contacts-pagination.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
+import { useChallengesList } from '@/features/challenges/services/challenges.queries';
 import { useContactsList } from '@/features/contacts/services/contacts.queries';
 import { useOpportunitiesList } from '@/features/opportunities/services/opportunities.queries';
 import { useDebounce } from '@/shared/hooks';
@@ -27,6 +29,7 @@ export function ConversationsInboxContainer() {
     status,
     categoryId,
     stageId,
+    emailStatus,
     page,
     pageSize,
     sortBy,
@@ -35,6 +38,7 @@ export function ConversationsInboxContainer() {
     handleStatusChange,
     handleCategoryChange,
     handleStageChange,
+    handleEmailStatusChange,
     handlePageChange,
     handleSortChange,
   } = useConversationsFilters();
@@ -48,59 +52,85 @@ export function ConversationsInboxContainer() {
   const createDialog = useCreateConversationDialog(async (values) => {
     await createMutation.mutateAsync({
       contactId: values.contactId,
+      contactIds: values.contactIds,
       contactName: values.contactName,
       contactCompany: values.contactCompany || undefined,
       opportunityId: values.opportunityId,
+      challengeId: values.challengeId,
       channel: values.channel,
       pastedText: values.pastedText,
       priority: 'medium',
       firstMessageSender: values.firstMessageSender,
+      firstMessageContactId: values.firstMessageContactId,
+      categoryId: values.categoryId,
+      stageId: values.stageId,
     });
     // Close the dialog after successful creation
     createDialog.close();
   });
 
+  // Fetch challenges for dropdown
+  // Always fetch so they're available immediately when dialog opens
+  const { data: challengesData, refetch: refetchChallenges } = useChallengesList({
+    page: 1,
+    pageSize: 100, // Maximum allowed by API
+    sortBy: 'name',
+    sortDir: 'asc',
+    enabled: true, // Always fetch so dropdown is populated
+  });
+  const availableChallenges = challengesData?.challenges || [];
+
+  // Refetch challenges when dialog opens to ensure fresh data
+  useEffect(() => {
+    if (createDialog.isOpen) {
+      refetchChallenges();
+    }
+  }, [createDialog.isOpen, refetchChallenges]);
+
   // Debounce contact search input for API calls
   const debouncedContactSearch = useDebounce(createDialog.contactSearchInput, 300);
   const debouncedOpportunitySearch = useDebounce(createDialog.opportunitySearchInput, 300);
 
-  // Contact pagination hook - manages pagination state and accumulation
-  // Hook manages contactPage state internally and accumulates contacts from query results
-  // Called once with contactsData (initially undefined), returns contactPage for query
-  // When contactsData is provided, hook accumulates it via useEffect
-  const {
-    contactPage,
-    accumulatedContacts,
-    hasMoreContacts,
-    loadMoreContacts,
-    CONTACTS_PAGE_SIZE,
-  } = useContactsPagination(undefined, false, createDialog.isOpen, debouncedContactSearch);
+  // Contact pagination state - manage page externally
+  const [contactPage, setContactPage] = useState(1);
+  const CONTACTS_PAGE_SIZE = 50;
+
+  // Reset page when dialog opens or search changes
+  useEffect(() => {
+    if (createDialog.isOpen) {
+      setContactPage(1);
+    }
+  }, [createDialog.isOpen, debouncedContactSearch]);
 
   // Fetch contacts for autocomplete (only when dialog is open)
-  // When contactPage changes (via loadMoreContacts), this query will automatically refetch
-  const { data: contactsData, isLoading: isSearchingContacts } = useContactsList({
+  // Explicitly set enabled to true/false to ensure query runs
+  const { data: contactsData, isLoading: isSearchingContacts, error: contactsError } = useContactsList({
     search: debouncedContactSearch.trim() || undefined,
     page: contactPage,
     pageSize: CONTACTS_PAGE_SIZE,
     sortBy: 'name',
     sortDir: 'asc',
-    enabled: createDialog.isOpen,
+    enabled: createDialog.isOpen === true, // Explicit boolean
   });
 
-  // Update pagination with fetched data
-  // Note: This is a workaround - we're calling the hook twice which violates React rules
-  // The proper solution would be to refactor the hook to handle the data flow in one call
-  // For now, we use the second call's result for accumulated contacts
+  // Use the pagination hook to accumulate contacts
   const {
     accumulatedContacts: finalAccumulatedContacts,
     hasMoreContacts: finalHasMoreContacts,
-    loadMoreContacts: finalLoadMoreContacts,
   } = useContactsPagination(
     contactsData,
+    contactPage,
     isSearchingContacts,
     createDialog.isOpen,
     debouncedContactSearch,
   );
+
+  // Function to load more contacts
+  const finalLoadMoreContacts = () => {
+    if (!isSearchingContacts && finalHasMoreContacts) {
+      setContactPage((prev) => prev + 1);
+    }
+  };
 
   // Contact options hook - handles "New contact" option logic
   const { contactOptions, allOptions, searchInputTrimmed } = useContactOptions(
@@ -109,6 +139,24 @@ export function ConversationsInboxContainer() {
     createDialog.values.contactId,
     CREATE_CONVERSATION_DIALOG_CONFIG.copy.newContactOption,
   );
+
+  // Debug: log contacts data
+  useEffect(() => {
+    if (createDialog.isOpen) {
+      console.log('=== Create Dialog Debug ===');
+      console.log('Dialog is open:', createDialog.isOpen);
+      console.log('Contacts data:', contactsData);
+      console.log('Contacts data contacts array:', contactsData?.contacts);
+      console.log('Contacts data length:', contactsData?.contacts?.length);
+      console.log('Accumulated contacts:', finalAccumulatedContacts);
+      console.log('Accumulated contacts length:', finalAccumulatedContacts?.length);
+      console.log('Contact page:', contactPage);
+      console.log('Is searching contacts:', isSearchingContacts);
+      console.log('All contact options:', allOptions);
+      console.log('All contact options length:', allOptions?.length);
+      console.log('===========================');
+    }
+  }, [createDialog.isOpen, contactsData, finalAccumulatedContacts, contactPage, isSearchingContacts, allOptions]);
 
   // Infinite scroll hook for contacts autocomplete
   const { handleScroll: handleContactScroll } = useAutocompleteScroll(
@@ -143,6 +191,7 @@ export function ConversationsInboxContainer() {
     status,
     categoryId: categoryId || undefined,
     stageId: stageId || undefined,
+    emailStatus: emailStatus || undefined,
     page,
     pageSize,
     sortBy,
@@ -173,10 +222,13 @@ export function ConversationsInboxContainer() {
       onStatusChange={handleStatusChange}
       categoryId={categoryId}
       stageId={stageId}
+      emailStatus={emailStatus}
       availableCategories={categories}
       availableStages={stages}
+      availableChallenges={availableChallenges}
       onCategoryChange={handleCategoryChange}
       onStageChange={handleStageChange}
+      onEmailStatusChange={handleEmailStatusChange}
       onPageChange={handlePageChange}
       onSortChange={handleSortChange}
       onRowClick={handleRowClick}
@@ -192,6 +244,7 @@ export function ConversationsInboxContainer() {
       contactSearchInput={createDialog.contactSearchInput}
       onContactSearchChange={createDialog.handleContactSearchChange}
       onContactSelect={createDialog.handleContactSelect}
+      onContactsSelect={createDialog.handleContactsSelect}
       contacts={finalAccumulatedContacts}
       contactOptions={contactOptions}
       allContactOptions={allOptions}

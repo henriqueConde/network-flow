@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
+import type { ContactListItem } from '@/features/contacts';
 
 export type ContactOption = ContactListItem | (ContactListItem & { isNewContact: true });
 
@@ -35,12 +35,16 @@ export function useContactOptions(
       id: '__NEW_CONTACT__',
       name: `${searchInputTrimmed} ${newContactOptionText}`,
       company: null,
+      companyId: null,
       headlineOrRole: null,
       primaryPlatform: null,
       profileLinks: null,
       tags: [],
-      categoryId: null,
-      stageId: null,
+      email: null,
+      warmOrCold: null,
+      connectionStatus: null,
+      contactType: null,
+      strategyIds: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       latestConversation: null,

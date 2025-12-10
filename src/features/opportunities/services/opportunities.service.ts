@@ -18,6 +18,9 @@ const OpportunityListItemDto = z.object({
   updatedAt: z.string().datetime(),
   lastMessageAt: z.string().datetime().nullable(),
   lastMessageSnippet: z.string().nullable(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type OpportunityListItemDto = z.infer<typeof OpportunityListItemDto>;
@@ -75,6 +78,15 @@ const ConversationDetailDto = z.object({
 });
 
 /**
+ * Contact DTO for opportunity detail.
+ */
+const OpportunityContactDto = z.object({
+  id: z.string(),
+  name: z.string(),
+  company: z.string().nullable(),
+});
+
+/**
  * Opportunity detail DTO from API.
  */
 const OpportunityDetailDto = z.object({
@@ -88,13 +100,26 @@ const OpportunityDetailDto = z.object({
   categoryName: z.string().nullable(),
   stageId: z.string().nullable(),
   stageName: z.string().nullable(),
+  challengeId: z.string().nullable(),
+  challengeName: z.string().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema.nullable(),
   summary: z.string().nullable(),
   notes: z.string().nullable(),
+  autoFollowupsEnabled: z.boolean(),
+  strategyIds: z.array(z.string()),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable(),
+  issuesFound: z.any().nullable(), // JSON field - array of { issue, screenshot?, notes? }
+  projectDetails: z.string().nullable(),
+  loomVideoUrl: z.string().url().nullable(),
+  githubRepoUrl: z.string().url().nullable(),
+  liveDemoUrl: z.string().url().nullable(),
+  sharedChannels: z.array(z.string()),
+  teamResponses: z.any().nullable(), // JSON field - array of { name, response, date }
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  contacts: z.array(OpportunityContactDto),
   conversations: z.array(ConversationDetailDto),
 });
 
@@ -132,11 +157,20 @@ export type ConversationDetail = {
   } | null;
 };
 
-export type OpportunityDetail = Omit<z.infer<typeof OpportunityDetailDto>, 'conversations' | 'createdAt' | 'updatedAt' | 'nextActionDueAt'> & {
+export type OpportunityContact = {
+  id: string;
+  name: string;
+  company: string | null;
+};
+
+export type OpportunityDetail = Omit<z.infer<typeof OpportunityDetailDto>, 'conversations' | 'createdAt' | 'updatedAt' | 'nextActionDueAt' | 'contacts'> & {
+  contacts: OpportunityContact[];
   conversations: ConversationDetail[];
   nextActionDueAtDate: Date | null;
   createdAtDate: Date;
   updatedAtDate: Date;
+  challengeId: string | null;
+  challengeName: string | null;
 };
 
 /**
@@ -147,6 +181,7 @@ export const CreateOpportunityPayload = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  challengeId: z.string().uuid().optional(),
   nextActionType: z.string().optional(),
   nextActionDueAt: z.string().datetime().optional(),
   priority: prioritySchema.optional(),
@@ -162,11 +197,22 @@ export const UpdateOpportunityPayload = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),
   summary: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  autoFollowupsEnabled: z.boolean().optional(),
+  strategyIds: z.array(z.string()).optional(),
+  proofOfWorkType: z.enum(['proof_of_work_bugs', 'proof_of_work_build', 'other']).nullable().optional(),
+  issuesFound: z.any().optional(), // JSON field
+  projectDetails: z.string().nullable().optional(),
+  loomVideoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  githubRepoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  liveDemoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  sharedChannels: z.array(z.string()).optional(),
+  teamResponses: z.any().optional(), // JSON field
 });
 
 export type UpdateOpportunityPayload = z.infer<typeof UpdateOpportunityPayload>;
@@ -178,6 +224,7 @@ export async function listOpportunities(params: {
   search?: string;
   categoryId?: string;
   stageId?: string;
+  proofOfWorkType?: 'proof_of_work_bugs' | 'proof_of_work_build' | 'other';
   page: number;
   pageSize: number;
   sortBy: 'updatedAt' | 'nextActionDueAt' | 'priority';
@@ -208,6 +255,9 @@ export async function getOpportunityDetail(id: string): Promise<OpportunityDetai
 
   return {
     ...data,
+    challengeId: data.challengeId,
+    challengeName: data.challengeName,
+    contacts: data.contacts || [],
     nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
     createdAtDate: new Date(data.createdAt),
     updatedAtDate: new Date(data.updatedAt),
@@ -246,28 +296,11 @@ export async function updateOpportunity(
 ): Promise<OpportunityDetail> {
   const body = UpdateOpportunityPayload.parse(payload);
   const res = await client.patch(`/api/opportunities/${id}`, body);
-  const data = OpportunityDetailDto.parse(res.data);
-
-  return {
-    ...data,
-    nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
-    createdAtDate: new Date(data.createdAt),
-    updatedAtDate: new Date(data.updatedAt),
-    conversations: data.conversations.map((conv) => ({
-      ...conv,
-      lastMessageAt: conv.lastMessageAt ? new Date(conv.lastMessageAt) : null,
-      messages: conv.messages.map((msg) => ({
-        ...msg,
-        sentAt: new Date(msg.sentAt),
-      })),
-      latestEmailEvent: conv.latestEmailEvent
-        ? {
-          ...conv.latestEmailEvent,
-          emailReceivedAt: new Date(conv.latestEmailEvent.emailReceivedAt),
-        }
-        : null,
-    })),
-  };
+  
+  // The API returns { id, success }, so we need to refetch the full opportunity detail
+  // React Query will handle the refetch automatically via invalidation, but we need to return something
+  // that matches the expected type. We'll refetch it here.
+  return getOpportunityDetail(id);
 }
 
 /**

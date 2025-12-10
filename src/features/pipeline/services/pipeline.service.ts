@@ -19,6 +19,8 @@ const PipelineOpportunityDto = z.object({
   contactCompany: z.string().nullable(),
   title: z.string().nullable(),
   categoryName: z.string().nullable(),
+  challengeId: z.string().uuid().nullable().optional(),
+  challengeName: z.string().nullable().optional(),
   lastMessageAt: z.string().datetime().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
@@ -63,6 +65,7 @@ export type PipelineBoard = {
 export async function getPipelineBoard(params?: {
   categoryId?: string;
   stageId?: string;
+  search?: string;
 }): Promise<PipelineBoard> {
   const res = await client.get('/api/pipeline', { params });
   const data = PipelineBoardDto.parse(res.data);
@@ -72,6 +75,8 @@ export async function getPipelineBoard(params?: {
       ...stage,
       opportunities: stage.opportunities.map((opp) => ({
         ...opp,
+        challengeId: opp.challengeId ?? null,
+        challengeName: opp.challengeName ?? null,
         lastMessageAtDate: opp.lastMessageAt ? new Date(opp.lastMessageAt) : null,
         nextActionDueAtDate: opp.nextActionDueAt ? new Date(opp.nextActionDueAt) : null,
         conversations: opp.conversations.map((conv) => ({

@@ -102,6 +102,16 @@ export function InterviewDetailView({
               </Typography>
             </Box>
           )}
+          {interview.challengeName && (
+            <Box sx={styles.contactField()}>
+              <Typography sx={styles.contactLabel()}>
+                Challenge
+              </Typography>
+              <Typography sx={styles.contactValue()}>
+                {interview.challengeName}
+              </Typography>
+            </Box>
+          )}
           {interview.contactProfileLinks && (
             <Box sx={styles.contactField()}>
               <Typography sx={styles.contactLabel()}>
@@ -185,7 +195,17 @@ export function InterviewDetailView({
           {config.copy.conversation.title}
         </Typography>
         <MessagesCard
-          messages={interview.messages}
+          messages={interview.messages.map(msg => ({
+            ...msg,
+            contactId: msg.sender === 'contact' ? interview.contactId : null,
+            contactName: msg.sender === 'contact' ? interview.contactName : null,
+          }))}
+          contacts={[{
+            id: interview.contactId,
+            name: interview.contactName,
+            company: interview.contactCompany,
+          }]}
+          onOpenAddReply={() => {}}
           config={{
             copy: {
               title: 'Conversation Detail' as const,
@@ -282,9 +302,22 @@ export function InterviewDetailView({
                 helper:
                   'Automatically draft follow-up messages every 2 days (up to 3) when this opportunity is not moving forward.' as const,
               },
+              contacts: {
+                title: 'Participants' as const,
+                addContact: 'Add Contact' as const,
+                removeContact: 'Remove' as const,
+                empty: 'No contacts' as const,
+              },
+              addContactDialog: {
+                title: 'Add Contact to Conversation' as const,
+                contactLabel: 'Contact' as const,
+                contactPlaceholder: 'Search for a contact...' as const,
+                cancel: 'Cancel' as const,
+                add: 'Add' as const,
+                allContactsAdded: 'All your contacts are already in this conversation.' as const,
+              },
             },
           }}
-          onOpenAddReply={() => {}}
           onConfirmMessage={() => {}}
           onEditMessage={() => {}}
           onDeleteMessage={() => {}}

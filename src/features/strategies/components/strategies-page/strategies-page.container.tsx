@@ -12,12 +12,14 @@ import {
   JOB_BOARD_LEAD_SNIPING_STRATEGY_CONFIG,
   THE_100_CONNECTION_WEEK_STRATEGY_CONFIG,
 } from './strategies-page.config';
-import { SmartStrategyContent } from './components/smart-strategy-content';
-import { RecentlyFundedStartupStrategyContent } from './components/recently-funded-startup-strategy-content';
-import { ProofOfWorkOutreachStrategyContent } from './components/proof-of-work-outreach-strategy-content';
-import { LoomEmailOutreachStrategyContent } from './components/loom-email-outreach-strategy-content';
-import { JobBoardLeadSnipingStrategyContent } from './components/job-board-lead-sniping-strategy-content';
-import { The100ConnectionWeekStrategyContent } from './components/the-100-connection-week-strategy-content';
+import {
+  SmartStrategyContent,
+  RecentlyFundedStartupStrategyContent,
+  ProofOfWorkOutreachStrategyContent,
+  LoomEmailOutreachStrategyContent,
+  JobBoardLeadSnipingStrategyContent,
+  The100ConnectionWeekStrategyContent,
+} from './components';
 
 export function StrategiesPageContainer() {
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>('smart');

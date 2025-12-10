@@ -34,7 +34,7 @@ export type NewMessage = {
 
 export type OverdueItem = {
     id: string;
-    conversationId: string;
+    conversationId?: string;
     contactName: string;
     contactCompany?: string;
     actionType: string;
@@ -62,7 +62,7 @@ export interface TodayPageViewProps {
     error: string | null;
     config: typeof TODAY_PAGE_CONFIG;
     onActionClick: (actionId: string, conversationId?: string) => void;
-    onOverdueClick: (itemId: string, conversationId: string) => void;
+    onOverdueClick: (itemId: string, conversationId?: string) => void;
     onInterviewsClick: () => void;
     activeOpportunitiesGoal: number;
     onEditGoalClick: () => void;

@@ -19,6 +19,8 @@ export async function getPipelineBoard(userId: string, filters?: GetPipelineBoar
       ...stage,
       opportunities: stage.opportunities.map((opp) => ({
         ...opp,
+        challengeId: opp.challengeId ?? null,
+        challengeName: opp.challengeName ?? null,
         lastMessageAt: opp.lastMessageAt ? opp.lastMessageAt.toISOString() : null,
         nextActionDueAt: opp.nextActionDueAt ? opp.nextActionDueAt.toISOString() : null,
         conversations: opp.conversations.map((conv) => ({

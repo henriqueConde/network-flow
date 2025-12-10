@@ -12,18 +12,24 @@ export function useContactsList(params: {
   categoryId?: string;
   stageId?: string;
   primaryPlatform?: string;
+  warmOrCold?: 'warm' | 'cold';
+  connectionStatus?: 'not_connected' | 'request_sent' | 'connected';
+  contactType?: string;
   page: number;
   pageSize: number;
   sortBy: 'name' | 'company' | 'updatedAt' | 'createdAt';
   sortDir: 'asc' | 'desc';
   enabled?: boolean;
 }) {
+  // Extract enabled from params to avoid passing it to API and query key
+  const { enabled, ...queryParams } = params;
+  
   return useQuery({
-    queryKey: contactsKeys.list(params),
-    queryFn: () => listContacts(params),
+    queryKey: contactsKeys.list(queryParams),
+    queryFn: () => listContacts(queryParams),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
-    enabled: params.enabled !== false,
+    enabled: enabled !== false,
   });
 }
 

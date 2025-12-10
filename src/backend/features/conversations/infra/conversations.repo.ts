@@ -19,6 +19,7 @@ export function makeConversationsRepo() {
       status?: 'all' | 'needs_attention' | 'waiting_on_them';
       categoryId?: string;
       stageId?: string;
+      emailStatus?: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process';
       page: number;
       pageSize: number;
       sortBy: 'updatedAt' | 'lastMessageAt' | 'priority';
@@ -30,6 +31,7 @@ export function makeConversationsRepo() {
         status = 'all',
         categoryId,
         stageId,
+        emailStatus,
         page,
         pageSize,
         sortBy,
@@ -58,15 +60,44 @@ export function makeConversationsRepo() {
               },
             },
           },
+          {
+            conversationContacts: {
+              some: {
+                contact: {
+                  name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          },
+          {
+            conversationContacts: {
+              some: {
+                contact: {
+                  company: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          },
         ];
       }
 
       if (categoryId) {
+        // Filter by conversation's category
         where.categoryId = categoryId;
       }
 
       if (stageId) {
         where.stageId = stageId;
+      }
+
+      if (emailStatus) {
+        where.emailStatus = emailStatus;
       }
 
       if (status === 'needs_attention') {
@@ -108,9 +139,43 @@ export function makeConversationsRepo() {
       const conversations = await prisma.conversation.findMany({
         where,
         include: {
-          contact: true,
-          category: true,
-          stage: true,
+          contact: {
+            select: {
+              name: true,
+              company: true,
+              warmOrCold: true,
+            },
+          },
+          conversationContacts: {
+            include: {
+              contact: {
+                select: {
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+          },
+          category: {
+            select: {
+              name: true,
+            },
+          },
+          stage: {
+            select: {
+              name: true,
+            },
+          },
+          opportunity: {
+            include: {
+              challenge: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
         orderBy:
           sortBy === 'priority'
@@ -129,12 +194,15 @@ export function makeConversationsRepo() {
         const needsAttention =
           conv.lastMessageSide === 'contact' || hasOverdueAction;
 
+        const contactCount = conv.conversationContacts.length || 1;
+
         return {
           id: conv.id,
           contactName: conv.contact.name,
           contactCompany: conv.contact.company ?? null,
+          contactCount,
           channel: conv.channel,
-          category: conv.category?.name ?? null,
+          category: conv.category?.name ?? null, // Use conversation's category
           stage: conv.stage?.name ?? null,
           lastMessageAt: conv.lastMessageAt,
           lastMessageSnippet: conv.lastMessageSnippet ?? null,
@@ -142,6 +210,9 @@ export function makeConversationsRepo() {
           priority: (conv.priority as 'low' | 'medium' | 'high' | null) ?? null,
           isOutOfSync: conv.isOutOfSync,
           needsAttention,
+          warmOrCold: conv.contact.warmOrCold as 'warm' | 'cold' | null,
+          challengeId: conv.opportunity?.challenge?.id ?? null,
+          challengeName: conv.opportunity?.challenge?.name ?? null,
         };
       });
     },
@@ -152,15 +223,18 @@ export function makeConversationsRepo() {
     async createConversation(params: {
       userId: string;
       contactId?: string;
+      contactIds?: string[];
       contactName: string;
       contactCompany?: string;
       opportunityId?: string;
+      challengeId?: string;
       channel: ConversationChannelType;
       pastedText: string;
       categoryId?: string;
       stageId?: string;
       priority: 'low' | 'medium' | 'high' | null;
       firstMessageSender: 'user' | 'contact';
+      firstMessageContactId?: string;
     }) {
       const {
         userId,
@@ -168,6 +242,7 @@ export function makeConversationsRepo() {
         contactName,
         contactCompany,
         opportunityId,
+        challengeId,
         channel,
         pastedText,
         categoryId,
@@ -245,20 +320,58 @@ export function makeConversationsRepo() {
               title,
               categoryId: categoryId ?? null,
               stageId: stageId ?? null,
+              challengeId: challengeId ?? null, // Assign challenge to opportunity
               nextActionType: null,
               nextActionDueAt: null,
               priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
             },
           });
+        } else if (challengeId) {
+          // If opportunity exists but challengeId was provided, update the opportunity to assign it to the challenge
+          await prisma.opportunity.update({
+            where: {
+              id: opportunity.id,
+            },
+            data: {
+              challengeId: challengeId,
+            },
+          });
         }
+      } else if (challengeId) {
+        // If opportunity was provided and challengeId was provided, update the opportunity to assign it to the challenge
+        await prisma.opportunity.update({
+          where: {
+            id: opportunity.id,
+          },
+          data: {
+            challengeId: challengeId,
+          },
+        });
+      }
+
+      // Determine all contacts to add
+      const allContactIds = new Set<string>();
+      allContactIds.add(ensuredContact.id);
+      
+      if (params.contactIds) {
+        // Verify all contact IDs belong to the user
+        const additionalContacts = await prisma.contact.findMany({
+          where: {
+            id: { in: params.contactIds },
+            userId,
+          },
+        });
+        additionalContacts.forEach(c => allContactIds.add(c.id));
       }
 
       // Create conversation and link it to the opportunity
+      // Note: challengeId is assigned to the opportunity, not stored directly on the conversation
       const conversation = await prisma.conversation.create({
         data: {
           userId,
-          contactId: ensuredContact.id,
+          contactId: ensuredContact.id, // Primary contact
           opportunityId: opportunity.id,
+          challengeId: null, // Not stored on conversation - we assign to opportunity instead
           channel,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
@@ -269,6 +382,17 @@ export function makeConversationsRepo() {
         },
       });
 
+      // Create ConversationContact entries for all contacts
+      const conversationContacts = Array.from(allContactIds).map((cid) => ({
+        conversationId: conversation.id,
+        contactId: cid,
+        addedAt: now,
+      }));
+
+      await prisma.conversationContact.createMany({
+        data: conversationContacts,
+      });
+
       await prisma.message.create({
         data: {
           conversationId: conversation.id,
@@ -277,6 +401,9 @@ export function makeConversationsRepo() {
           sentAt: now,
           source: 'manual_paste',
           status: 'pending', // Messages start as pending by default
+          contactId: firstMessageSender === 'contact' && params.firstMessageContactId 
+            ? params.firstMessageContactId 
+            : null,
         },
       });
 
@@ -296,11 +423,48 @@ export function makeConversationsRepo() {
           userId,
         },
         include: {
-          contact: true,
+          contact: {
+            select: {
+              id: true,
+              name: true,
+              company: true,
+            },
+          },
+          conversationContacts: {
+            include: {
+              contact: {
+                select: {
+                  id: true,
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+            orderBy: [
+              { addedAt: 'asc' },
+            ],
+          },
           category: true,
           stage: true,
-          opportunity: true,
+          opportunity: {
+            include: {
+              challenge: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
           messages: {
+            include: {
+              contact: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
             orderBy: {
               sentAt: 'asc',
             },
@@ -323,13 +487,24 @@ export function makeConversationsRepo() {
           ? Boolean((conversation as any).autoFollowupsEnabled)
           : true;
 
+      // Get first contact (for backwards compatibility with contactId/contactName)
+      const firstContact = conversation.conversationContacts[0]?.contact 
+        || conversation.contact;
+
       return {
         id: conversation.id,
         contactId: conversation.contactId,
-        contactName: conversation.contact.name,
-        contactCompany: conversation.contact.company ?? null,
+        contactName: firstContact.name,
+        contactCompany: firstContact.company ?? null,
+        contacts: conversation.conversationContacts.map(cc => ({
+          id: cc.contact.id,
+          name: cc.contact.name,
+          company: cc.contact.company ?? null,
+        })),
         opportunityId: conversation.opportunityId ?? null,
         opportunityTitle: conversation.opportunity?.title ?? null,
+        challengeId: conversation.opportunity?.challenge?.id ?? null,
+        challengeName: conversation.opportunity?.challenge?.name ?? null,
         channel: conversation.channel,
         categoryId: conversation.categoryId ?? null,
         categoryName: conversation.category?.name ?? null,
@@ -352,6 +527,8 @@ export function makeConversationsRepo() {
           sentAt: msg.sentAt,
           source: msg.source,
           status: msg.status as 'pending' | 'confirmed',
+          contactId: msg.contactId ?? null,
+          contactName: msg.contact?.name ?? null,
         })),
         latestEmailEvent:
           conversation.linkedInEmailEvents.length > 0
@@ -362,6 +539,17 @@ export function makeConversationsRepo() {
               emailReceivedAt: conversation.linkedInEmailEvents[0].emailReceivedAt,
             }
             : null,
+        strategyIds: conversation.strategyIds || [],
+        responseReceived: conversation.responseReceived,
+        responseReceivedAt: conversation.responseReceivedAt,
+        emailSentAt: conversation.emailSentAt,
+        loomVideoUrl: conversation.loomVideoUrl,
+        loomSent: conversation.loomSent,
+        emailFollowUpDates: conversation.emailFollowUpDates || [],
+        emailStatus: conversation.emailStatus as 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null,
+        followUp1Date: conversation.followUp1Date,
+        followUp2Date: conversation.followUp2Date,
+        followUp3Date: conversation.followUp3Date,
       };
     },
 
@@ -400,12 +588,24 @@ export function makeConversationsRepo() {
       updates: {
         categoryId?: string | null;
         stageId?: string | null;
+        challengeId?: string | null;
         nextActionType?: string | null;
         nextActionDueAt?: Date | null;
         priority?: 'low' | 'medium' | 'high' | null;
         notes?: string | null;
         originalUrl?: string | null;
         autoFollowupsEnabled?: boolean;
+        strategyIds?: string[];
+        responseReceived?: boolean;
+        responseReceivedAt?: Date | null;
+        emailSentAt?: Date | null;
+        loomVideoUrl?: string | null;
+        loomSent?: boolean;
+        emailFollowUpDates?: Date[];
+        emailStatus?: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
+        followUp1Date?: Date | null;
+        followUp2Date?: Date | null;
+        followUp3Date?: Date | null;
       };
     }) {
       const { userId, conversationId, updates } = params;
@@ -477,6 +677,9 @@ export function makeConversationsRepo() {
       if (updates.stageId !== undefined) {
         updateData.stageId = updates.stageId;
       }
+      if (updates.challengeId !== undefined) {
+        updateData.challengeId = updates.challengeId;
+      }
       if (updates.autoFollowupsEnabled !== undefined) {
         updateData.autoFollowupsEnabled = updates.autoFollowupsEnabled;
       }
@@ -497,6 +700,39 @@ export function makeConversationsRepo() {
       }
       if (updates.originalUrl !== undefined) {
         updateData.originalUrl = updates.originalUrl;
+      }
+      if (updates.strategyIds !== undefined) {
+        updateData.strategyIds = updates.strategyIds;
+      }
+      if (updates.responseReceived !== undefined) {
+        updateData.responseReceived = updates.responseReceived;
+      }
+      if (updates.responseReceivedAt !== undefined) {
+        updateData.responseReceivedAt = updates.responseReceivedAt;
+      }
+      if (updates.emailSentAt !== undefined) {
+        updateData.emailSentAt = updates.emailSentAt;
+      }
+      if (updates.loomVideoUrl !== undefined) {
+        updateData.loomVideoUrl = updates.loomVideoUrl;
+      }
+      if (updates.loomSent !== undefined) {
+        updateData.loomSent = updates.loomSent;
+      }
+      if (updates.emailFollowUpDates !== undefined) {
+        updateData.emailFollowUpDates = updates.emailFollowUpDates;
+      }
+      if (updates.emailStatus !== undefined) {
+        updateData.emailStatus = updates.emailStatus;
+      }
+      if (updates.followUp1Date !== undefined) {
+        updateData.followUp1Date = updates.followUp1Date;
+      }
+      if (updates.followUp2Date !== undefined) {
+        updateData.followUp2Date = updates.followUp2Date;
+      }
+      if (updates.followUp3Date !== undefined) {
+        updateData.followUp3Date = updates.followUp3Date;
       }
 
       // If moving to a closed stage, set priority and next action to null
@@ -562,8 +798,9 @@ export function makeConversationsRepo() {
       body: string;
       sender: 'user' | 'contact';
       sentAt: Date;
+      contactId?: string;
     }) {
-      const { userId, conversationId, body, sender, sentAt } = params;
+      const { userId, conversationId, body, sender, sentAt, contactId } = params;
 
       // Verify conversation belongs to user
       const conversation = await prisma.conversation.findFirst({
@@ -575,6 +812,20 @@ export function makeConversationsRepo() {
 
       if (!conversation) {
         return null;
+      }
+
+      // Validate contactId if provided
+      if (contactId && sender === 'contact') {
+        // Verify the contact belongs to this conversation
+        const conversationContact = await prisma.conversationContact.findFirst({
+          where: {
+            conversationId,
+            contactId,
+          },
+        });
+        if (!conversationContact) {
+          throw new Error('Contact does not belong to this conversation');
+        }
       }
 
       // Create the message
@@ -590,6 +841,7 @@ export function makeConversationsRepo() {
           sentAt,
           source: 'manual_reply',
           status,
+          contactId: contactId ?? null,
         },
       });
 
@@ -837,6 +1089,127 @@ export function makeConversationsRepo() {
 
       return true;
     },
+
+    /**
+     * Add a contact to a conversation.
+     */
+    async addContactToConversation(params: {
+      userId: string;
+      conversationId: string;
+      contactId: string;
+    }) {
+      const { userId, conversationId, contactId } = params;
+
+      // Verify conversation belongs to user
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      // Verify contact belongs to user
+      const contact = await prisma.contact.findFirst({
+        where: {
+          id: contactId,
+          userId,
+        },
+      });
+
+      if (!contact) {
+        return null;
+      }
+
+      // Check if contact is already in conversation
+      const existing = await prisma.conversationContact.findFirst({
+        where: {
+          conversationId,
+          contactId,
+        },
+      });
+
+      if (existing) {
+        return this.getConversationById({ userId, conversationId });
+      }
+
+      // Add contact to conversation
+      await prisma.conversationContact.create({
+        data: {
+          conversationId,
+          contactId,
+        },
+      });
+
+      return this.getConversationById({ userId, conversationId });
+    },
+
+    /**
+     * Remove a contact from a conversation.
+     * Cannot remove if it's the only contact.
+     */
+    async removeContactFromConversation(params: {
+      userId: string;
+      conversationId: string;
+      contactId: string;
+    }) {
+      const { userId, conversationId, contactId } = params;
+
+      // Verify conversation belongs to user
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId,
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      // Get all contacts in conversation
+      const allContacts = await prisma.conversationContact.findMany({
+        where: {
+          conversationId,
+        },
+      });
+
+      if (allContacts.length <= 1) {
+        throw new Error('Cannot remove the only contact from a conversation');
+      }
+
+      const contactToRemove = allContacts.find(cc => cc.contactId === contactId);
+      if (!contactToRemove) {
+        return this.getConversationById({ userId, conversationId });
+      }
+
+      // If removing the contact that conversation.contactId points to, update it to another contact
+      if (conversation.contactId === contactId) {
+        const otherContact = allContacts.find(cc => cc.contactId !== contactId);
+        if (otherContact) {
+          await prisma.conversation.update({
+            where: { id: conversationId },
+            data: { contactId: otherContact.contactId },
+          });
+        }
+      }
+
+      // Remove contact
+      await prisma.conversationContact.delete({
+        where: {
+          conversationId_contactId: {
+            conversationId,
+            contactId,
+          },
+        },
+      });
+
+      return this.getConversationById({ userId, conversationId });
+    },
+
   };
 }
 

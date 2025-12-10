@@ -6,3 +6,4 @@ export interface ConversationTableRowProps {
   onOpenDelete: (conversationId: string, contactName: string) => void;
 }
 
+

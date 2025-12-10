@@ -31,6 +31,9 @@ export type { AiAssistantCardProps } from './ai-assistant-card';
 export { NotesCard } from './notes-card';
 export type { NotesCardProps } from './notes-card';
 
+export { EmailTrackingCard } from './email-tracking-card';
+export type { EmailTrackingCardProps } from './email-tracking-card';
+
 // Banner components
 export { OutOfSyncBanner } from './out-of-sync-banner';
 export type { OutOfSyncBannerProps } from './out-of-sync-banner';
@@ -41,4 +44,10 @@ export type { AddReplyDialogProps } from './add-reply-dialog';
 
 export { EditMessageDialog } from './edit-message-dialog';
 export type { EditMessageDialogProps } from './edit-message-dialog';
+
+export { ContactsCard } from './contacts-card';
+export type { ContactsCardProps } from './contacts-card';
+
+export { AddContactDialog } from './add-contact-dialog';
+export type { AddContactDialogProps } from './add-contact-dialog';
 

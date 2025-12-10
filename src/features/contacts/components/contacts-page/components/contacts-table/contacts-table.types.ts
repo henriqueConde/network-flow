@@ -20,3 +20,4 @@ export type ContactsTableProps = {
   onOpenDelete: (contact: ContactListItem) => void;
 };
 
+

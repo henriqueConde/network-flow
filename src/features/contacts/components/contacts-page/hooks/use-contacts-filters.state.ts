@@ -7,9 +7,10 @@ import { useListQueryControls } from '@/shared/hooks';
  */
 export function useContactsFilters() {
   const [company, setCompany] = useState<string>('');
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [stageId, setStageId] = useState<string | null>(null);
   const [primaryPlatform, setPrimaryPlatform] = useState<string | null>(null);
+  const [warmOrCold, setWarmOrCold] = useState<'warm' | 'cold' | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'not_connected' | 'request_sent' | 'connected' | null>(null);
+  const [contactType, setContactType] = useState<string>('');
 
   const {
     search,
@@ -37,18 +38,23 @@ export function useContactsFilters() {
     setPage(1);
   };
 
-  const handleCategoryChange = (value: string | null) => {
-    setCategoryId(value);
-    setPage(1);
-  };
-
-  const handleStageChange = (value: string | null) => {
-    setStageId(value);
-    setPage(1);
-  };
-
   const handlePlatformChange = (value: string | null) => {
     setPrimaryPlatform(value);
+    setPage(1);
+  };
+
+  const handleWarmOrColdChange = (value: 'warm' | 'cold' | null) => {
+    setWarmOrCold(value);
+    setPage(1);
+  };
+
+  const handleConnectionStatusChange = (value: 'not_connected' | 'request_sent' | 'connected' | null) => {
+    setConnectionStatus(value);
+    setPage(1);
+  };
+
+  const handleContactTypeChange = (value: string) => {
+    setContactType(value);
     setPage(1);
   };
 
@@ -66,18 +72,20 @@ export function useContactsFilters() {
   return {
     search,
     company,
-    categoryId,
-    stageId,
     primaryPlatform,
+    warmOrCold,
+    connectionStatus,
+    contactType,
     page,
     pageSize,
     sortBy,
     sortDir,
     handleSearchChange,
     handleCompanyChange,
-    handleCategoryChange,
-    handleStageChange,
     handlePlatformChange,
+    handleWarmOrColdChange,
+    handleConnectionStatusChange,
+    handleContactTypeChange,
     handlePageChange,
     handleSortChange,
   };

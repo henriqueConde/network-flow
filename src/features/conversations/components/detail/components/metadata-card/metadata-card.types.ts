@@ -3,6 +3,10 @@ import type { Category } from '@/features/categories';
 import type { CONVERSATION_DETAIL_CONFIG } from '../../conversation-detail.config';
 
 export type MetadataCardProps = {
+  conversation: {
+    challengeId: string | null;
+    challengeName: string | null;
+  };
   editValues: {
     categoryId: string | null;
     stageId: string | null;

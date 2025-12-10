@@ -20,6 +20,8 @@ export const INTERVIEWS_LIST_CONFIG = {
       lastMessage: 'Last message',
       priority: 'Priority',
       status: 'Status',
+      warmOrCold: 'Warm/Cold',
+      challenge: 'Challenge',
     },
     emptyState: 'No interviews in progress. Move conversations to the "Interviewing" stage to see them here.',
   },

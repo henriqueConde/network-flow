@@ -43,6 +43,7 @@ export function InterviewsListView({
         status={status}
         categoryId={categoryId}
         stageId={null}
+        emailStatus={null}
         availableCategories={availableCategories}
         availableStages={[]}
         config={{
@@ -62,6 +63,8 @@ export function InterviewsListView({
               lastMessage: 'Last message' as const,
               priority: 'Priority' as const,
               status: 'Status' as const,
+              warmOrCold: 'Warm/Cold' as const,
+              challenge: 'Challenge' as const,
             },
             emptyState: 'No conversations yet. Create your first one to get started.' as const,
           },
@@ -70,6 +73,7 @@ export function InterviewsListView({
         onStatusChange={onStatusChange}
         onCategoryChange={onCategoryChange}
         onStageChange={() => {}}
+        onEmailStatusChange={() => {}}
       />
 
       {isLoading && (
@@ -129,6 +133,8 @@ export function InterviewsListView({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>{config.copy.table.status}</TableCell>
+                  <TableCell>{config.copy.table.warmOrCold}</TableCell>
+                  <TableCell>{config.copy.table.challenge}</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>

@@ -6,6 +6,7 @@ export const listConversationsQuery = z.object({
   status: z.enum(['all', 'needs_attention', 'waiting_on_them']).optional().default('all'),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  emailStatus: z.enum(['no_reply', 'replied', 'call_scheduled', 'rejected', 'in_process']).optional(),
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
   sortBy: z
@@ -23,8 +24,9 @@ export type ListConversationsQuery = z.infer<typeof listConversationsQuery>;
  */
 export const conversationInboxItemDto = z.object({
   id: z.string().uuid(),
-  contactName: z.string(),
+  contactName: z.string(), // Primary contact name (backwards compat)
   contactCompany: z.string().nullable(),
+  contactCount: z.number().int().min(1).default(1), // New field
   channel: z.string(),
   category: z.string().nullable(),
   stage: z.string().nullable(),
@@ -34,6 +36,9 @@ export const conversationInboxItemDto = z.object({
   priority: prioritySchema.nullable(),
   isOutOfSync: z.boolean(),
   needsAttention: z.boolean(),
+  warmOrCold: z.enum(['warm', 'cold']).nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
 });
 
 export type ConversationInboxItemDto = z.infer<typeof conversationInboxItemDto>;
@@ -46,13 +51,17 @@ export const conversationInboxListDto = z.array(conversationInboxItemDto);
  */
 export const createConversationBody = z.object({
   // Either use an existing contact or create a new one
-  contactId: z.string().uuid().optional(),
+  contactId: z.string().uuid().optional(), // Primary contact
+  contactIds: z.array(z.string().uuid()).optional(), // All contacts (if multiple)
   contactName: z.string().min(1, 'Contact name is required'),
   contactCompany: z.string().optional(),
   channel: conversationChannelSchema.default('linkedin'),
 
   // Optional: link to an existing opportunity
   opportunityId: z.string().uuid().optional(),
+
+  // Optional: link to a challenge
+  challengeId: z.string().uuid().optional(),
 
   // Raw pasted conversation text; for v1 we store it as a single message
   pastedText: z.string().min(1, 'Conversation text is required'),
@@ -62,6 +71,7 @@ export const createConversationBody = z.object({
   stageId: z.string().uuid().optional(),
   priority: prioritySchema.optional().default('medium'),
   firstMessageSender: messageSideSchema.optional().default('contact'),
+  firstMessageContactId: z.string().uuid().optional(), // Which contact sent the first message (if sender is "contact" and multiple contacts exist)
 });
 
 export type CreateConversationBody = z.infer<typeof createConversationBody>;
@@ -85,6 +95,8 @@ export const messageDto = z.object({
   sentAt: z.string().datetime(),
   source: z.string(),
   status: z.enum(['pending', 'confirmed']),
+  contactId: z.string().uuid().nullable(),
+  contactName: z.string().nullable(), // Included for convenience
 });
 
 export type MessageDto = z.infer<typeof messageDto>;
@@ -107,11 +119,20 @@ export type LinkedInEmailEventDto = z.infer<typeof linkedInEmailEventDto>;
  */
 export const conversationDetailDto = z.object({
   id: z.string().uuid(),
+  // Keep for backwards compatibility
   contactId: z.string().uuid(),
   contactName: z.string(),
   contactCompany: z.string().nullable(),
+  // New fields
+  contacts: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    company: z.string().nullable(),
+  })),
   opportunityId: z.string().uuid().nullable(),
   opportunityTitle: z.string().nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
   channel: z.string(),
   categoryId: z.string().uuid().nullable(),
   categoryName: z.string().nullable(),
@@ -129,6 +150,17 @@ export const conversationDetailDto = z.object({
   messages: z.array(messageDto),
   latestEmailEvent: linkedInEmailEventDto.nullable(),
   autoFollowupsEnabled: z.boolean(),
+  strategyIds: z.array(z.string()),
+  responseReceived: z.boolean(),
+  responseReceivedAt: z.string().datetime().nullable(),
+  emailSentAt: z.string().datetime().nullable(),
+  loomVideoUrl: z.string().url().nullable(),
+  loomSent: z.boolean(),
+  emailFollowUpDates: z.array(z.string().datetime()),
+  emailStatus: z.enum(['no_reply', 'replied', 'call_scheduled', 'rejected', 'in_process']).nullable(),
+  followUp1Date: z.string().datetime().nullable(),
+  followUp2Date: z.string().datetime().nullable(),
+  followUp3Date: z.string().datetime().nullable(),
 });
 
 export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
@@ -139,12 +171,24 @@ export type ConversationDetailDto = z.infer<typeof conversationDetailDto>;
 export const updateConversationBody = z.object({
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),
   notes: z.string().nullable().optional(),
   originalUrl: z.string().url().nullable().optional(),
   autoFollowupsEnabled: z.boolean().optional(),
+  strategyIds: z.array(z.string()).optional(),
+  responseReceived: z.boolean().optional(),
+  responseReceivedAt: z.string().datetime().nullable().optional(),
+  emailSentAt: z.string().datetime().nullable().optional(),
+  loomVideoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  loomSent: z.boolean().optional(),
+  emailFollowUpDates: z.array(z.string().datetime()).optional(),
+  emailStatus: z.enum(['no_reply', 'replied', 'call_scheduled', 'rejected', 'in_process']).nullable().optional(),
+  followUp1Date: z.string().datetime().nullable().optional(),
+  followUp2Date: z.string().datetime().nullable().optional(),
+  followUp3Date: z.string().datetime().nullable().optional(),
 });
 
 export type UpdateConversationBody = z.infer<typeof updateConversationBody>;
@@ -156,6 +200,7 @@ export const addMessageBody = z.object({
   body: z.string().min(1, 'Message body is required'),
   sender: messageSideSchema,
   sentAt: z.string().datetime(),
+  contactId: z.string().uuid().optional(), // Required if sender is "contact" and multiple contacts exist
 });
 
 export type AddMessageBody = z.infer<typeof addMessageBody>;
@@ -169,5 +214,15 @@ export const updateMessageBody = z.object({
 });
 
 export type UpdateMessageBody = z.infer<typeof updateMessageBody>;
+
+/**
+ * Body schema for adding a contact to a conversation.
+ */
+export const addContactToConversationBody = z.object({
+  contactId: z.string().uuid(),
+});
+
+export type AddContactToConversationBody = z.infer<typeof addContactToConversationBody>;
+
 
 

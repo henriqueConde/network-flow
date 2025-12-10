@@ -30,3 +30,4 @@ export async function updateUserSettings(data: { activeOpportunitiesGoal?: numbe
   return userSettingsResponseSchema.parse(res.data);
 }
 
+
