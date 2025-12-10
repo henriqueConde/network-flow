@@ -23,6 +23,7 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
     firstMessageContactId: undefined,
     categoryId: undefined,
     stageId: undefined,
+    challengeId: undefined,
   });
   const [contactSearchInput, setContactSearchInput] = useState('');
   const [opportunitySearchInput, setOpportunitySearchInput] = useState('');
@@ -41,6 +42,9 @@ export function useCreateConversationDialog(onSubmit: SubmitHandler) {
       pastedText: '',
       firstMessageSender: MessageSide.CONTACT,
       firstMessageContactId: undefined,
+      categoryId: undefined,
+      stageId: undefined,
+      challengeId: undefined,
     });
     setContactSearchInput('');
     setOpportunitySearchInput('');

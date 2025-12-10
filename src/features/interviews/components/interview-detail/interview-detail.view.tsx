@@ -102,6 +102,16 @@ export function InterviewDetailView({
               </Typography>
             </Box>
           )}
+          {interview.challengeName && (
+            <Box sx={styles.contactField()}>
+              <Typography sx={styles.contactLabel()}>
+                Challenge
+              </Typography>
+              <Typography sx={styles.contactValue()}>
+                {interview.challengeName}
+              </Typography>
+            </Box>
+          )}
           {interview.contactProfileLinks && (
             <Box sx={styles.contactField()}>
               <Typography sx={styles.contactLabel()}>

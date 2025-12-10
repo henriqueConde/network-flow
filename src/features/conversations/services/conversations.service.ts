@@ -139,6 +139,8 @@ const ConversationDetailDto = z.object({
   })),
   opportunityId: z.string().nullable(),
   opportunityTitle: z.string().nullable(),
+  challengeId: z.string().nullable(),
+  challengeName: z.string().nullable(),
   channel: z.string(),
   categoryId: z.string().nullable(),
   categoryName: z.string().nullable(),
@@ -170,6 +172,8 @@ const ConversationDetailDto = z.object({
 });
 
 export type ConversationDetail = Omit<z.infer<typeof ConversationDetailDto>, 'messages' | 'latestEmailEvent' | 'nextActionDueAt' | 'lastMessageAt' | 'responseReceivedAt' | 'emailSentAt' | 'followUp1Date' | 'followUp2Date' | 'followUp3Date' | 'emailFollowUpDates'> & {
+  challengeId: string | null;
+  challengeName: string | null;
   messages: Array<{
     id: string;
     sender: 'user' | 'contact';

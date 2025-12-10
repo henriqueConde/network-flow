@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
+import type { ContactListItem } from '@/features/contacts';
 
 export type ContactOption = ContactListItem | (ContactListItem & { isNewContact: true });
 

@@ -19,6 +19,7 @@ import { useContactOptions } from '@/features/conversations/components/inbox/com
 import { useAutocompleteScroll } from '@/features/conversations/components/inbox/components/create-conversation-dialog/hooks/use-autocomplete-scroll.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
+import { useChallengesList } from '@/features/challenges/services/challenges.queries';
 
 export function OpportunityDetailContainer() {
   const params = useParams();
@@ -28,6 +29,13 @@ export function OpportunityDetailContainer() {
   const { data: opportunity, isLoading, error } = useOpportunityDetail(opportunityId);
   const { data: categories = [] } = useCategories();
   const { data: stages = [] } = useStages();
+  const { data: challengesData } = useChallengesList({
+    page: 1,
+    pageSize: 100, // Maximum allowed by API
+    sortBy: 'name',
+    sortDir: 'asc',
+  });
+  const availableChallenges = challengesData?.challenges || [];
 
   // Edit state
   const updateMutation = useUpdateOpportunity();
@@ -162,6 +170,7 @@ export function OpportunityDetailContainer() {
         error={error ? 'Failed to load opportunity. Please try again.' : null}
         availableCategories={categories}
         availableStages={stages}
+        availableChallenges={availableChallenges}
         editValues={edit.values}
         editErrors={edit.errors}
         isEditing={edit.isEditing}
@@ -202,6 +211,7 @@ export function OpportunityDetailContainer() {
         isSearchingOpportunities={isSearchingOpportunities}
         availableCategories={categories}
         availableStages={stages}
+        availableChallenges={availableChallenges}
       />
     </>
   );

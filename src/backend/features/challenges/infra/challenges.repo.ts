@@ -109,6 +109,7 @@ export function makeChallengesRepo() {
       startDate: Date;
       endDate: Date;
       goal: number;
+      outreachesPerDay?: number | null;
       outreachesCount?: number;
       acceptsCount?: number;
       repliesCount?: number;
@@ -123,6 +124,7 @@ export function makeChallengesRepo() {
           startDate: params.startDate,
           endDate: params.endDate,
           goal: params.goal,
+          outreachesPerDay: params.outreachesPerDay ?? null,
           outreachesCount: params.outreachesCount ?? 0,
           acceptsCount: params.acceptsCount ?? 0,
           repliesCount: params.repliesCount ?? 0,
@@ -145,6 +147,7 @@ export function makeChallengesRepo() {
       startDate?: Date;
       endDate?: Date;
       goal?: number;
+      outreachesPerDay?: number | null;
       outreachesCount?: number;
       acceptsCount?: number;
       repliesCount?: number;
@@ -162,6 +165,7 @@ export function makeChallengesRepo() {
           ...(params.startDate !== undefined && { startDate: params.startDate }),
           ...(params.endDate !== undefined && { endDate: params.endDate }),
           ...(params.goal !== undefined && { goal: params.goal }),
+          ...(params.outreachesPerDay !== undefined && { outreachesPerDay: params.outreachesPerDay }),
           ...(params.outreachesCount !== undefined && { outreachesCount: params.outreachesCount }),
           ...(params.acceptsCount !== undefined && { acceptsCount: params.acceptsCount }),
           ...(params.repliesCount !== undefined && { repliesCount: params.repliesCount }),

@@ -1,10 +1,11 @@
 import type { CreateConversationFormValues } from '../../conversations-inbox.schema';
 import type { CREATE_CONVERSATION_DIALOG_CONFIG } from './create-conversation-dialog.config';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
-import type { OpportunityListItem } from '@/features/opportunities/services/opportunities.service';
+import type { ContactListItem } from '@/features/contacts';
+import type { OpportunityListItem } from '@/features/opportunities';
 import type { ContactOption } from './hooks/use-contact-options.state';
 import type { Category } from '@/features/categories';
 import type { Stage } from '@/features/stages';
+import type { ChallengeListItem } from '@/features/challenges';
 
 export interface CreateConversationDialogProps {
   isOpen: boolean;
@@ -35,5 +36,6 @@ export interface CreateConversationDialogProps {
   isSearchingOpportunities: boolean;
   availableCategories: Category[];
   availableStages: Stage[];
+  availableChallenges: ChallengeListItem[];
 }
 

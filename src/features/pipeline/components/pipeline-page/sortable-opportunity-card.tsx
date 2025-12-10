@@ -102,6 +102,11 @@ export function SortableOpportunityCard({
             {opportunity.categoryName}
           </Typography>
         )}
+        {opportunity.challengeName && (
+          <Typography variant="caption" sx={styles.opportunityMetaItem()}>
+            Challenge: {opportunity.challengeName}
+          </Typography>
+        )}
         {opportunity.nextActionType && (
           <Typography variant="caption" sx={styles.opportunityMetaItem()}>
             {opportunity.nextActionType}

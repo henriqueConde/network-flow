@@ -25,6 +25,7 @@ export function ConversationsInboxView({
   emailStatus,
   availableCategories,
   availableStages,
+  availableChallenges,
   config,
   onSearchChange,
   onStatusChange,
@@ -146,6 +147,7 @@ export function ConversationsInboxView({
         isSearchingOpportunities={isSearchingOpportunities}
         availableCategories={availableCategories}
         availableStages={availableStages}
+        availableChallenges={availableChallenges}
       />
 
       <DeleteConversationDialog

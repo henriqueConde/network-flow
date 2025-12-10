@@ -5,6 +5,7 @@ export const ChallengeFormSchema = z.object({
   startDate: z.string().datetime('Start date must be a valid datetime'),
   endDate: z.string().datetime('End date must be a valid datetime'),
   goal: z.number().int().min(1, 'Goal must be at least 1'),
+  outreachesPerDay: z.number().int().min(1).optional().nullable(),
   outreachesCount: z.number().int().min(0).optional().default(0),
   acceptsCount: z.number().int().min(0).optional().default(0),
   repliesCount: z.number().int().min(0).optional().default(0),

@@ -7,6 +7,7 @@ import type { MetadataCardProps } from './metadata-card.types';
 import { styles } from './metadata-card.styles';
 
 export function MetadataCard({
+  conversation,
   editValues,
   editErrors,
   isEditing,
@@ -82,6 +83,17 @@ export function MetadataCard({
               </MenuItem>
             ))}
           </TextField>
+        </Box>
+
+        <Box sx={styles.stageContainer()}>
+          <TextField
+            label="Challenge"
+            size="small"
+            fullWidth
+            value={conversation.challengeName || ''}
+            disabled
+            helperText={conversation.challengeName ? "Challenge assigned to the opportunity that owns this conversation" : "No challenge assigned"}
+          />
         </Box>
 
         <Box sx={styles.nextActionContainer()}>

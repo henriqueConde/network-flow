@@ -18,6 +18,7 @@ export const CreateConversationFormSchema = z.object({
   firstMessageContactId: z.string().uuid().optional(), // Which contact sent the first message (if sender is "contact" and multiple contacts exist)
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  challengeId: z.string().uuid().optional(), // Assigns the opportunity that owns the conversation to this challenge
 });
 
 export type CreateConversationFormValues = z.infer<typeof CreateConversationFormSchema>;

@@ -131,6 +131,8 @@ export const conversationDetailDto = z.object({
   })),
   opportunityId: z.string().uuid().nullable(),
   opportunityTitle: z.string().nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
   channel: z.string(),
   categoryId: z.string().uuid().nullable(),
   categoryName: z.string().nullable(),

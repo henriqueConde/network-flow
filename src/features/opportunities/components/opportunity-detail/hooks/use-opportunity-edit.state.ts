@@ -5,6 +5,7 @@ type EditValues = {
   title: string | null;
   categoryId: string | null;
   stageId: string | null;
+  challengeId: string | null;
   nextActionType: string | null;
   nextActionDueAt: string | null;
   priority: 'low' | 'medium' | 'high' | null;
@@ -30,6 +31,7 @@ export function useOpportunityEdit(opportunity: OpportunityDetail | null) {
     title: null,
     categoryId: null,
     stageId: null,
+    challengeId: null,
     nextActionType: null,
     nextActionDueAt: null,
     priority: 'medium',
@@ -55,6 +57,7 @@ export function useOpportunityEdit(opportunity: OpportunityDetail | null) {
         title: opportunity.title,
         categoryId: opportunity.categoryId,
         stageId: opportunity.stageId,
+        challengeId: opportunity.challengeId,
         nextActionType: opportunity.nextActionType,
         nextActionDueAt: opportunity.nextActionDueAtDate
           ? opportunity.nextActionDueAtDate.toISOString()
@@ -99,6 +102,7 @@ export function useOpportunityEdit(opportunity: OpportunityDetail | null) {
         title: opportunity.title,
         categoryId: opportunity.categoryId,
         stageId: opportunity.stageId,
+        challengeId: opportunity.challengeId,
         nextActionType: opportunity.nextActionType,
         nextActionDueAt: opportunity.nextActionDueAtDate
           ? opportunity.nextActionDueAtDate.toISOString()
@@ -127,6 +131,7 @@ export function useOpportunityEdit(opportunity: OpportunityDetail | null) {
       title: values.title ?? undefined,
       categoryId: values.categoryId,
       stageId: values.stageId,
+      challengeId: values.challengeId,
       nextActionType: values.nextActionType,
       nextActionDueAt: values.nextActionDueAt,
       priority: values.priority,

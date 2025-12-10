@@ -73,6 +73,12 @@ export function makePipelineRepo() {
           contact: true,
           category: true,
           stage: true,
+          challenge: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           conversations: {
             orderBy: {
               lastMessageAt: 'desc',
@@ -105,6 +111,8 @@ export function makePipelineRepo() {
               contactCompany: string | null;
               title: string | null;
               categoryName: string | null;
+              challengeId: string | null;
+              challengeName: string | null;
               lastMessageAt: Date | null;
               nextActionType: string | null;
               nextActionDueAt: Date | null;
@@ -136,9 +144,11 @@ export function makePipelineRepo() {
           contactName: string;
           contactCompany: string | null;
           title: string | null;
-          categoryName: string | null;
-          lastMessageAt: Date | null;
-          nextActionType: string | null;
+              categoryName: string | null;
+              challengeId: string | null;
+              challengeName: string | null;
+              lastMessageAt: Date | null;
+              nextActionType: string | null;
           nextActionDueAt: Date | null;
           priority: 'low' | 'medium' | 'high' | null;
           isOutOfSync: boolean;
@@ -167,6 +177,8 @@ export function makePipelineRepo() {
           contactCompany: opp.contact.company,
           title: opp.title,
           categoryName: opp.category?.name ?? null,
+          challengeId: opp.challenge?.id ?? null,
+          challengeName: opp.challenge?.name ?? null,
           lastMessageAt: mostRecentConversation?.lastMessageAt ?? null,
           nextActionType: opp.nextActionType,
           nextActionDueAt: opp.nextActionDueAt,

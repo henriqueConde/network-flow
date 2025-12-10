@@ -1,7 +1,7 @@
 import { client } from '@/shared/services/http/client';
 import { z } from 'zod';
 import { conversationChannelSchema, prioritySchema, messageSideSchema } from '@/shared/types';
-import type { ConversationInboxItem, ConversationDetail } from '@/features/conversations/services/conversations.service';
+import type { ConversationInboxItem, ConversationDetail } from '@/features/conversations';
 
 const InterviewInboxItemDto = z.object({
   id: z.string(),
@@ -63,6 +63,8 @@ const InterviewDetailDto = z.object({
   categoryName: z.string().nullable(),
   stageId: z.string().nullable(),
   stageName: z.string().nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema,
@@ -96,6 +98,8 @@ export type InterviewDetail = Omit<
   ConversationDetail,
   'messages' | 'latestEmailEvent' | 'opportunityId' | 'opportunityTitle' | 'autoFollowupsEnabled'
 > & {
+  challengeId: string | null;
+  challengeName: string | null;
   messages: Array<{
     id: string;
     sender: 'user' | 'contact';

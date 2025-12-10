@@ -122,6 +122,8 @@ export const opportunityDetailDto = z.object({
   categoryName: z.string().nullable(),
   stageId: z.string().uuid().nullable(),
   stageName: z.string().nullable(),
+  challengeId: z.string().uuid().nullable(),
+  challengeName: z.string().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema.nullable(),

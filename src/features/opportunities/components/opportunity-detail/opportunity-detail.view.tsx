@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Typography, Button, CircularProgress, Alert, Divider, Card, CardContent, Chip, TextField } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, Divider, Card, CardContent, Chip, TextField, MenuItem } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,10 +18,12 @@ type OpportunityDetailViewProps = {
   error: string | null;
   availableCategories: Category[];
   availableStages: Stage[];
+  availableChallenges: Array<{ id: string; name: string }>;
   editValues: {
     title: string | null;
     categoryId: string | null;
     stageId: string | null;
+    challengeId: string | null;
     nextActionType: string | null;
     nextActionDueAt: string | null;
     priority: 'low' | 'medium' | 'high' | null;
@@ -61,6 +63,7 @@ export function OpportunityDetailView({
   error,
   availableCategories,
   availableStages,
+  availableChallenges,
   editValues,
   editErrors,
   isEditing,
@@ -189,6 +192,126 @@ export function OpportunityDetailView({
 
       {/* Scrollable Content */}
       <Box sx={styles.scrollableContent()}>
+        {/* Metadata Section */}
+        <Card sx={{ marginBottom: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Details
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Category
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.categoryId || ''}
+                      onChange={(e) => onChangeEditField('categoryId', e.target.value || null)}
+                      error={!!editErrors.categoryId}
+                      helperText={editErrors.categoryId}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      {availableCategories.map((category) => (
+                        <MenuItem key={category.id} value={category.id}>
+                          {category.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    opportunity.categoryName || '—'
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Stage
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.stageId || ''}
+                      onChange={(e) => onChangeEditField('stageId', e.target.value || null)}
+                      error={!!editErrors.stageId}
+                      helperText={editErrors.stageId}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      {availableStages.map((stage) => (
+                        <MenuItem key={stage.id} value={stage.id}>
+                          {stage.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    opportunity.stageName || '—'
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Challenge
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.challengeId || ''}
+                      onChange={(e) => onChangeEditField('challengeId', e.target.value || null)}
+                      error={!!editErrors.challengeId}
+                      helperText={editErrors.challengeId}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      {availableChallenges.map((challenge) => (
+                        <MenuItem key={challenge.id} value={challenge.id}>
+                          {challenge.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  ) : (
+                    opportunity.challengeName || '—'
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Priority
+                </Typography>
+                <Typography variant="body1">
+                  {isEditing ? (
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      value={editValues.priority || ''}
+                      onChange={(e) => onChangeEditField('priority', e.target.value as 'low' | 'medium' | 'high' | null)}
+                      error={!!editErrors.priority}
+                      helperText={editErrors.priority}
+                      disabled={isSaving}
+                    >
+                      <MenuItem value="low">Low</MenuItem>
+                      <MenuItem value="medium">Medium</MenuItem>
+                      <MenuItem value="high">High</MenuItem>
+                    </TextField>
+                  ) : (
+                    opportunity.priority || '—'
+                  )}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
         {/* Contacts Section */}
       {opportunity.contacts && opportunity.contacts.length > 0 && (
         <Box sx={{ marginTop: 3 }}>

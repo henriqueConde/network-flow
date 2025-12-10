@@ -6,7 +6,7 @@ import { EDIT_MESSAGE_DIALOG_CONFIG } from './components/edit-message-dialog/edi
 import { useConversationDetail } from '../../services/conversations.queries';
 import { useUpdateConversation, useAddMessage, useUpdateMessage, useDeleteMessage, useToggleMessageStatus, useAddContactToConversation, useRemoveContactFromConversation } from '../../services/conversations.mutations';
 import { useAnalyzeConversationMutation } from '../../services/conversation-ai.mutations';
-import { useContactsList } from '@/features/contacts';
+import { useContactsList } from '@/features/contacts/services/contacts.queries';
 import { useConversationEdit } from './hooks/use-conversation-edit.state';
 import { useConversationDetailNavigation } from './hooks/use-conversation-detail-navigation.state';
 import { useRouter } from 'next/navigation';

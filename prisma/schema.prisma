@@ -338,11 +338,13 @@ model Challenge {
   startDate         DateTime @map("start_date")
   endDate           DateTime @map("end_date")
   goal              Int      // e.g., 100
+  outreachesPerDay  Int?     @map("outreaches_per_day") // Minimum daily outreaches goal
   outreachesCount   Int      @default(0) @map("outreaches_count")
   acceptsCount      Int      @default(0) @map("accepts_count")
   repliesCount      Int      @default(0) @map("replies_count")
   callsCount        Int      @default(0) @map("calls_count")
   interviewsCount   Int      @default(0) @map("interviews_count")
+  screeningsScheduledOpportunityIds Json? @map("screenings_scheduled_opportunity_ids") // Array of opportunity IDs that have been counted
   notes             String?  @db.Text
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

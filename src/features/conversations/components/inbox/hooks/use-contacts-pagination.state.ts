@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
+import type { ContactListItem } from '@/features/contacts';
 
 /**
  * UI state hook for contacts pagination in create conversation dialog.

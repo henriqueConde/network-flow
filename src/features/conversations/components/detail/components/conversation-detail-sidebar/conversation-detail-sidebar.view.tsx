@@ -40,6 +40,10 @@ export function ConversationDetailSidebar({
       />
 
       <MetadataCard
+        conversation={{
+          challengeId: conversation.challengeId,
+          challengeName: conversation.challengeName,
+        }}
         editValues={editValues}
         editErrors={editErrors}
         isEditing={isEditingMetadata}

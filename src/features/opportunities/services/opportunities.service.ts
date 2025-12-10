@@ -100,6 +100,8 @@ const OpportunityDetailDto = z.object({
   categoryName: z.string().nullable(),
   stageId: z.string().nullable(),
   stageName: z.string().nullable(),
+  challengeId: z.string().nullable(),
+  challengeName: z.string().nullable(),
   nextActionType: z.string().nullable(),
   nextActionDueAt: z.string().datetime().nullable(),
   priority: prioritySchema.nullable(),
@@ -167,6 +169,8 @@ export type OpportunityDetail = Omit<z.infer<typeof OpportunityDetailDto>, 'conv
   nextActionDueAtDate: Date | null;
   createdAtDate: Date;
   updatedAtDate: Date;
+  challengeId: string | null;
+  challengeName: string | null;
 };
 
 /**
@@ -177,6 +181,7 @@ export const CreateOpportunityPayload = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
+  challengeId: z.string().uuid().optional(),
   nextActionType: z.string().optional(),
   nextActionDueAt: z.string().datetime().optional(),
   priority: prioritySchema.optional(),
@@ -192,6 +197,7 @@ export const UpdateOpportunityPayload = z.object({
   title: z.string().optional(),
   categoryId: z.string().uuid().nullable().optional(),
   stageId: z.string().uuid().nullable().optional(),
+  challengeId: z.string().uuid().nullable().optional(),
   nextActionType: z.string().nullable().optional(),
   nextActionDueAt: z.string().datetime().nullable().optional(),
   priority: prioritySchema.optional(),
@@ -249,6 +255,8 @@ export async function getOpportunityDetail(id: string): Promise<OpportunityDetai
 
   return {
     ...data,
+    challengeId: data.challengeId,
+    challengeName: data.challengeName,
     contacts: data.contacts || [],
     nextActionDueAtDate: data.nextActionDueAt ? new Date(data.nextActionDueAt) : null,
     createdAtDate: new Date(data.createdAt),

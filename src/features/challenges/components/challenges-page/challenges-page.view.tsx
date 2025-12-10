@@ -295,6 +295,14 @@ export function ChallengesPageView({
               fullWidth
             />
             <TextField
+              label="Outreaches Per Day (Optional)"
+              type="number"
+              value={dialogValues.outreachesPerDay ?? ''}
+              onChange={(e) => onChangeDialogField('outreachesPerDay', e.target.value ? parseInt(e.target.value, 10) : null)}
+              helperText="Set a daily minimum goal to track daily progress"
+              fullWidth
+            />
+            <TextField
               label="Outreaches Count"
               type="number"
               value={dialogValues.outreachesCount}
@@ -316,7 +324,7 @@ export function ChallengesPageView({
               fullWidth
             />
             <TextField
-              label="Calls Count"
+              label="Screenings Scheduled Count"
               type="number"
               value={dialogValues.callsCount}
               onChange={(e) => onChangeDialogField('callsCount', parseInt(e.target.value, 10) || 0)}

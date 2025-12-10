@@ -12,6 +12,7 @@ import { useDeleteConversationDialog } from './hooks/use-delete-conversation-dia
 import { useContactsPagination } from './hooks/use-contacts-pagination.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
+import { useChallengesList } from '@/features/challenges/services/challenges.queries';
 import { useContactsList } from '@/features/contacts/services/contacts.queries';
 import { useOpportunitiesList } from '@/features/opportunities/services/opportunities.queries';
 import { useDebounce } from '@/shared/hooks';
@@ -55,6 +56,7 @@ export function ConversationsInboxContainer() {
       contactName: values.contactName,
       contactCompany: values.contactCompany || undefined,
       opportunityId: values.opportunityId,
+      challengeId: values.challengeId,
       channel: values.channel,
       pastedText: values.pastedText,
       priority: 'medium',
@@ -66,6 +68,24 @@ export function ConversationsInboxContainer() {
     // Close the dialog after successful creation
     createDialog.close();
   });
+
+  // Fetch challenges for dropdown
+  // Always fetch so they're available immediately when dialog opens
+  const { data: challengesData, refetch: refetchChallenges } = useChallengesList({
+    page: 1,
+    pageSize: 100, // Maximum allowed by API
+    sortBy: 'name',
+    sortDir: 'asc',
+    enabled: true, // Always fetch so dropdown is populated
+  });
+  const availableChallenges = challengesData?.challenges || [];
+
+  // Refetch challenges when dialog opens to ensure fresh data
+  useEffect(() => {
+    if (createDialog.isOpen) {
+      refetchChallenges();
+    }
+  }, [createDialog.isOpen, refetchChallenges]);
 
   // Debounce contact search input for API calls
   const debouncedContactSearch = useDebounce(createDialog.contactSearchInput, 300);
@@ -205,6 +225,7 @@ export function ConversationsInboxContainer() {
       emailStatus={emailStatus}
       availableCategories={categories}
       availableStages={stages}
+      availableChallenges={availableChallenges}
       onCategoryChange={handleCategoryChange}
       onStageChange={handleStageChange}
       onEmailStatusChange={handleEmailStatusChange}

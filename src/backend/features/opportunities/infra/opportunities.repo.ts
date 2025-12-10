@@ -21,6 +21,12 @@ export function makeOpportunitiesRepo() {
           contact: true,
           category: true,
           stage: true,
+          challenge: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           conversations: {
             include: {
               stage: true,
@@ -159,6 +165,8 @@ export function makeOpportunitiesRepo() {
         categoryName: opportunity.category?.name ?? null,
         stageId: opportunity.stageId ?? null,
         stageName: opportunity.stage?.name ?? null,
+        challengeId: opportunity.challengeId ?? null,
+        challengeName: (opportunity as any).challenge?.name ?? null,
         nextActionType: opportunity.nextActionType ?? null,
         nextActionDueAt: opportunity.nextActionDueAt,
         priority: opportunity.priority as 'low' | 'medium' | 'high' | null,
@@ -484,12 +492,57 @@ export function makeOpportunitiesRepo() {
       if (sharedChannels !== undefined) updateData.sharedChannels = sharedChannels;
       if (teamResponses !== undefined) updateData.teamResponses = teamResponses;
 
-      return await prisma.opportunity.update({
+      const updated = await prisma.opportunity.update({
         where: {
           id: opportunityId,
         },
         data: updateData,
       });
+
+      // If stage was changed to "Screening scheduled" and opportunity is linked to a challenge,
+      // increment the challenge's callsCount (screenings scheduled count)
+      if (stageId !== undefined && stageId !== null && stageId !== existing.stageId && existing.challengeId) {
+        const stage = await prisma.stage.findUnique({
+          where: {
+            id: stageId,
+          },
+        });
+
+        if (stage && stage.name === 'Screening scheduled') {
+          const challenge = await prisma.challenge.findUnique({
+            where: {
+              id: existing.challengeId,
+            },
+            select: {
+              screeningsScheduledOpportunityIds: true,
+            },
+          });
+
+          if (challenge) {
+            // Get the current list of counted opportunity IDs (default to empty array)
+            const countedIds: string[] = Array.isArray(challenge.screeningsScheduledOpportunityIds)
+              ? (challenge.screeningsScheduledOpportunityIds as string[])
+              : [];
+
+            // Only increment if this opportunity hasn't been counted yet
+            if (!countedIds.includes(opportunityId)) {
+              await prisma.challenge.update({
+                where: {
+                  id: existing.challengeId,
+                },
+                data: {
+                  callsCount: {
+                    increment: 1,
+                  },
+                  screeningsScheduledOpportunityIds: [...countedIds, opportunityId],
+                },
+              });
+            }
+          }
+        }
+      }
+
+      return updated;
     },
 
     /**
@@ -517,6 +570,7 @@ export function makeOpportunitiesRepo() {
 
       // If stageId is provided, verify it belongs to the user and check if it's a closed stage
       let isClosedStage = false;
+      let stageName: string | null = null;
       if (stageId) {
         const stage = await prisma.stage.findFirst({
           where: {
@@ -529,6 +583,7 @@ export function makeOpportunitiesRepo() {
           return null;
         }
 
+        stageName = stage.name;
         // Check if the stage name starts with "Closed"
         isClosedStage = stage.name.toLowerCase().startsWith('closed');
       }
@@ -563,6 +618,41 @@ export function makeOpportunitiesRepo() {
           stageId,
         },
       });
+
+      // If moving to "Screening scheduled" stage and opportunity is linked to a challenge,
+      // increment the challenge's callsCount (screenings scheduled count)
+      if (stageName === 'Screening scheduled' && opportunity.challengeId) {
+        const challenge = await prisma.challenge.findUnique({
+          where: {
+            id: opportunity.challengeId,
+          },
+          select: {
+            screeningsScheduledOpportunityIds: true,
+          },
+        });
+
+        if (challenge) {
+          // Get the current list of counted opportunity IDs (default to empty array)
+          const countedIds: string[] = Array.isArray(challenge.screeningsScheduledOpportunityIds)
+            ? (challenge.screeningsScheduledOpportunityIds as string[])
+            : [];
+
+          // Only increment if this opportunity hasn't been counted yet
+          if (!countedIds.includes(opportunityId)) {
+            await prisma.challenge.update({
+              where: {
+                id: opportunity.challengeId,
+              },
+              data: {
+                callsCount: {
+                  increment: 1,
+                },
+                screeningsScheduledOpportunityIds: [...countedIds, opportunityId],
+              },
+            });
+          }
+        }
+      }
 
       return await prisma.opportunity.findUnique({
         where: {

@@ -3,8 +3,9 @@ import type { CONVERSATIONS_INBOX_CONFIG } from './conversations-inbox.config';
 import type { CreateConversationFormValues } from './conversations-inbox.schema';
 import type { Category } from '@/features/categories';
 import type { Stage } from '@/features/stages';
+import type { ChallengeListItem } from '@/features/challenges';
 import type { CREATE_CONVERSATION_DIALOG_CONFIG } from './components/create-conversation-dialog/create-conversation-dialog.config';
-import type { ContactListItem } from '@/features/contacts/services/contacts.service';
+import type { ContactListItem } from '@/features/contacts';
 export type { CreateConversationFormValues } from './conversations-inbox.schema';
 
 export type ConversationsInboxFilterStatus = 'all' | 'needs_attention' | 'waiting_on_them';
@@ -23,6 +24,7 @@ export interface ConversationsInboxViewProps {
   emailStatus: 'no_reply' | 'replied' | 'call_scheduled' | 'rejected' | 'in_process' | null;
   availableCategories: Category[];
   availableStages: Stage[];
+  availableChallenges: ChallengeListItem[];
   config: typeof CONVERSATIONS_INBOX_CONFIG;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: ConversationsInboxFilterStatus) => void;

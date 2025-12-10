@@ -166,10 +166,14 @@ export function makeConversationsRepo() {
               name: true,
             },
           },
-          challenge: {
-            select: {
-              id: true,
-              name: true,
+          opportunity: {
+            include: {
+              challenge: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -207,8 +211,8 @@ export function makeConversationsRepo() {
           isOutOfSync: conv.isOutOfSync,
           needsAttention,
           warmOrCold: conv.contact.warmOrCold as 'warm' | 'cold' | null,
-          challengeId: conv.challenge?.id ?? null,
-          challengeName: conv.challenge?.name ?? null,
+          challengeId: conv.opportunity?.challenge?.id ?? null,
+          challengeName: conv.opportunity?.challenge?.name ?? null,
         };
       });
     },
@@ -316,12 +320,33 @@ export function makeConversationsRepo() {
               title,
               categoryId: categoryId ?? null,
               stageId: stageId ?? null,
+              challengeId: challengeId ?? null, // Assign challenge to opportunity
               nextActionType: null,
               nextActionDueAt: null,
               priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
             },
           });
+        } else if (challengeId) {
+          // If opportunity exists but challengeId was provided, update the opportunity to assign it to the challenge
+          await prisma.opportunity.update({
+            where: {
+              id: opportunity.id,
+            },
+            data: {
+              challengeId: challengeId,
+            },
+          });
         }
+      } else if (challengeId) {
+        // If opportunity was provided and challengeId was provided, update the opportunity to assign it to the challenge
+        await prisma.opportunity.update({
+          where: {
+            id: opportunity.id,
+          },
+          data: {
+            challengeId: challengeId,
+          },
+        });
       }
 
       // Determine all contacts to add
@@ -340,12 +365,13 @@ export function makeConversationsRepo() {
       }
 
       // Create conversation and link it to the opportunity
+      // Note: challengeId is assigned to the opportunity, not stored directly on the conversation
       const conversation = await prisma.conversation.create({
         data: {
           userId,
           contactId: ensuredContact.id, // Primary contact
           opportunityId: opportunity.id,
-          challengeId: challengeId ?? null,
+          challengeId: null, // Not stored on conversation - we assign to opportunity instead
           channel,
           categoryId: categoryId ?? null,
           stageId: stageId ?? null,
@@ -420,7 +446,16 @@ export function makeConversationsRepo() {
           },
           category: true,
           stage: true,
-          opportunity: true,
+          opportunity: {
+            include: {
+              challenge: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
           messages: {
             include: {
               contact: {
@@ -468,6 +503,8 @@ export function makeConversationsRepo() {
         })),
         opportunityId: conversation.opportunityId ?? null,
         opportunityTitle: conversation.opportunity?.title ?? null,
+        challengeId: conversation.opportunity?.challenge?.id ?? null,
+        challengeName: conversation.opportunity?.challenge?.name ?? null,
         channel: conversation.channel,
         categoryId: conversation.categoryId ?? null,
         categoryName: conversation.category?.name ?? null,

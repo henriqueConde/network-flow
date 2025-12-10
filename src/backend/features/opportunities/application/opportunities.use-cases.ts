@@ -20,6 +20,8 @@ export async function getOpportunityById(input: {
   // Normalize Dates to ISO strings for DTO
   return {
     ...opportunity,
+    challengeId: opportunity.challengeId ?? null,
+    challengeName: opportunity.challengeName ?? null,
     nextActionDueAt: opportunity.nextActionDueAt
       ? opportunity.nextActionDueAt.toISOString()
       : null,

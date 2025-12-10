@@ -43,6 +43,7 @@ export function CreateConversationDialog({
   isSearchingOpportunities,
   availableCategories,
   availableStages,
+  availableChallenges,
 }: CreateConversationDialogProps) {
   const [contactAutocompleteOpen, setContactAutocompleteOpen] = useState(false);
   const contactListboxRef = useRef<HTMLUListElement | null>(null);
@@ -347,6 +348,22 @@ export function CreateConversationDialog({
           {availableStages.map((stage) => (
             <MenuItem key={stage.id} value={stage.id}>
               {stage.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          label="Challenge"
+          fullWidth
+          size="small"
+          value={values.challengeId || ''}
+          onChange={(e) => onChangeField('challengeId', e.target.value || undefined)}
+          helperText="Assign the opportunity that owns this conversation to a challenge"
+        >
+          <MenuItem value="">None</MenuItem>
+          {availableChallenges.map((challenge) => (
+            <MenuItem key={challenge.id} value={challenge.id}>
+              {challenge.name}
             </MenuItem>
           ))}
         </TextField>

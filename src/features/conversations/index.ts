@@ -1,4 +1,4 @@
-export { ConversationsInboxContainer } from './components/inbox/conversations-inbox.container';
-export { ConversationDetailContainer } from './components/detail/conversation-detail.container';
+export type { ConversationInboxItem, ConversationDetail } from './services/conversations.service';
+export { useCreateConversation, useUpdateConversation, useDeleteConversation } from './services/conversations.mutations';
 
 

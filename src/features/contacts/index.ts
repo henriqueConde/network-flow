@@ -6,6 +6,4 @@ export type {
   CreateContactPayload,
   UpdateContactPayload,
 } from './services/contacts.service';
-export { ContactsPageContainer } from './components/contacts-page';
-export { ContactDetailPageContainer } from './components/contact-detail-page';
 
