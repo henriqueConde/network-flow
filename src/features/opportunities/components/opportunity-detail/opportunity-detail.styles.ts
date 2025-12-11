@@ -11,7 +11,7 @@ export const styles = {
   headerSection: () => (theme: Theme) => ({
     padding: theme.spacing(3),
     borderBottom: `1px solid ${theme.palette.divider}`,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.default,
     flexShrink: 0,
     maxWidth: 1200,
     margin: '0 auto',

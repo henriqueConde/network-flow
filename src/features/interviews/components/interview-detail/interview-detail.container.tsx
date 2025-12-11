@@ -46,6 +46,7 @@ export function InterviewDetailContainer() {
       onCancelEditNotes={notesState.cancelEdit}
       onRelatedConversationClick={handleRelatedConversationClick}
       onRelatedContactClick={handleRelatedContactClick}
+      onConversationClick={handleRelatedConversationClick}
     />
   );
 }

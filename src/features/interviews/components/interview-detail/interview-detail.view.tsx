@@ -1,13 +1,14 @@
 'use client';
 
-import { Box, Typography, Button, TextField, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Button, TextField, CircularProgress, Alert, Card, CardContent } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import type { InterviewDetailViewProps } from './interview-detail.types';
 import { styles } from './interview-detail.styles';
-import { MessagesCard } from '@/features/conversations/components/detail/components/messages-card';
+import { formatDate } from './interview-detail.utils';
 
 export function InterviewDetailView({
   interview,
@@ -24,7 +25,10 @@ export function InterviewDetailView({
   onCancelEditNotes,
   onRelatedConversationClick,
   onRelatedContactClick,
+  onConversationClick,
 }: InterviewDetailViewProps) {
+
+
   if (isLoading) {
     return (
       <Box sx={styles.container()}>
@@ -56,6 +60,11 @@ export function InterviewDetailView({
       </Box>
     );
   }
+
+  // Get last message snippet from messages
+  const lastMessageSnippet = interview.messages && interview.messages.length > 0
+    ? interview.messages[interview.messages.length - 1].body
+    : null;
 
   return (
     <Box sx={styles.container()}>
@@ -189,139 +198,47 @@ export function InterviewDetailView({
         )}
       </Box>
 
-      {/* Conversation/Messages Section */}
+      {/* Conversation Preview Section */}
       <Box sx={styles.section()}>
         <Typography sx={styles.sectionTitle()}>
           {config.copy.conversation.title}
         </Typography>
-        <MessagesCard
-          messages={interview.messages.map(msg => ({
-            ...msg,
-            contactId: msg.sender === 'contact' ? interview.contactId : null,
-            contactName: msg.sender === 'contact' ? interview.contactName : null,
-          }))}
-          contacts={[{
-            id: interview.contactId,
-            name: interview.contactName,
-            company: interview.contactCompany,
-          }]}
-          onOpenAddReply={() => {}}
-          config={{
-            copy: {
-              title: 'Conversation Detail' as const,
-              backButton: 'Back to Inbox' as const,
-              outOfSyncBanner: {
-                title: 'New messages detected' as const,
-                message: 'This conversation has newer messages on LinkedIn. Open the thread, copy the new messages, and paste them here to sync.' as const,
-                action: 'Paste new messages' as const,
-              },
-              contact: {
-                label: 'Contact' as const,
-                company: 'Company' as const,
-              },
-              metadata: {
-                category: 'Category' as const,
-                stage: 'Stage' as const,
-                priority: 'Priority' as const,
-                nextAction: 'Next action' as const,
-                dueDate: 'Due date' as const,
-                originalUrl: {
-                  label: 'Original URL' as const,
-                  placeholder: 'https://...' as const,
-                  helperText: 'Link to the original conversation (e.g., LinkedIn)' as const,
-                  goToButton: 'Go to conversation' as const,
-                },
-              },
-              summary: {
-                title: 'Summary' as const,
-                empty: 'No summary available' as const,
-              },
-              messages: {
-                title: 'Messages' as const,
-                empty: config.copy.conversation.empty,
-                userLabel: 'You' as const,
-                contactLabel: 'Contact' as const,
-                addReply: 'Add Reply' as const,
-                actions: {
-                  edit: 'Edit message' as const,
-                  delete: 'Delete message' as const,
-                  deleteConfirmation: 'Are you sure you want to delete this message?' as const,
-                },
-                status: {
-                  pending: 'Pending' as const,
-                  confirmed: 'Confirmed' as const,
-                  togglePending: 'Click to mark as pending' as const,
-                  toggleConfirmed: 'Click to confirm' as const,
-                },
-              },
-              addReplyDialog: {
-                title: 'Add Reply' as const,
-                bodyLabel: 'Message' as const,
-                bodyPlaceholder: 'Type the message here...' as const,
-                senderLabel: 'From' as const,
-                sentAtLabel: 'Date & Time' as const,
-                cancel: 'Cancel' as const,
-                submit: 'Add Message' as const,
-                submitting: 'Adding...' as const,
-              },
-              notes: {
-                title: 'Notes' as const,
-                placeholder: 'Add your personal notes about this conversation...' as const,
-                label: 'Personal notes' as const,
-              },
-              actions: {
-                save: 'Save changes' as const,
-                saving: 'Saving...' as const,
-                cancel: 'Cancel' as const,
-              },
-              priority: {
-                low: 'Low' as const,
-                medium: 'Medium' as const,
-                high: 'High' as const,
-              },
-              aiAssistant: {
-                title: 'AI Assistant' as const,
-                suggestedReply: {
-                  title: 'Suggested Reply' as const,
-                  copy: 'Copy' as const,
-                  regenerate: 'Regenerate' as const,
-                },
-                suggestedNextAction: {
-                  title: 'Suggested Next Action' as const,
-                },
-                summary: {
-                  title: 'Conversation Summary' as const,
-                },
-                button: {
-                  reanalyze: 'Re-analyze Conversation' as const,
-                  getSuggestions: 'Get AI Suggestions' as const,
-                },
-              },
-              autoFollowups: {
-                label: 'Auto follow-ups' as const,
-                helper:
-                  'Automatically draft follow-up messages every 2 days (up to 3) when this opportunity is not moving forward.' as const,
-              },
-              contacts: {
-                title: 'Participants' as const,
-                addContact: 'Add Contact' as const,
-                removeContact: 'Remove' as const,
-                empty: 'No contacts' as const,
-              },
-              addContactDialog: {
-                title: 'Add Contact to Conversation' as const,
-                contactLabel: 'Contact' as const,
-                contactPlaceholder: 'Search for a contact...' as const,
-                cancel: 'Cancel' as const,
-                add: 'Add' as const,
-                allContactsAdded: 'All your contacts are already in this conversation.' as const,
-              },
-            },
-          }}
-          onConfirmMessage={() => {}}
-          onEditMessage={() => {}}
-          onDeleteMessage={() => {}}
-        />
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 1 }}>
+                  <Typography variant="h6">
+                    {interview.contactName}
+                    {interview.contactCompany ? ` • ${interview.contactCompany}` : ''}
+                  </Typography>
+                </Box>
+                {interview.lastMessageAtDate && (
+                  <Typography variant="body2" color="text.secondary">
+                    Last message: {formatDate(interview.lastMessageAtDate)}
+                  </Typography>
+                )}
+                <Typography variant="body2" sx={{ marginTop: 1 }}>
+                  {interview.messages.length} message{interview.messages.length !== 1 ? 's' : ''}
+                </Typography>
+                {lastMessageSnippet && (
+                  <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1, fontStyle: 'italic' }}>
+                    &quot;{lastMessageSnippet.slice(0, 100)}{lastMessageSnippet.length > 100 ? '...' : ''}&quot;
+                  </Typography>
+                )}
+              </Box>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<VisibilityIcon />}
+                onClick={() => onConversationClick(interview.id)}
+                sx={{ ml: 2 }}
+              >
+                View Conversation
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
       </Box>
 
       {/* Related Conversations */}

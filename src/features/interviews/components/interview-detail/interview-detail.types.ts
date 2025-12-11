@@ -16,6 +16,7 @@ export interface InterviewDetailViewProps {
   onCancelEditNotes: () => void;
   onRelatedConversationClick: (conversationId: string) => void;
   onRelatedContactClick: (contactId: string) => void;
+  onConversationClick: (conversationId: string) => void;
 }
 
 
