@@ -384,7 +384,7 @@ export function JobBoardLeadSnipingStrategyContent({ config }: JobBoardLeadSnipi
               <SubsectionTitle 
                 title={copy.sections.howToTrackInApp.step1.title} 
                 icon={copy.sections.howToTrackInApp.step1.icon}
-                link={'link' in copy.sections.howToTrackInApp.step1 ? copy.sections.howToTrackInApp.step1.link : undefined}
+                link={undefined}
               />
               <Box sx={styles.sectionContent()}>
                 {copy.sections.howToTrackInApp.step1.items.map((item, index) => (
@@ -464,7 +464,6 @@ export function JobBoardLeadSnipingStrategyContent({ config }: JobBoardLeadSnipi
                 <InfoBox 
                   text={copy.sections.howToTrackInApp.tip.text} 
                   type={copy.sections.howToTrackInApp.tip.type}
-                  link={copy.sections.howToTrackInApp.tip.link}
                 />
               )}
             </Box>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useTodayMetrics,
   useTodayActions,
@@ -16,7 +16,7 @@ import { useTodayNavigation } from './hooks/use-today-navigation.state';
 import { useEditGoalModal } from './hooks/use-edit-goal-modal.state';
 import { useCreateTaskModal } from './hooks/use-create-task-modal.state';
 import { useCompletedActions } from './hooks/use-completed-actions.state';
-import { useCompleteTask, useUncompleteTask, useCreateTask } from '@/features/tasks';
+import { useCompleteTask, useUncompleteTask, useCreateTask, useDeleteTask } from '@/features/tasks';
 import type { TodayAction } from './today-page.types';
 
 export function TodayPageContainer() {
@@ -53,7 +53,10 @@ export function TodayPageContainer() {
   const completeTaskMutation = useCompleteTask();
   const uncompleteTaskMutation = useUncompleteTask();
   const createTaskMutation = useCreateTask();
+  const deleteTaskMutation = useDeleteTask();
   const completedActions = useCompletedActions();
+  const [dismissedActionIds, setDismissedActionIds] = useState<Set<string>>(new Set());
+  const [actionPendingDelete, setActionPendingDelete] = useState<TodayAction | null>(null);
 
   // Aggregate loading and error states
   const { isLoading, error } = useTodayLoadingError(
@@ -111,7 +114,9 @@ export function TodayPageContainer() {
 
   // Sort and limit data for display
   const { prioritizedActions, sortedOverdueItems } = useTodaySorting(
-    actionsWithCompletionState,
+    actionsWithCompletionState.filter(
+      (action) => !(dismissedActionIds.has(action.id) && (action.completed ?? false)),
+    ),
     overdueItems,
   );
 
@@ -124,6 +129,12 @@ export function TodayPageContainer() {
       // For tasks, toggle via API
       if (action.completed) {
         await uncompleteTaskMutation.mutateAsync(action.taskId);
+        // If it was dismissed, re-show it when marking incomplete
+        setDismissedActionIds((prev) => {
+          const next = new Set(prev);
+          next.delete(action.id);
+          return next;
+        });
       } else {
         await completeTaskMutation.mutateAsync(action.taskId);
       }
@@ -131,6 +142,11 @@ export function TodayPageContainer() {
       // For other actions, toggle in frontend state
       if (action.completed) {
         completedActions.markIncomplete(action.id);
+        setDismissedActionIds((prev) => {
+          const next = new Set(prev);
+          next.delete(action.id);
+          return next;
+        });
       } else {
         completedActions.markCompleted(action.id);
       }
@@ -139,14 +155,22 @@ export function TodayPageContainer() {
 
   const handleRemoveAction = (action: TodayAction) => {
     if (action.source === 'task' && action.taskId) {
-      // For tasks, we can't remove them, just uncomplete
-      if (action.completed) {
-        uncompleteTaskMutation.mutate(action.taskId);
-      }
-    } else {
-      // For other actions, remove from completed list
-      completedActions.removeAction(action.id);
+      setActionPendingDelete(action);
+      return;
     }
+    // Non-task actions: just dismiss
+    setDismissedActionIds((prev) => new Set(prev).add(action.id));
+  };
+
+  const handleConfirmDeleteTask = async () => {
+    if (!actionPendingDelete?.taskId) return;
+    await deleteTaskMutation.mutateAsync(actionPendingDelete.taskId);
+    setDismissedActionIds((prev) => new Set(prev).add(actionPendingDelete.id));
+    setActionPendingDelete(null);
+  };
+
+  const handleCancelDeleteTask = () => {
+    setActionPendingDelete(null);
   };
 
   // Edit goal modal state
@@ -185,6 +209,13 @@ export function TodayPageContainer() {
       isCompletingTask={completeTaskMutation.isPending || uncompleteTaskMutation.isPending}
       onCreateTaskClick={createTaskModal.onOpen}
       createTaskModal={createTaskModal}
+      deleteTaskDialog={{
+        isOpen: !!actionPendingDelete,
+        actionTitle: actionPendingDelete?.title ?? null,
+        isDeleting: deleteTaskMutation.isPending,
+        onConfirm: handleConfirmDeleteTask,
+        onCancel: handleCancelDeleteTask,
+      }}
     />
   );
 }

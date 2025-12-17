@@ -5,6 +5,7 @@ export type ContactsPageHeaderProps = {
   onOpenCreate: () => void;
   onStartImport: () => void;
   isImporting: boolean;
+  showImportButton: boolean;
 };
 
 

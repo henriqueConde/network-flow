@@ -89,4 +89,11 @@ export interface TodayPageViewProps {
     isCompletingTask: boolean;
     onCreateTaskClick: () => void;
     createTaskModal: CreateTaskModalState;
+    deleteTaskDialog: {
+        isOpen: boolean;
+        actionTitle: string | null;
+        isDeleting: boolean;
+        onConfirm: () => void;
+        onCancel: () => void;
+    };
 }

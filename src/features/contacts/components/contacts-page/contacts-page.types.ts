@@ -66,5 +66,6 @@ export interface ContactsPageViewProps {
   onStartImport: () => void;
   onCloseImportDialog: () => void;
   isImporting: boolean;
+  showImportButton: boolean;
 }
 

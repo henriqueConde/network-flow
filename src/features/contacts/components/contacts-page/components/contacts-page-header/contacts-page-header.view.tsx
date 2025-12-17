@@ -11,6 +11,7 @@ export function ContactsPageHeader({
   onOpenCreate,
   onStartImport,
   isImporting,
+  showImportButton,
 }: ContactsPageHeaderProps) {
   return (
     <Box sx={styles.header()}>
@@ -23,14 +24,16 @@ export function ContactsPageHeader({
         </Typography>
       </Box>
       <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button
-          variant="outlined"
-          startIcon={<LinkedInIcon />}
-          onClick={onStartImport}
-          disabled={isImporting}
-        >
-          {config.copy.importLinkedInButton}
-        </Button>
+        {showImportButton && (
+          <Button
+            variant="outlined"
+            startIcon={<LinkedInIcon />}
+            onClick={onStartImport}
+            disabled={isImporting}
+          >
+            {config.copy.importLinkedInButton}
+          </Button>
+        )}
         <Button variant="contained" startIcon={<AddIcon />} onClick={onOpenCreate}>
           {config.copy.createButton}
         </Button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Typography, CircularProgress, Alert, Chip, IconButton, Checkbox, Button } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Chip, IconButton, Checkbox, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -28,6 +28,7 @@ export function TodayPageView({
   isCompletingTask,
   onCreateTaskClick,
   createTaskModal,
+  deleteTaskDialog,
 }: TodayPageViewProps) {
   if (isLoading) {
     return (
@@ -325,6 +326,29 @@ export function TodayPageView({
         )}
       </Box>
       </Box>
+
+      {/* Delete Task Confirmation */}
+      <Dialog open={deleteTaskDialog.isOpen} onClose={deleteTaskDialog.onCancel} maxWidth="xs" fullWidth>
+        <DialogTitle>Delete task?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            This will permanently delete the task{deleteTaskDialog.actionTitle ? ` "${deleteTaskDialog.actionTitle}"` : ''}. You can&apos;t undo this action.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={deleteTaskDialog.onCancel} disabled={deleteTaskDialog.isDeleting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={deleteTaskDialog.onConfirm}
+            color="error"
+            variant="contained"
+            disabled={deleteTaskDialog.isDeleting}
+          >
+            {deleteTaskDialog.isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Edit Goal Modal */}
       <EditGoalModal

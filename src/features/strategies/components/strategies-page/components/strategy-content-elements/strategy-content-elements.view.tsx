@@ -106,7 +106,6 @@ export function StrategyItem({ item, index }: StrategyItemProps) {
                     {link.includes('/conversations') && 'Go to Conversations'}
                     {link.includes('/companies') && 'Go to Companies'}
                     {link.includes('/opportunities') && 'Go to Opportunities'}
-                    {link.includes('/job-postings') && 'Go to Job Postings'}
                     {link.includes('/challenges') && 'Go to Challenges'}
                     {link.includes('/pipeline') && 'Go to Pipeline'}
                     {link === '/' && 'Go to Today'}

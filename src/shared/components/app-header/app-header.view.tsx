@@ -171,21 +171,6 @@ export function AppHeaderView({ userEmail, onSignOut, config }: AppHeaderViewPro
             </Typography>
           </Link>
           <Link
-            href={config.routes['job-postings']}
-            style={{ textDecoration: 'none' }}
-            className={isActive(config.routes['job-postings']) ? 'active' : ''}
-          >
-            <Typography
-              component="span"
-              sx={[
-                styles.navLink(),
-                isActive(config.routes['job-postings']) && styles.navLinkActive(),
-              ]}
-            >
-              {config.copy.navigation['job-postings']}
-            </Typography>
-          </Link>
-          <Link
             href={config.routes.challenges}
             style={{ textDecoration: 'none' }}
             className={isActive(config.routes.challenges) ? 'active' : ''}

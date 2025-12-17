@@ -60,6 +60,7 @@ export function ContactsPageView({
   onStartImport,
   onCloseImportDialog,
   isImporting,
+  showImportButton,
 }: ContactsPageViewProps) {
   return (
     <Box sx={styles.container()}>
@@ -68,6 +69,7 @@ export function ContactsPageView({
         onOpenCreate={onOpenCreate}
         onStartImport={onStartImport}
         isImporting={isImporting}
+        showImportButton={showImportButton}
       />
 
       <ContactsFilters

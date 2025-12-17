@@ -11,10 +11,13 @@ import { useDeleteContactDialog } from './hooks/use-delete-contact-dialog.state'
 import { useLinkedInImport } from './hooks/use-linkedin-import.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
+import { useAuthContext } from '@/features/auth';
 import type { ContactListItem } from '../../services/contacts.service';
 
 export function ContactsPageContainer() {
   const router = useRouter();
+  const { email } = useAuthContext();
+  const isAdmin = email === 'henriquepenaconde@gmail.com';
 
   // UI state hooks (no I/O)
   const {
@@ -197,6 +200,7 @@ export function ContactsPageContainer() {
       onStartImport={linkedInImport.startImport}
       onCloseImportDialog={linkedInImport.close}
       isImporting={linkedInImport.isImporting}
+      showImportButton={isAdmin}
     />
   );
 }
