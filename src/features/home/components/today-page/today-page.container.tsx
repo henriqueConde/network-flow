@@ -14,6 +14,9 @@ import { useTodayData } from './hooks/use-today-data.state';
 import { useTodaySorting } from './hooks/use-today-sorting.state';
 import { useTodayNavigation } from './hooks/use-today-navigation.state';
 import { useEditGoalModal } from './hooks/use-edit-goal-modal.state';
+import { useCreateTaskModal } from './hooks/use-create-task-modal.state';
+import { useCompletedActions } from './hooks/use-completed-actions.state';
+import { useCompleteTask, useUncompleteTask, useCreateTask } from '@/features/tasks';
 import type { TodayAction } from './today-page.types';
 
 export function TodayPageContainer() {
@@ -47,6 +50,10 @@ export function TodayPageContainer() {
   } = useUserSettings();
 
   const updateSettingsMutation = useUpdateUserSettings();
+  const completeTaskMutation = useCompleteTask();
+  const uncompleteTaskMutation = useUncompleteTask();
+  const createTaskMutation = useCreateTask();
+  const completedActions = useCompletedActions();
 
   // Aggregate loading and error states
   const { isLoading, error } = useTodayLoadingError(
@@ -80,20 +87,67 @@ export function TodayPageContainer() {
       description: `You have ${metrics.activeOpportunities} out of ${activeOpportunitiesGoal} active opportunities. Aim to add ${opportunitiesToSeek} more today.`,
       dueAt: new Date(), // Due today
       priority: 'high',
+      completed: false,
     };
 
     // Add at the beginning with high priority
     return [seekOpportunitiesAction, ...actions];
   }, [actions, needsMoreOpportunities, opportunitiesToSeek, metrics.activeOpportunities, activeOpportunitiesGoal]);
 
+  // Merge completion state: backend state (for tasks) + frontend state (for other actions)
+  const actionsWithCompletionState = useMemo(() => {
+    return actionsWithSeekOpportunities.map((action) => {
+      // For tasks, use backend completion state
+      if (action.source === 'task' && action.taskId) {
+        return { ...action, completed: action.completed ?? false };
+      }
+      // For other actions, use frontend completion state
+      return {
+        ...action,
+        completed: completedActions.isCompleted(action.id),
+      };
+    });
+  }, [actionsWithSeekOpportunities, completedActions]);
+
   // Sort and limit data for display
   const { prioritizedActions, sortedOverdueItems } = useTodaySorting(
-    actionsWithSeekOpportunities,
+    actionsWithCompletionState,
     overdueItems,
   );
 
   // Navigation handlers
   const { handleActionClick, handleOverdueClick, handleInterviewsClick } = useTodayNavigation();
+
+  // Action completion handlers (works for all action types)
+  const handleActionToggle = async (action: TodayAction) => {
+    if (action.source === 'task' && action.taskId) {
+      // For tasks, toggle via API
+      if (action.completed) {
+        await uncompleteTaskMutation.mutateAsync(action.taskId);
+      } else {
+        await completeTaskMutation.mutateAsync(action.taskId);
+      }
+    } else {
+      // For other actions, toggle in frontend state
+      if (action.completed) {
+        completedActions.markIncomplete(action.id);
+      } else {
+        completedActions.markCompleted(action.id);
+      }
+    }
+  };
+
+  const handleRemoveAction = (action: TodayAction) => {
+    if (action.source === 'task' && action.taskId) {
+      // For tasks, we can't remove them, just uncomplete
+      if (action.completed) {
+        uncompleteTaskMutation.mutate(action.taskId);
+      }
+    } else {
+      // For other actions, remove from completed list
+      completedActions.removeAction(action.id);
+    }
+  };
 
   // Edit goal modal state
   const editGoalModal = useEditGoalModal({
@@ -102,6 +156,14 @@ export function TodayPageContainer() {
       await updateSettingsMutation.mutateAsync({ activeOpportunitiesGoal: goal });
     },
     isSaving: updateSettingsMutation.isPending,
+  });
+
+  // Create task modal state
+  const createTaskModal = useCreateTaskModal({
+    onCreate: async (task) => {
+      await createTaskMutation.mutateAsync(task);
+    },
+    isCreating: createTaskMutation.isPending,
   });
 
   return (
@@ -118,6 +180,11 @@ export function TodayPageContainer() {
       activeOpportunitiesGoal={userSettings?.activeOpportunitiesGoal ?? 15}
       onEditGoalClick={editGoalModal.onOpen}
       editGoalModal={editGoalModal}
+      onActionToggle={handleActionToggle}
+      onRemoveAction={handleRemoveAction}
+      isCompletingTask={completeTaskMutation.isPending || uncompleteTaskMutation.isPending}
+      onCreateTaskClick={createTaskModal.onOpen}
+      createTaskModal={createTaskModal}
     />
   );
 }

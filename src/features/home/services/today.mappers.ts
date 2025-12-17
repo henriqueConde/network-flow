@@ -13,7 +13,7 @@ import type { ConversationChannelType } from '@/shared/types';
 
 type TodayActionDto = {
   id: string;
-  type: 'reply' | 'follow_up' | 'outreach';
+  type: 'reply' | 'follow_up' | 'outreach' | 'task';
   title: string;
   description?: string;
   opportunityId: string;
@@ -24,6 +24,8 @@ type TodayActionDto = {
   priority: 'high' | 'medium' | 'low' | null;
   category?: string;
   stage?: string;
+  source?: 'derived' | 'task';
+  taskId?: string;
 };
 
 type NewMessageDto = {

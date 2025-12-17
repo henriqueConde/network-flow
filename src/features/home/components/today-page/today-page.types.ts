@@ -9,7 +9,7 @@ export type TodayPageMetrics = {
 
 export type TodayAction = {
     id: string;
-    type: 'reply' | 'follow_up' | 'outreach' | 'seek_opportunities';
+    type: 'reply' | 'follow_up' | 'outreach' | 'seek_opportunities' | 'task';
     title: string;
     description?: string;
     conversationId?: string;
@@ -19,6 +19,9 @@ export type TodayAction = {
     priority: 'high' | 'medium' | 'low' | null;
     category?: string;
     stage?: string;
+    source?: 'derived' | 'task';
+    taskId?: string;
+    completed?: boolean;
 };
 
 export type NewMessage = {
@@ -54,6 +57,20 @@ export interface EditGoalModalState {
     isSaving: boolean;
 }
 
+export interface CreateTaskModalState {
+    isOpen: boolean;
+    error: string | null;
+    onOpen: () => void;
+    onClose: () => void;
+    onCreate: (task: {
+        title: string;
+        description?: string;
+        dueAt?: string;
+        priority?: 'low' | 'medium' | 'high';
+    }) => Promise<void>;
+    isCreating: boolean;
+}
+
 export interface TodayPageViewProps {
     metrics: TodayPageMetrics;
     prioritizedActions: TodayAction[];
@@ -67,4 +84,9 @@ export interface TodayPageViewProps {
     activeOpportunitiesGoal: number;
     onEditGoalClick: () => void;
     editGoalModal: EditGoalModalState;
+    onActionToggle: (action: TodayAction) => void;
+    onRemoveAction: (action: TodayAction) => void;
+    isCompletingTask: boolean;
+    onCreateTaskClick: () => void;
+    createTaskModal: CreateTaskModalState;
 }

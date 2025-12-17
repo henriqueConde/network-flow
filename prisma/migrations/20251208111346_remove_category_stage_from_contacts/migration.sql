@@ -11,3 +11,4 @@ ALTER TABLE "contacts" DROP COLUMN IF EXISTS "categoryId";
 ALTER TABLE "contacts" DROP COLUMN IF EXISTS "stageId";
 
 
+

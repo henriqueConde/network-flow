@@ -104,3 +104,4 @@ export const jobPostingResponseDto = jobPostingDetailDto;
 export type JobPostingResponseDto = z.infer<typeof jobPostingResponseDto>;
 
 
+

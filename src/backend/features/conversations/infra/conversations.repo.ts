@@ -274,7 +274,7 @@ export function makeConversationsRepo() {
           },
         }));
 
-      // Use provided opportunityId, or find/create an opportunity for this contact
+      // Use provided opportunityId, or create a new opportunity for this conversation
       let opportunity: { id: string } | null = null;
 
       if (opportunityId) {
@@ -287,64 +287,41 @@ export function makeConversationsRepo() {
         });
         if (existingOpportunity) {
           opportunity = existingOpportunity;
+          
+          // If opportunity was provided and challengeId was provided, update the opportunity to assign it to the challenge
+          if (challengeId) {
+            await prisma.opportunity.update({
+              where: {
+                id: opportunity.id,
+              },
+              data: {
+                challengeId: challengeId,
+              },
+            });
+          }
         }
-      }
+      } else {
+        // If no opportunity was provided, always create a new one for this conversation
+        // Generate opportunity title from contact and company
+        let title: string | null = null;
+        if (contactCompany) {
+          title = contactCompany;
+          if (ensuredContact.headlineOrRole) {
+            title = `${ensuredContact.headlineOrRole} at ${contactCompany}`;
+          }
+        }
 
-      // If no opportunity was provided or found, find or create one for this contact
-      if (!opportunity) {
-        opportunity = await prisma.opportunity.findFirst({
-          where: {
+        opportunity = await prisma.opportunity.create({
+          data: {
             userId,
             contactId: ensuredContact.id,
-          },
-          orderBy: {
-            createdAt: 'desc', // Get the most recent one
-          },
-        });
-
-        // If no opportunity exists, create one with metadata from the conversation
-        if (!opportunity) {
-          // Generate opportunity title from contact and company
-          let title: string | null = null;
-          if (contactCompany) {
-            title = contactCompany;
-            if (ensuredContact.headlineOrRole) {
-              title = `${ensuredContact.headlineOrRole} at ${contactCompany}`;
-            }
-          }
-
-          opportunity = await prisma.opportunity.create({
-            data: {
-              userId,
-              contactId: ensuredContact.id,
-              title,
-              categoryId: categoryId ?? null,
-              stageId: stageId ?? null,
-              challengeId: challengeId ?? null, // Assign challenge to opportunity
-              nextActionType: null,
-              nextActionDueAt: null,
-              priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
-            },
-          });
-        } else if (challengeId) {
-          // If opportunity exists but challengeId was provided, update the opportunity to assign it to the challenge
-          await prisma.opportunity.update({
-            where: {
-              id: opportunity.id,
-            },
-            data: {
-              challengeId: challengeId,
-            },
-          });
-        }
-      } else if (challengeId) {
-        // If opportunity was provided and challengeId was provided, update the opportunity to assign it to the challenge
-        await prisma.opportunity.update({
-          where: {
-            id: opportunity.id,
-          },
-          data: {
-            challengeId: challengeId,
+            title,
+            categoryId: categoryId ?? null,
+            stageId: stageId ?? null,
+            challengeId: challengeId ?? null, // Assign challenge to opportunity
+            nextActionType: null,
+            nextActionDueAt: null,
+            priority: (priority ?? 'medium') as 'low' | 'medium' | 'high' | null,
           },
         });
       }
@@ -366,6 +343,9 @@ export function makeConversationsRepo() {
 
       // Create conversation and link it to the opportunity
       // Note: challengeId is assigned to the opportunity, not stored directly on the conversation
+      if (!opportunity) {
+        throw new Error('Opportunity not found or failed to create for conversation');
+      }
       const conversation = await prisma.conversation.create({
         data: {
           userId,

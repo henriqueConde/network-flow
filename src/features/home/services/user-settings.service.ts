@@ -31,3 +31,4 @@ export async function updateUserSettings(data: { activeOpportunitiesGoal?: numbe
 }
 
 
+

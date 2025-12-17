@@ -40,3 +40,4 @@ export function useCompanyDetail(id: string) {
 }
 
 
+

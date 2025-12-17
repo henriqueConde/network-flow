@@ -27,6 +27,7 @@ model User {
   companies          Company[]
   jobPostings        JobPosting[]
   challenges         Challenge[]
+  tasks              Task[]
 
   @@map("users")
 }
@@ -162,6 +163,7 @@ model Opportunity {
   challenge    Challenge?    @relation(fields: [challengeId], references: [id], onDelete: SetNull)
   conversations Conversation[]
   jobPosting   JobPosting?
+  tasks        Task[]
 
   @@index([userId])
   @@index([contactId])
@@ -219,6 +221,7 @@ model Conversation {
   linkedInEmailEvents LinkedInEmailEvent[]
   challengeConversations ChallengeConversation[]
   conversationContacts ConversationContact[]
+  tasks              Task[]
 
   @@index([userId])
   @@index([contactId])
@@ -408,5 +411,35 @@ model ConversationContact {
   @@index([conversationId])
   @@index([contactId])
   @@map("conversation_contacts")
+}
+
+model Task {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @db.Uuid
+  title           String
+  description     String?   @db.Text
+  dueAt           DateTime? @map("due_at")
+  completedAt     DateTime? @map("completed_at")
+  priority        String?   // "low", "medium", "high"
+  
+  // Optional links to other entities
+  // Tasks can be linked to conversations (including interviews) and/or opportunities
+  conversationId  String?   @map("conversation_id") @db.Uuid
+  opportunityId   String?   @map("opportunity_id") @db.Uuid
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation  Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  opportunity   Opportunity?  @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, completedAt])
+  @@index([userId, dueAt])
+  @@index([conversationId])
+  @@index([opportunityId])
+  @@map("tasks")
 }
 

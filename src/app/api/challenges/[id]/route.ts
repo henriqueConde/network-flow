@@ -107,7 +107,8 @@ export async function DELETE(
       challengeId: id,
     });
 
-    return NextResponse.json({ success: true }, { status: 204 });
+    // 204 responses cannot contain a body
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -122,5 +123,6 @@ export async function DELETE(
     );
   }
 }
+
 
 

@@ -24,7 +24,7 @@ const todayMetricsResponseSchema = z.object({
 
 const todayActionResponseSchema = z.object({
   id: z.string(),
-  type: z.enum(['reply', 'follow_up', 'outreach']),
+  type: z.enum(['reply', 'follow_up', 'outreach', 'task']),
   title: z.string(),
   description: z.string().optional(),
   opportunityId: z.string(),
@@ -35,6 +35,9 @@ const todayActionResponseSchema = z.object({
   priority: prioritySchema.nullable(),
   category: z.string().optional(),
   stage: z.string().optional(),
+  source: z.enum(['derived', 'task']).optional(),
+  taskId: z.string().optional(),
+  completed: z.boolean().optional().default(false),
 });
 
 const newMessageResponseSchema = z.object({

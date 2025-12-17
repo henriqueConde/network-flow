@@ -69,9 +69,15 @@ export function ChallengesPageContainer() {
   const deleteDialog = useDeleteChallengeDialog();
 
   const handleConfirmDelete = async () => {
-    if (deleteDialog.challengeId) {
+    if (!deleteDialog.challengeId) return;
+
+    try {
+      // Ensure the dialog closes only after a successful deletion.
       await deleteMutation.mutateAsync(deleteDialog.challengeId);
       deleteDialog.close();
+    } catch (error) {
+      // Surface errors for debugging without swallowing them silently.
+      console.error('Failed to delete challenge', error);
     }
   };
 

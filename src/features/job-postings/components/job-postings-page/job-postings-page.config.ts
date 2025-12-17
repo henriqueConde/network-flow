@@ -33,3 +33,4 @@ export const JOB_POSTINGS_PAGE_CONFIG = {
 } as const;
 
 
+

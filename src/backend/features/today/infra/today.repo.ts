@@ -1,5 +1,6 @@
 import { prisma } from '@/backend/core/db/prisma';
 import { ConversationChannel, ConversationChannelType } from '@/shared/types';
+import { makeTasksRepo } from '@/backend/features/tasks/infra/tasks.repo';
 
 /**
  * Repository for Today page data access.
@@ -85,14 +86,15 @@ export function makeTodayRepo() {
          */
         async getTodayActions(userId: string) {
             const now = new Date();
-            const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+            // Use start of tomorrow to include all of today (including 23:59:59.999)
+            const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
 
             // Get opportunities with actions due today
             const opportunitiesWithActions = await prisma.opportunity.findMany({
                 where: {
                     userId,
                     nextActionDueAt: {
-                        lte: endOfToday,
+                        lt: startOfTomorrow, // Less than start of tomorrow = all of today
                         not: null,
                     },
                 },
@@ -123,7 +125,7 @@ export function makeTodayRepo() {
                 where: {
                     userId,
                     nextActionDueAt: {
-                        lte: endOfToday,
+                        lt: startOfTomorrow, // Less than start of tomorrow = all of today
                         not: null,
                     },
                     nextActionType: {
@@ -188,10 +190,14 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
+            // Get tasks due today
+            const tasksRepo = makeTasksRepo();
+            const todayTasks = await tasksRepo.getTodayTasks(userId);
+
             // Combine and deduplicate by opportunity ID
             const allActions = new Map<string, {
                 id: string;
-                type: 'reply' | 'follow_up' | 'outreach';
+                type: 'reply' | 'follow_up' | 'outreach' | 'task';
                 title: string;
                 description?: string;
                 opportunityId: string;
@@ -202,6 +208,9 @@ export function makeTodayRepo() {
                 priority: 'high' | 'medium' | 'low' | null;
                 category?: string;
                 stage?: string;
+                source?: 'derived' | 'task';
+                taskId?: string;
+                completed?: boolean;
             }>();
 
             // Add opportunities with actions due today
@@ -220,6 +229,8 @@ export function makeTodayRepo() {
                     priority: opp.priority as 'high' | 'medium' | 'low' | null,
                     category: opp.category?.name || undefined,
                     stage: opp.stage?.name || undefined,
+                    source: 'derived',
+                    completed: false,
                 });
             });
 
@@ -248,6 +259,8 @@ export function makeTodayRepo() {
                         priority,
                         category,
                         stage,
+                        source: 'derived',
+                        completed: false,
                     });
                 }
             });
@@ -278,8 +291,42 @@ export function makeTodayRepo() {
                         priority,
                         category,
                         stage,
+                        source: 'derived',
+                        completed: false,
                     });
                 }
+            });
+
+            // Add tasks due today
+            todayTasks.forEach((task) => {
+                const taskKey = `task-${task.id}`;
+                // Get contact name from linked conversation or opportunity
+                let contactName = 'Task';
+                let contactCompany: string | undefined = undefined;
+                
+                if (task.conversation) {
+                    contactName = task.conversation.contact.name;
+                    contactCompany = task.conversation.contact.company || undefined;
+                } else if (task.opportunity) {
+                    contactName = task.opportunity.contact.name;
+                    contactCompany = task.opportunity.contact.company || undefined;
+                }
+
+                allActions.set(taskKey, {
+                    id: `task-${task.id}`,
+                    type: 'task',
+                    title: task.title,
+                    description: task.description || undefined,
+                    opportunityId: task.opportunityId || task.id,
+                    conversationId: task.conversationId || undefined,
+                    contactName,
+                    contactCompany,
+                    dueAt: task.dueAt!,
+                    priority: task.priority as 'high' | 'medium' | 'low' | null,
+                    source: 'task',
+                    taskId: task.id,
+                    completed: task.completedAt !== null,
+                });
             });
 
             // Sort by priority and due date, then return

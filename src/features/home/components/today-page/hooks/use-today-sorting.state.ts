@@ -10,7 +10,7 @@ export function useTodaySorting(
   actions: TodayAction[],
   overdueItems: OverdueItem[],
 ) {
-  // Sort actions by priority (high > medium > low) and due date
+  // Sort actions by completion status (incomplete first), then priority (high > medium > low), then due date
   const sortedActions = useMemo(() => {
     const priorityOrder: Record<'high' | 'medium' | 'low', number> = {
       high: 3,
@@ -19,6 +19,13 @@ export function useTodaySorting(
     };
 
     return [...actions].sort((a, b) => {
+      // Incomplete items first
+      const aCompleted = a.completed ?? false;
+      const bCompleted = b.completed ?? false;
+      if (aCompleted !== bCompleted) {
+        return aCompleted ? 1 : -1;
+      }
+
       const aPriority = a.priority ?? 'low'; // Treat null as low priority
       const bPriority = b.priority ?? 'low'; // Treat null as low priority
       const priorityDiff = priorityOrder[bPriority] - priorityOrder[aPriority];

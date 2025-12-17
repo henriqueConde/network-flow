@@ -37,3 +37,4 @@ export const CHALLENGES_PAGE_CONFIG = {
 } as const;
 
 
+
