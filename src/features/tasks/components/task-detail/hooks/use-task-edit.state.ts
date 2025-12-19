@@ -23,9 +23,10 @@ export function useTaskEdit(task: Task | null) {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
+    if (!task) return;
     setValues(taskToValues(task));
     setIsEditing(false);
-  }, [task?.id, task?.updatedAt]);
+  }, [task]);
 
   const hasChanges = useMemo(() => {
     if (!task) return false;

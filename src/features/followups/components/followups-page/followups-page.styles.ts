@@ -53,6 +53,7 @@ export const styles = {
     calendarGrid: () => (theme: Theme) => ({
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
+        gridAutoRows: 'min-content',
         gap: 1,
         overflowY: 'auto',
         flex: 1,
@@ -130,5 +131,57 @@ export const styles = {
     errorState: () => (theme: Theme) => ({
         p: 3,
         textAlign: 'center',
+    }),
+    moreButton: () => (theme: Theme) => ({
+        mt: 0.5,
+        fontSize: '0.8rem',
+        minHeight: 'auto',
+        py: 0.5,
+        px: 1,
+        textTransform: 'none',
+        width: '100%',
+        fontWeight: 600,
+        borderWidth: 2,
+        borderStyle: 'dashed',
+        borderColor: theme.palette.primary.main,
+        color: theme.palette.primary.main,
+        bgcolor: theme.palette.mode === 'dark' 
+            ? 'rgba(144, 202, 249, 0.1)' 
+            : 'rgba(25, 118, 210, 0.08)',
+        '&:hover': {
+            bgcolor: theme.palette.mode === 'dark'
+                ? 'rgba(144, 202, 249, 0.2)'
+                : 'rgba(25, 118, 210, 0.15)',
+            borderColor: theme.palette.primary.dark,
+            borderStyle: 'solid',
+            transform: 'scale(1.02)',
+        },
+        transition: 'all 0.2s ease-in-out',
+    }),
+    dialogContent: () => (theme: Theme) => ({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        pt: 1,
+    }),
+    dialogFollowupItem: () => (theme: Theme) => ({
+        p: 1.5,
+        borderRadius: 1,
+        border: `1px solid ${theme.palette.divider}`,
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+        '&:hover': {
+            bgcolor: theme.palette.action.hover,
+            borderColor: theme.palette.primary.main,
+        },
+    }),
+    dialogFollowupHeader: () => (theme: Theme) => ({
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        mb: 0.5,
+    }),
+    dialogFollowupName: () => (theme: Theme) => ({
+        fontWeight: 600,
     }),
 };

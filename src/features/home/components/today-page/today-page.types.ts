@@ -1,5 +1,7 @@
 import type { TODAY_PAGE_CONFIG } from './today-page.config';
+import type { FOLLOWUPS_PAGE_CONFIG } from '@/features/followups/components/followups-page/followups-page.config';
 import type { ConversationChannelType } from '@/shared/types';
+import type { ScheduledFollowup } from '@/features/followups';
 
 export type TodayPageMetrics = {
     activeOpportunities: number;
@@ -71,16 +73,25 @@ export interface CreateTaskModalState {
     isCreating: boolean;
 }
 
+export interface FollowupsModalState {
+    isOpen: boolean;
+    onClose: () => void;
+    onConversationClick: (conversationId: string) => void;
+}
+
 export interface TodayPageViewProps {
     metrics: TodayPageMetrics;
     prioritizedActions: TodayAction[];
     overdueItems: OverdueItem[];
+    followupsForTodayAndOverdue: ScheduledFollowup[];
     isLoading: boolean;
     error: string | null;
     config: typeof TODAY_PAGE_CONFIG;
+    followupsConfig: typeof FOLLOWUPS_PAGE_CONFIG;
     onActionClick: (actionId: string, conversationId?: string) => void;
     onOverdueClick: (itemId: string, conversationId?: string) => void;
     onInterviewsClick: () => void;
+    onFollowupsClick: () => void;
     activeOpportunitiesGoal: number;
     onEditGoalClick: () => void;
     editGoalModal: EditGoalModalState;
@@ -96,4 +107,5 @@ export interface TodayPageViewProps {
         onConfirm: () => void;
         onCancel: () => void;
     };
+    followupsModal: FollowupsModalState;
 }

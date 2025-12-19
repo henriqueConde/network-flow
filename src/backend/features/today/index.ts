@@ -6,6 +6,8 @@ export {
   getTodayMetrics,
   getTodayActions,
   getNewMessages,
+  getPendingMessages,
+  getOverdueFollowups,
   getOverdueItems,
 } from './application/today.use-cases';
 

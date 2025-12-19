@@ -433,10 +433,71 @@ export function makeTodayRepo() {
         },
 
         /**
-         * Get overdue items
-         * Includes opportunities with overdue nextActionDueAt, conversations with overdue nextActionDueAt, and conversations with pending messages
+         * Get pending messages (conversations with pending user messages that need confirmation)
          */
-        async getOverdueItems(userId: string) {
+        async getPendingMessages(userId: string) {
+            const now = new Date();
+
+            // Get conversations with pending messages (include opportunity relation)
+            const conversationsWithPendingMessages = await prisma.conversation.findMany({
+                where: {
+                    userId,
+                    messages: {
+                        some: {
+                            sender: 'user',
+                            status: 'pending',
+                        },
+                    },
+                },
+                include: {
+                    contact: true,
+                    opportunity: true,
+                    messages: {
+                        where: {
+                            sender: 'user',
+                            status: 'pending',
+                        },
+                        orderBy: {
+                            sentAt: 'asc',
+                        },
+                        take: 1,
+                    },
+                },
+                take: 20,
+            });
+
+            const pendingMessages = conversationsWithPendingMessages.map((conv) => {
+                const oldestPendingMessage = conv.messages[0];
+                const daysOverdue = oldestPendingMessage
+                    ? Math.floor(
+                          (now.getTime() - oldestPendingMessage.sentAt.getTime()) / (1000 * 60 * 60 * 24)
+                      )
+                    : 0;
+                // Create a preview of the message (first 150 characters)
+                const messagePreview = oldestPendingMessage?.body
+                    ? oldestPendingMessage.body.slice(0, 150) + (oldestPendingMessage.body.length > 150 ? '...' : '')
+                    : undefined;
+                return {
+                    id: `pending-${conv.id}`,
+                    opportunityId: conv.opportunityId || conv.id,
+                    conversationId: conv.id,
+                    contactName: conv.contact.name,
+                    contactCompany: conv.contact.company || undefined,
+                    actionType: 'Confirm message sent',
+                    dueDate: oldestPendingMessage?.sentAt || now,
+                    daysOverdue,
+                    messagePreview,
+                };
+            });
+
+            return pendingMessages.sort((a, b) => a.daysOverdue - b.daysOverdue);
+        },
+
+        /**
+         * Get overdue follow-ups
+         * Includes opportunities with overdue nextActionDueAt and conversations with overdue nextActionDueAt
+         */
+        async getOverdueFollowups(userId: string) {
             const now = new Date();
 
             // Get opportunities with overdue nextActionDueAt
@@ -479,34 +540,6 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            // Get conversations with pending messages (include opportunity relation)
-            const conversationsWithPendingMessages = await prisma.conversation.findMany({
-                where: {
-                    userId,
-                    messages: {
-                        some: {
-                            sender: 'user',
-                            status: 'pending',
-                        },
-                    },
-                },
-                include: {
-                    contact: true,
-                    opportunity: true,
-                    messages: {
-                        where: {
-                            sender: 'user',
-                            status: 'pending',
-                        },
-                        orderBy: {
-                            sentAt: 'asc',
-                        },
-                        take: 1,
-                    },
-                },
-                take: 20,
-            });
-
             // Combine and deduplicate by opportunity ID
             const allOverdue = new Map<string, {
                 id: string;
@@ -517,7 +550,6 @@ export function makeTodayRepo() {
                 actionType: string;
                 dueDate: Date;
                 daysOverdue: number;
-                messagePreview?: string;
             }>();
 
             // Add overdue opportunities
@@ -558,31 +590,40 @@ export function makeTodayRepo() {
                 }
             });
 
-            // Add conversations with pending messages (link to opportunity if exists)
-            conversationsWithPendingMessages.forEach((conv) => {
-                const opportunityId = conv.opportunityId || `pending-${conv.id}`;
-                if (!allOverdue.has(opportunityId)) {
-                    const oldestPendingMessage = conv.messages[0];
-                    const daysOverdue = oldestPendingMessage
-                        ? Math.floor(
-                              (now.getTime() - oldestPendingMessage.sentAt.getTime()) / (1000 * 60 * 60 * 24)
-                          )
-                        : 0;
-                    // Create a preview of the message (first 150 characters)
-                    const messagePreview = oldestPendingMessage?.body
-                        ? oldestPendingMessage.body.slice(0, 150) + (oldestPendingMessage.body.length > 150 ? '...' : '')
-                        : undefined;
-                    allOverdue.set(opportunityId, {
-                        id: `pending-${conv.id}`,
-                        opportunityId: conv.opportunityId || conv.id,
-                        conversationId: conv.id,
-                        contactName: conv.contact.name,
-                        contactCompany: conv.contact.company || undefined,
-                        actionType: 'Confirm message sent',
-                        dueDate: oldestPendingMessage?.sentAt || now,
-                        daysOverdue,
-                        messagePreview,
-                    });
+            return Array.from(allOverdue.values()).sort((a, b) => a.daysOverdue - b.daysOverdue).slice(0, 20);
+        },
+
+        /**
+         * Get overdue items (deprecated - kept for backward compatibility)
+         * Includes opportunities with overdue nextActionDueAt, conversations with overdue nextActionDueAt, and conversations with pending messages
+         */
+        async getOverdueItems(userId: string) {
+            // Combine both lists for backward compatibility
+            const pendingMessages = await this.getPendingMessages(userId);
+            const overdueFollowups = await this.getOverdueFollowups(userId);
+            
+            // Combine and deduplicate by opportunity ID
+            const allOverdue = new Map<string, {
+                id: string;
+                opportunityId: string;
+                conversationId?: string;
+                contactName: string;
+                contactCompany?: string;
+                actionType: string;
+                dueDate: Date;
+                daysOverdue: number;
+                messagePreview?: string;
+            }>();
+
+            // Add overdue follow-ups first
+            overdueFollowups.forEach((item) => {
+                allOverdue.set(item.opportunityId, { ...item, messagePreview: undefined });
+            });
+
+            // Add pending messages (only if not already present)
+            pendingMessages.forEach((item) => {
+                if (!allOverdue.has(item.opportunityId)) {
+                    allOverdue.set(item.opportunityId, item);
                 }
             });
 

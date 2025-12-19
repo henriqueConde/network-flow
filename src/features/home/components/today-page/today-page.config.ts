@@ -14,9 +14,9 @@ export const TODAY_PAGE_CONFIG = {
                 plural: 'interviews',
             },
             overdueFollowUps: {
-                label: 'Overdue Follow-ups',
-                singular: 'overdue',
-                plural: 'overdue',
+                label: 'Follow-ups',
+                singular: 'follow-up',
+                plural: 'follow-ups',
             },
         },
         sections: {
@@ -33,9 +33,9 @@ export const TODAY_PAGE_CONFIG = {
                 title: 'New Messages',
                 empty: 'No new messages',
             },
-            overdueItems: {
-                title: 'Overdue',
-                empty: 'All caught up!',
+            pendingMessages: {
+                title: 'Overdue actions',
+                empty: 'No overdue actions',
             },
         },
         actions: {

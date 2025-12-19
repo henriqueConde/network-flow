@@ -7,10 +7,11 @@ import {
   useOverdueItems,
 } from '../../services/today.queries';
 import { useUserSettings, useUpdateUserSettings } from '../../services/user-settings.queries';
+import { useScheduledFollowups } from '@/features/followups';
 import { TodayPageView } from './today-page.view';
 import { TODAY_PAGE_CONFIG } from './today-page.config';
+import { FOLLOWUPS_PAGE_CONFIG } from '@/features/followups/components/followups-page/followups-page.config';
 import { useTodayLoadingError } from './hooks/use-today-loading-error.state';
-import { useTodayData } from './hooks/use-today-data.state';
 import { useTodaySorting } from './hooks/use-today-sorting.state';
 import { useTodayNavigation } from './hooks/use-today-navigation.state';
 import { useEditGoalModal } from './hooks/use-edit-goal-modal.state';
@@ -18,6 +19,7 @@ import { useCreateTaskModal } from './hooks/use-create-task-modal.state';
 import { useCompletedActions } from './hooks/use-completed-actions.state';
 import { useCompleteTask, useUncompleteTask, useCreateTask, useDeleteTask } from '@/features/tasks';
 import type { TodayAction } from './today-page.types';
+import type { ScheduledFollowup } from '@/features/followups';
 
 export function TodayPageContainer() {
   // Fetch data using service layer queries
@@ -44,6 +46,12 @@ export function TodayPageContainer() {
   } = useOverdueItems();
 
   const {
+    data: followupsByDate = [],
+    isLoading: isFollowupsLoading,
+    error: followupsError,
+  } = useScheduledFollowups();
+
+  const {
     data: userSettings,
     isLoading: isSettingsLoading,
     error: settingsError,
@@ -57,19 +65,50 @@ export function TodayPageContainer() {
   const completedActions = useCompletedActions();
   const [dismissedActionIds, setDismissedActionIds] = useState<Set<string>>(new Set());
   const [actionPendingDelete, setActionPendingDelete] = useState<TodayAction | null>(null);
+  const [isFollowupsModalOpen, setIsFollowupsModalOpen] = useState(false);
+
+  // Calculate follow-ups for today and overdue
+  const { followupsForTodayAndOverdue, followupsCount } = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const allFollowups: ScheduledFollowup[] = [];
+    
+    // Collect all follow-ups
+    for (const group of followupsByDate) {
+      allFollowups.push(...group.followups);
+    }
+    
+    // Filter for today or overdue (dueDate <= today)
+    const relevantFollowups = allFollowups.filter((followup) => {
+      const dueDate = followup.dueDateDate;
+      const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+      return dueDateOnly <= today;
+    });
+    
+    return {
+      followupsForTodayAndOverdue: relevantFollowups,
+      followupsCount: relevantFollowups.length,
+    };
+  }, [followupsByDate]);
 
   // Aggregate loading and error states
   const { isLoading, error } = useTodayLoadingError(
     isMetricsLoading,
     isActionsLoading,
     isOverdueLoading,
+    isFollowupsLoading,
     metricsError,
     actionsError,
     overdueError,
+    followupsError,
   );
 
-  // Aggregate and derive data
-  const { metrics: metricsWithOverdue } = useTodayData(metrics, overdueItems);
+  // Aggregate and derive data - use follow-ups count instead of overdueFollowUps
+  const metricsWithFollowups = useMemo(() => ({
+    ...metrics,
+    overdueFollowUps: followupsCount,
+  }), [metrics, followupsCount]);
 
   // Add "seek opportunities" action if below goal
   const activeOpportunitiesGoal = userSettings?.activeOpportunitiesGoal ?? 15;
@@ -200,17 +239,29 @@ export function TodayPageContainer() {
     isCreating: createTaskMutation.isPending,
   });
 
+  const handleFollowupsClick = () => {
+    setIsFollowupsModalOpen(true);
+  };
+
+  const handleFollowupConversationClick = (conversationId: string) => {
+    handleActionClick('', conversationId);
+    setIsFollowupsModalOpen(false);
+  };
+
   return (
     <TodayPageView
-      metrics={metricsWithOverdue}
+      metrics={metricsWithFollowups}
       prioritizedActions={prioritizedActions}
       overdueItems={sortedOverdueItems}
+      followupsForTodayAndOverdue={followupsForTodayAndOverdue}
       isLoading={isLoading || isSettingsLoading}
       error={error || (settingsError ? 'Failed to load settings' : null)}
       config={TODAY_PAGE_CONFIG}
+      followupsConfig={FOLLOWUPS_PAGE_CONFIG}
       onActionClick={handleActionClick}
       onOverdueClick={handleOverdueClick}
       onInterviewsClick={handleInterviewsClick}
+      onFollowupsClick={handleFollowupsClick}
       activeOpportunitiesGoal={userSettings?.activeOpportunitiesGoal ?? 15}
       onEditGoalClick={editGoalModal.onOpen}
       editGoalModal={editGoalModal}
@@ -225,6 +276,11 @@ export function TodayPageContainer() {
         isDeleting: deleteTaskMutation.isPending,
         onConfirm: handleConfirmDeleteTask,
         onCancel: handleCancelDeleteTask,
+      }}
+      followupsModal={{
+        isOpen: isFollowupsModalOpen,
+        onClose: () => setIsFollowupsModalOpen(false),
+        onConversationClick: handleFollowupConversationClick,
       }}
     />
   );

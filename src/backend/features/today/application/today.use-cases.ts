@@ -48,7 +48,39 @@ export async function getNewMessages(userId: string) {
 }
 
 /**
- * Use case: Get overdue items
+ * Use case: Get pending messages
+ */
+export async function getPendingMessages(userId: string) {
+  const repo = makeTodayRepo();
+  const items = await repo.getPendingMessages(userId);
+
+  // Transform to DTO format (convert Date to ISO string)
+  const itemsDto = items.map((item) => ({
+    ...item,
+    dueDate: item.dueDate.toISOString(),
+  }));
+
+  return overdueItemsDto.parse(itemsDto);
+}
+
+/**
+ * Use case: Get overdue follow-ups
+ */
+export async function getOverdueFollowups(userId: string) {
+  const repo = makeTodayRepo();
+  const items = await repo.getOverdueFollowups(userId);
+
+  // Transform to DTO format (convert Date to ISO string)
+  const itemsDto = items.map((item) => ({
+    ...item,
+    dueDate: item.dueDate.toISOString(),
+  }));
+
+  return overdueItemsDto.parse(itemsDto);
+}
+
+/**
+ * Use case: Get overdue items (deprecated - kept for backward compatibility)
  */
 export async function getOverdueItems(userId: string) {
   const repo = makeTodayRepo();

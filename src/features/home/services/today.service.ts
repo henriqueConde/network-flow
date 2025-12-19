@@ -85,6 +85,18 @@ export async function getNewMessages(): Promise<NewMessage[]> {
   return dtos.map(toNewMessage);
 }
 
+export async function getPendingMessages(): Promise<OverdueItem[]> {
+  const res = await client.get('/api/today', { params: { type: 'pending-messages' } });
+  const dtos = z.array(overdueItemResponseSchema).parse(res.data);
+  return dtos.map(toOverdueItem);
+}
+
+export async function getOverdueFollowups(): Promise<OverdueItem[]> {
+  const res = await client.get('/api/today', { params: { type: 'overdue-followups' } });
+  const dtos = z.array(overdueItemResponseSchema).parse(res.data);
+  return dtos.map(toOverdueItem);
+}
+
 export async function getOverdueItems(): Promise<OverdueItem[]> {
   const res = await client.get('/api/today', { params: { type: 'overdue' } });
   const dtos = z.array(overdueItemResponseSchema).parse(res.data);

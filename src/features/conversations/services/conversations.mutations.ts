@@ -18,6 +18,7 @@ import { pipelineKeys } from '@/features/pipeline/services/pipeline.keys';
 import { contactsKeys } from '@/features/contacts/services/contacts.keys';
 import { interviewsKeys } from '@/features/interviews/services/interviews.keys';
 import { opportunitiesKeys } from '@/features/opportunities/services/opportunities.keys';
+import { followupsKeys } from '@/features/followups/services/followups.keys';
 
 /**
  * Mutation hook for creating a new conversation.
@@ -75,12 +76,17 @@ export function useAddMessage() {
   return useMutation({
     mutationFn: ({ conversationId, payload }: { conversationId: string; payload: AddMessagePayload }) =>
       addMessage(conversationId, payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       // Invalidate both the detail and list queries
       queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+      
+      // If a user message was added, invalidate follow-ups since follow-up dates are calculated from last user message
+      if (variables.payload.sender === 'user') {
+        queryClient.invalidateQueries({ queryKey: followupsKeys.all });
+      }
     },
   });
 }
@@ -102,13 +108,18 @@ export function useUpdateMessage() {
       payload: { body?: string; sentAt?: string } 
     }) =>
       updateMessage(conversationId, messageId, payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       // Invalidate both the detail and list queries, and today page
       queryClient.invalidateQueries({ queryKey: conversationsKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: conversationsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ['today'] });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+      
+      // If sentAt was changed, invalidate follow-ups queries since follow-up dates are calculated from message dates
+      if (variables.payload.sentAt !== undefined) {
+        queryClient.invalidateQueries({ queryKey: followupsKeys.all });
+      }
     },
   });
 }
@@ -129,6 +140,8 @@ export function useDeleteMessage() {
       queryClient.invalidateQueries({ queryKey: ['today'] });
       // Invalidate contacts list to refresh latest conversation info
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
+      // Invalidate follow-ups since deleting a message could change which is the last user message
+      queryClient.invalidateQueries({ queryKey: followupsKeys.all });
     },
   });
 }

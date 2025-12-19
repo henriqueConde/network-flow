@@ -14,12 +14,15 @@ export function TodayPageView({
   metrics,
   prioritizedActions,
   overdueItems,
+  followupsForTodayAndOverdue,
   isLoading,
   error,
   config,
+  followupsConfig,
   onActionClick,
   onOverdueClick,
   onInterviewsClick,
+  onFollowupsClick,
   activeOpportunitiesGoal,
   onEditGoalClick,
   editGoalModal,
@@ -29,6 +32,7 @@ export function TodayPageView({
   onCreateTaskClick,
   createTaskModal,
   deleteTaskDialog,
+  followupsModal,
 }: TodayPageViewProps) {
   if (isLoading) {
     return (
@@ -139,7 +143,13 @@ export function TodayPageView({
             {metrics.interviewsInProgress}
           </Typography>
         </Box>
-        <Box sx={styles.metricCard()}>
+        <Box
+          sx={(theme) => ({
+            ...styles.metricCard()(theme),
+            cursor: 'pointer',
+          })}
+          onClick={onFollowupsClick}
+        >
           <Typography sx={styles.metricLabel()}>
             {config.copy.metrics.overdueFollowUps.label}
           </Typography>
@@ -280,12 +290,12 @@ export function TodayPageView({
           </Box>
         </Box>
 
-        {/* Overdue Items */}
+        {/* Overdue Actions */}
         {overdueItems.length > 0 && (
           <Box sx={styles.sectionCard()}>
             <Box sx={styles.sectionHeader()}>
               <Typography sx={styles.sectionTitle()}>
-                {config.copy.sections.overdueItems.title}
+                {config.copy.sections.pendingMessages.title}
               </Typography>
             </Box>
             <Box sx={styles.sectionContent()}>
@@ -369,6 +379,88 @@ export function TodayPageView({
         onClose={createTaskModal.onClose}
         onCreate={createTaskModal.onCreate}
       />
+
+      {/* Follow-ups Modal */}
+      <Dialog
+        open={followupsModal.isOpen}
+        onClose={followupsModal.onClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Follow-ups {followupsForTodayAndOverdue.length > 0 && `(${followupsForTodayAndOverdue.length})`}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
+            {followupsForTodayAndOverdue.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                No follow-ups for today or overdue
+              </Typography>
+            ) : (
+              followupsForTodayAndOverdue.map((followup, idx) => {
+                const isOverdue = followup.dueDateDate < new Date();
+                const dueDateOnly = new Date(followup.dueDateDate.getFullYear(), followup.dueDateDate.getMonth(), followup.dueDateDate.getDate());
+                const todayOnly = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+                const daysDiff = Math.floor((todayOnly.getTime() - dueDateOnly.getTime()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <Box
+                    key={`${followup.conversationId}-${idx}`}
+                    sx={(theme) => ({
+                      p: 1.5,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.divider}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: theme.palette.action.hover,
+                        borderColor: theme.palette.primary.main,
+                      },
+                    })}
+                    onClick={() => followupsModal.onConversationClick(followup.conversationId)}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        {followup.contactName}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Chip
+                          label={followupsConfig.copy.followup.followupNumber(followup.followupNumber)}
+                          size="small"
+                          color="primary"
+                        />
+                        {isOverdue && (
+                          <Chip
+                            label={`${daysDiff}d overdue`}
+                            size="small"
+                            color="error"
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                    {followup.contactCompany && (
+                      <Typography variant="body2" color="text.secondary">
+                        {followup.contactCompany}
+                      </Typography>
+                    )}
+                    {followup.opportunityTitle && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Opportunity: {followup.opportunityTitle}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                      Channel: {followup.channel}
+                    </Typography>
+                  </Box>
+                );
+              })
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={followupsModal.onClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

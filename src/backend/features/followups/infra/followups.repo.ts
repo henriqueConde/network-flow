@@ -1,6 +1,28 @@
 import { prisma } from '@/backend/core/db/prisma';
 
 /**
+ * Helper function to add business days to a date, skipping weekends (Saturday and Sunday).
+ * @param startDate The starting date
+ * @param businessDays The number of business days to add
+ * @returns A new Date object with the business days added
+ */
+function addBusinessDays(startDate: Date, businessDays: number): Date {
+  const result = new Date(startDate);
+  let daysAdded = 0;
+  
+  while (daysAdded < businessDays) {
+    result.setDate(result.getDate() + 1);
+    const dayOfWeek = result.getDay();
+    // Skip Saturday (6) and Sunday (0)
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      daysAdded++;
+    }
+  }
+  
+  return result;
+}
+
+/**
  * Repository for automatic follow-up generation.
  */
 export function makeFollowupsRepo() {
@@ -66,7 +88,11 @@ export function makeFollowupsRepo() {
         const messages = conv.messages;
         if (messages.length === 0) continue;
 
-        const lastUserMessage = [...messages].reverse().find((m) => m.sender === 'user');
+        // Find the last user message that is NOT an auto-follow-up
+        // Auto-follow-ups should not be used as the base for calculating new follow-ups
+        const lastUserMessage = [...messages]
+          .reverse()
+          .find((m) => m.sender === 'user' && m.source !== 'auto_follow_up');
         const lastContactMessage = [...messages].reverse().find((m) => m.sender === 'contact');
 
         // If contact has replied after the last user message, skip
@@ -199,7 +225,7 @@ export function makeFollowupsRepo() {
           },
           messages: {
             orderBy: {
-              sentAt: 'asc',
+              sentAt: 'asc', // Order by sentAt ascending to ensure correct chronological order
             },
             select: {
               id: true,
@@ -235,7 +261,11 @@ export function makeFollowupsRepo() {
         const messages = conv.messages;
         if (messages.length === 0) continue;
 
-        const lastUserMessage = [...messages].reverse().find((m) => m.sender === 'user');
+        // Find the last user message that is NOT an auto-follow-up
+        // Auto-follow-ups should not be used as the base for calculating new follow-ups
+        const lastUserMessage = [...messages]
+          .reverse()
+          .find((m) => m.sender === 'user' && m.source !== 'auto_follow_up');
         const lastContactMessage = [...messages].reverse().find((m) => m.sender === 'contact');
 
         // If contact has replied after the last user message, skip
@@ -273,16 +303,35 @@ export function makeFollowupsRepo() {
         if (!lastUserMessage) continue;
 
         // Calculate due dates for remaining follow-ups
-        const followupCount = autoFollowups.length;
+        // Always calculate from the base date (last user message)
+        // The followupNumber (0, 1, 2) determines which follow-up this is (1st, 2nd, or 3rd)
         const baseDate = lastUserMessage.sentAt;
 
         // Calculate due dates for up to 3 follow-ups total
-        for (let i = followupCount; i < 3; i++) {
-          const daysToAdd = (i + 1) * 2; // 2 days, 4 days, 6 days after last user message
-          const dueDate = new Date(baseDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+        // Use business days (skipping weekends): 2, 4, 6 business days after last user message
+        // We calculate all 3 possible follow-ups, but only include those that haven't been sent yet
+        // Note: If the base date changed, old follow-ups won't match the new calculated dates and will be ignored
+        for (let followupNumber = 0; followupNumber < 3; followupNumber++) {
+          const businessDaysToAdd = (followupNumber + 1) * 2; // 2, 4, or 6 business days
+          const dueDate = addBusinessDays(baseDate, businessDaysToAdd);
 
-          // Only include if due date is in the future or today
-          if (dueDate >= now) {
+          // Check if this specific follow-up (based on current base date) has already been sent
+          // Only count follow-ups that match the current calculated date (within 1 day tolerance)
+          const followupAlreadySent = autoFollowups.some((af) => {
+            const sentDate = new Date(af.sentAt);
+            // Check if sent date is within 1 day of the expected date for this follow-up number
+            const diffDays = Math.abs((sentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+            return diffDays <= 1;
+          });
+          
+          if (followupAlreadySent) {
+            continue; // Skip this follow-up as it's already been sent
+          }
+
+          // Only include if due date is in the future or today (compare dates, not times)
+          const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+          const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          if (dueDateOnly >= nowOnly) {
             scheduledFollowups.push({
               conversationId: conv.id,
               contactName: conv.contact.name,
@@ -291,7 +340,7 @@ export function makeFollowupsRepo() {
               opportunityTitle: conv.opportunity?.title ?? null,
               channel: conv.channel,
               lastMessageAt: lastUserMessage.sentAt,
-              followupNumber: i,
+              followupNumber: followupNumber,
               dueDate,
             });
           }

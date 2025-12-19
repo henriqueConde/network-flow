@@ -4,6 +4,8 @@ import {
   getTodayMetrics,
   getTodayActions,
   getNewMessages,
+  getPendingMessages,
+  getOverdueFollowups,
   getOverdueItems,
 } from '@/backend/features/today';
 import {
@@ -49,19 +51,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(overdueItemsDto.parse(result));
     }
 
+    if (type === 'pending-messages') {
+      const result = await getPendingMessages(user.id);
+      return NextResponse.json(overdueItemsDto.parse(result));
+    }
+
+    if (type === 'overdue-followups') {
+      const result = await getOverdueFollowups(user.id);
+      return NextResponse.json(overdueItemsDto.parse(result));
+    }
+
     // Return all data
-    const [metrics, actions, messages, overdue] = await Promise.all([
+    const [metrics, actions, messages, pendingMessages, overdueFollowups] = await Promise.all([
       getTodayMetrics(user.id),
       getTodayActions(user.id),
       getNewMessages(user.id),
-      getOverdueItems(user.id),
+      getPendingMessages(user.id),
+      getOverdueFollowups(user.id),
     ]);
 
     return NextResponse.json({
       metrics: todayMetricsDto.parse(metrics),
       actions: todayActionsDto.parse(actions),
       messages: newMessagesDto.parse(messages),
-      overdue: overdueItemsDto.parse(overdue),
+      pendingMessages: overdueItemsDto.parse(pendingMessages),
+      overdueFollowups: overdueItemsDto.parse(overdueFollowups),
+      // Keep backward compatibility
+      overdue: overdueItemsDto.parse(await getOverdueItems(user.id)),
     });
   } catch (error) {
     if (error instanceof HttpError) {
