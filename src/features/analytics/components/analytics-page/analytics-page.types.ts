@@ -42,48 +42,6 @@ export interface ResponseTime {
 
 import { ANALYTICS_PAGE_CONFIG } from './analytics-page.config';
 
-export interface OverallMetrics {
-  totalOpportunities: number;
-  activeOpportunities: number;
-  interviewsInProgress: number;
-  offers: number;
-  totalConversations: number;
-  totalMessages: number;
-  averageResponseHours: number | null;
-  conversionRate: number;
-}
-
-export interface StageDistribution {
-  stageId: string;
-  stageName: string;
-  count: number;
-  percentage: number;
-}
-
-export interface CategoryPerformance {
-  categoryId: string | null;
-  categoryName: string | null;
-  totalOpportunities: number;
-  interviewsInProgress: number;
-  offers: number;
-  conversionRate: number;
-}
-
-export interface PipelineConversion {
-  fromStage: string;
-  toStage: string;
-  count: number;
-  averageDays: number | null;
-}
-
-export interface ResponseTime {
-  categoryId: string | null;
-  categoryName: string | null;
-  averageResponseHours: number | null;
-  medianResponseHours: number | null;
-  totalResponses: number;
-}
-
 export interface ActivityOverTime {
   date: Date;
   conversationsCreated: number;

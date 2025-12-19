@@ -112,14 +112,16 @@ export function ConversationsInboxView({
         </Box>
       )}
 
-      <Box sx={styles.paginationContainer()}>
-        <Pagination
-          page={page}
-          onChange={(_, value) => onPageChange(value)}
-          count={page + 1}
-          color="primary"
-        />
-      </Box>
+      {page > 1 && (
+        <Box sx={styles.paginationContainer()}>
+          <Pagination
+            page={page}
+            onChange={(_, value) => onPageChange(value)}
+            count={page + 1}
+            color="primary"
+          />
+        </Box>
+      )}
 
       <CreateConversationDialog
         isOpen={isCreateOpen}

@@ -18,8 +18,9 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LaunchIcon from '@mui/icons-material/Launch';
-import { STRATEGIES } from '@/features/strategies/components/strategies-page/strategies-page.config';
 import { Autocomplete } from '@mui/material';
+import { formatEnumToTitleCase } from '@/shared/utils/string.utils';
+import { STRATEGIES } from '@/features/strategies/components/strategies-page/strategies-page.config';
 import type { EmailTrackingCardProps } from './email-tracking-card.types';
 import { styles } from './email-tracking-card.styles';
 
@@ -185,7 +186,7 @@ export function EmailTrackingCard({
             <Typography sx={styles.fieldValue()}>
               {conversation.emailStatus ? (
                 <Chip
-                  label={conversation.emailStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  label={formatEnumToTitleCase(conversation.emailStatus)}
                   size="small"
                 />
               ) : (
@@ -410,6 +411,7 @@ export function EmailTrackingCard({
     </Card>
   );
 }
+
 
 
 

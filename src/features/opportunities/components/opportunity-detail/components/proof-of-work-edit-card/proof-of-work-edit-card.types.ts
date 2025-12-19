@@ -20,6 +20,7 @@ export type ProofOfWorkEditCardProps = {
   isSaving: boolean;
   availableCategories: Category[];
   availableStages: Stage[];
+  strategies: Array<{ id: string; title: string; description: string }>;
   onChangeEditField: (
     field: keyof ProofOfWorkEditCardProps['editValues'],
     value: string | string[] | any | null,
@@ -27,6 +28,7 @@ export type ProofOfWorkEditCardProps = {
   onSave: () => void;
   onCancel: () => void;
 };
+
 
 
 

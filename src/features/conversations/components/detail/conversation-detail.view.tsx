@@ -44,6 +44,8 @@ export function ConversationDetailView({
   onSubmitAddReply,
   availableStages,
   availableCategories,
+  contactColorMap,
+  contactMap,
   aiMessages,
   isAiLoading,
   aiError,
@@ -106,6 +108,8 @@ export function ConversationDetailView({
         isSaving={isSaving}
         availableStages={availableStages}
         availableCategories={availableCategories}
+        contactColorMap={contactColorMap}
+        contactMap={contactMap}
         config={config}
         onPasteNewMessages={onPasteNewMessages}
         onOpenAddReply={onOpenAddReply}

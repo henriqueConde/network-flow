@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -17,8 +16,6 @@ import {
   Divider,
   Box,
 } from '@mui/material';
-import { useCompaniesList } from '@/features/companies/services/companies.queries';
-import { STRATEGIES } from '@/features/strategies/components/strategies-page/strategies-page.config';
 import type { CreateEditContactDialogProps } from './create-edit-contact-dialog.types';
 
 export function CreateEditContactDialog({
@@ -29,54 +26,15 @@ export function CreateEditContactDialog({
   isSubmitting,
   availableCategories,
   availableStages,
+  strategies,
+  companies,
+  formatDateForInput,
+  onDateChange,
   config,
   onClose,
   onChangeField,
   onSubmit,
 }: CreateEditContactDialogProps) {
-  // Fetch companies for dropdown
-  const { data: companiesData } = useCompaniesList({
-    page: 1,
-    pageSize: 100,
-    sortBy: 'name',
-    sortDir: 'asc',
-    enabled: isOpen, // Only fetch when dialog is open
-  });
-
-  const companies = companiesData?.companies || [];
-  const strategies = STRATEGIES;
-
-  // Format date for input[type="datetime-local"]
-  const formatDateForInput = (dateStr: string | null | undefined): string => {
-    if (!dateStr) return '';
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return '';
-      // Format as YYYY-MM-DDTHH:mm for datetime-local input
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    } catch {
-      return '';
-    }
-  };
-
-  // Convert datetime-local input value to ISO string
-  const handleDateChange = (field: string, value: string) => {
-    if (!value) {
-      onChangeField(field as any, '');
-      return;
-    }
-    try {
-      const date = new Date(value);
-      onChangeField(field as any, date.toISOString());
-    } catch {
-      onChangeField(field as any, '');
-    }
-  };
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="md">
@@ -241,7 +199,7 @@ export function CreateEditContactDialog({
           type="datetime-local"
           size="small"
           value={formatDateForInput(values.connectionRequestSentAt)}
-          onChange={(e) => handleDateChange('connectionRequestSentAt', e.target.value)}
+          onChange={(e) => onDateChange('connectionRequestSentAt', e.target.value)}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -250,7 +208,7 @@ export function CreateEditContactDialog({
           type="datetime-local"
           size="small"
           value={formatDateForInput(values.connectionAcceptedAt)}
-          onChange={(e) => handleDateChange('connectionAcceptedAt', e.target.value)}
+          onChange={(e) => onDateChange('connectionAcceptedAt', e.target.value)}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -259,7 +217,7 @@ export function CreateEditContactDialog({
           type="datetime-local"
           size="small"
           value={formatDateForInput(values.dmSentAt)}
-          onChange={(e) => handleDateChange('dmSentAt', e.target.value)}
+          onChange={(e) => onDateChange('dmSentAt', e.target.value)}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -268,7 +226,7 @@ export function CreateEditContactDialog({
           type="datetime-local"
           size="small"
           value={formatDateForInput(values.firstMessageDate)}
-          onChange={(e) => handleDateChange('firstMessageDate', e.target.value)}
+          onChange={(e) => onDateChange('firstMessageDate', e.target.value)}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -277,7 +235,7 @@ export function CreateEditContactDialog({
           type="datetime-local"
           size="small"
           value={formatDateForInput(values.lastFollowUpAt)}
-          onChange={(e) => handleDateChange('lastFollowUpAt', e.target.value)}
+          onChange={(e) => onDateChange('lastFollowUpAt', e.target.value)}
           InputLabelProps={{ shrink: true }}
         />
 
@@ -300,7 +258,7 @@ export function CreateEditContactDialog({
           type="datetime-local"
           size="small"
           value={formatDateForInput(values.referralGivenAt)}
-          onChange={(e) => handleDateChange('referralGivenAt', e.target.value)}
+          onChange={(e) => onDateChange('referralGivenAt', e.target.value)}
           InputLabelProps={{ shrink: true }}
           disabled={!values.referralGiven}
         />

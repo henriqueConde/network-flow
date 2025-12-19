@@ -20,5 +20,8 @@ export interface PipelinePageViewProps {
   onCategoryChange: (value: string | null) => void;
   onStageChange: (value: string | null) => void;
   onSearchChange: (value: string) => void;
+  getMoveMenuItems: (opportunityId: string) => Array<{ id: string; label: string }>;
+  getCurrentStageForOpportunity: (opportunityId: string) => { id: string; name: string } | null;
+  getActiveOpportunity: (activeId: string | null) => PipelineOpportunity | null;
 }
 

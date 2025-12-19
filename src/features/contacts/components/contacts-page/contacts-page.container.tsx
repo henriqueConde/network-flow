@@ -11,8 +11,11 @@ import { useDeleteContactDialog } from './hooks/use-delete-contact-dialog.state'
 import { useLinkedInImport } from './hooks/use-linkedin-import.state';
 import { useCategories } from '@/features/categories';
 import { useStages } from '@/features/stages';
+import { useCompaniesList } from '@/features/companies/services/companies.queries';
 import { useAuthContext } from '@/features/auth';
+import { STRATEGIES } from '@/features/strategies/components/strategies-page/strategies-page.config';
 import type { ContactListItem } from '../../services/contacts.service';
+import type { ContactFormValues } from './contacts-page.schema';
 
 export function ContactsPageContainer() {
   const router = useRouter();
@@ -107,6 +110,47 @@ export function ContactsPageContainer() {
   // LinkedIn import
   const linkedInImport = useLinkedInImport();
 
+  // Fetch companies for the create/edit dialog (only when dialog is open)
+  const { data: companiesData } = useCompaniesList({
+    page: 1,
+    pageSize: 100,
+    sortBy: 'name',
+    sortDir: 'asc',
+    enabled: contactDialog.isOpen,
+  });
+  const companies = companiesData?.companies || [];
+
+  // Helper function to format date for datetime-local input
+  const formatDateForInput = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch {
+      return '';
+    }
+  };
+
+  // Helper function to handle date changes from datetime-local input
+  const handleDateChange = (field: keyof ContactFormValues, value: string) => {
+    if (!value) {
+      contactDialog.changeField(field, '');
+      return;
+    }
+    try {
+      const date = new Date(value);
+      contactDialog.changeField(field, date.toISOString());
+    } catch {
+      contactDialog.changeField(field, '');
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (deleteDialog.contactId) {
       await deleteMutation.mutateAsync(deleteDialog.contactId);
@@ -168,6 +212,10 @@ export function ContactsPageContainer() {
       sortDir={sortDir}
       availableCategories={categories}
       availableStages={stages}
+      strategies={[...STRATEGIES] as Array<{ id: string; title: string; description: string }>}
+      companies={companies}
+      formatDateForInput={formatDateForInput}
+      onDateChange={handleDateChange}
       config={CONTACTS_PAGE_CONFIG}
       onSearchChange={handleSearchChange}
       onCompanyChange={handleCompanyChange}

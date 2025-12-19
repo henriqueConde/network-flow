@@ -153,7 +153,7 @@ export function InterviewsListView({
         </Box>
       )}
 
-      {!isLoading && !error && interviews.length > 0 && (
+      {!isLoading && !error && page > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
           <Pagination
             page={page}

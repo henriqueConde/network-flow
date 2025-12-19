@@ -113,11 +113,21 @@ export function TodayPageContainer() {
   }, [actionsWithSeekOpportunities, completedActions]);
 
   // Sort and limit data for display
+  // Filter out: dismissed completed actions, and completed tasks (since we have a tasks page now)
   const { prioritizedActions, sortedOverdueItems } = useTodaySorting(
-    actionsWithCompletionState.filter(
-      (action) => !(dismissedActionIds.has(action.id) && (action.completed ?? false)),
-    ),
+    actionsWithCompletionState.filter((action) => {
+      // Filter out dismissed completed actions
+      if (dismissedActionIds.has(action.id) && (action.completed ?? false)) {
+        return false;
+      }
+      // Filter out completed tasks (they should be viewed in the tasks page)
+      if (action.source === 'task' && action.completed === true) {
+        return false;
+      }
+      return true;
+    }),
     overdueItems,
+    TODAY_PAGE_CONFIG.ui.maxActionsToShow,
   );
 
   // Navigation handlers

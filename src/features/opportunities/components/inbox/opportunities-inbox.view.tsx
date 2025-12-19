@@ -339,7 +339,7 @@ export function OpportunitiesInboxView({
       )}
 
       {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
           <Pagination
             page={page}
             count={totalPages}

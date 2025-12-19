@@ -75,6 +75,9 @@ export function PipelinePageView({
   onCategoryChange,
   onStageChange,
   onSearchChange,
+  getMoveMenuItems,
+  getCurrentStageForOpportunity,
+  getActiveOpportunity,
 }: PipelinePageViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -114,10 +117,8 @@ export function PipelinePageView({
     const opportunityId = active.id as string;
     const targetStageId = over.id as string;
 
-    // Find current stage
-    const currentStage = board.stages.find((stage) =>
-      stage.opportunities.some((opp) => opp.id === opportunityId),
-    );
+    // Find current stage (logic moved to container)
+    const currentStage = getCurrentStageForOpportunity(opportunityId);
 
     // Don't do anything if dropped in the same stage
     if (currentStage?.id === targetStageId) return;
@@ -144,10 +145,8 @@ export function PipelinePageView({
     }
   };
 
-  // Get active opportunity for drag overlay
-  const activeOpportunity = board?.stages
-    .flatMap((stage) => stage.opportunities)
-    .find((opp) => opp.id === activeId);
+  // Get active opportunity for drag overlay (logic moved to container)
+  const activeOpportunity = board ? getActiveOpportunity(activeId) : null;
 
   // Check scroll position for arrow buttons
   const checkScrollButtons = () => {
@@ -386,38 +385,11 @@ export function PipelinePageView({
           <MenuItem disabled>
             <ListItemText primary={config.copy.opportunity.moveTo} />
           </MenuItem>
-          {(() => {
-            // Find the current stage of this opportunity
-            const currentStage = board.stages.find((s) =>
-              s.opportunities.some((o) => o.id === anchorEl?.opportunityId),
-            );
-
-            // Filter out the current stage
-            const otherStages = availableStages.filter((stage) => stage.id !== currentStage?.id);
-
-            // If current stage is not unassigned, add an "Unassigned" option
-            const showUnassigned = currentStage?.id !== '__unassigned__';
-
-            const menuItems = [];
-            
-            if (showUnassigned) {
-              menuItems.push(
-                <MenuItem key="__unassigned__" onClick={() => handleMove('__unassigned__')}>
-                  <ListItemText primary={config.copy.opportunity.unassigned} />
-                </MenuItem>
-              );
-            }
-            
-            otherStages.forEach((stage) => {
-              menuItems.push(
-                <MenuItem key={stage.id} onClick={() => handleMove(stage.id)}>
-                  <ListItemText primary={stage.name} />
-                </MenuItem>
-              );
-            });
-
-            return menuItems;
-          })()}
+          {anchorEl && getMoveMenuItems(anchorEl.opportunityId).map((item) => (
+            <MenuItem key={item.id} onClick={() => handleMove(item.id)}>
+              <ListItemText primary={item.label} />
+            </MenuItem>
+          ))}
         </Menu>
       </Box>
     </DndContext>

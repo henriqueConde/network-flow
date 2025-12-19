@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { STRATEGIES } from '@/features/strategies/components/strategies-page/strategies-page.config';
+import { formatEnumToTitleCase } from '@/shared/utils/string.utils';
 import type { ProofOfWorkEditCardProps } from './proof-of-work-edit-card.types';
 import { styles } from './proof-of-work-edit-card.styles';
 
@@ -30,11 +30,11 @@ export function ProofOfWorkEditCard({
   isSaving,
   availableCategories,
   availableStages,
+  strategies,
   onChangeEditField,
   onSave,
   onCancel,
 }: ProofOfWorkEditCardProps) {
-  const strategies = STRATEGIES;
 
   // Format date for input[type="datetime-local"]
   const formatDateForInput = (dateStr: string | null | undefined): string => {
@@ -211,7 +211,7 @@ export function ProofOfWorkEditCard({
             <Typography sx={styles.fieldValue()}>
               {opportunity.proofOfWorkType ? (
                 <Chip
-                  label={opportunity.proofOfWorkType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  label={formatEnumToTitleCase(opportunity.proofOfWorkType)}
                   size="small"
                 />
               ) : (

@@ -7,7 +7,6 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';
 import type { OpportunityDetail } from '../../services/opportunities.service';
-import { useMemo } from 'react';
 import type { Category } from '@/features/categories';
 import type { Stage } from '@/features/stages';
 import { styles } from './opportunity-detail.styles';
@@ -19,6 +18,26 @@ type OpportunityDetailViewProps = {
   availableCategories: Category[];
   availableStages: Stage[];
   availableChallenges: Array<{ id: string; name: string }>;
+  interviews: Array<{
+    id: string;
+    contactName: string;
+    contactCompany: string | null;
+    channel: string;
+    stageName: string | null;
+    lastMessageAt: Date | null;
+    lastMessageSnippet: string | null;
+    isOutOfSync: boolean;
+  }>;
+  allConversations: Array<{
+    id: string;
+    contactName: string;
+    contactCompany: string | null;
+    channel: string;
+    stageName: string | null;
+    lastMessageAt: Date | null;
+    lastMessageSnippet: string | null;
+    isOutOfSync: boolean;
+  }>;
   editValues: {
     title: string | null;
     categoryId: string | null;
@@ -64,6 +83,8 @@ export function OpportunityDetailView({
   availableCategories,
   availableStages,
   availableChallenges,
+  interviews,
+  allConversations,
   editValues,
   editErrors,
   isEditing,
@@ -78,20 +99,6 @@ export function OpportunityDetailView({
   onOpenCreateConversation,
   onContactClick,
 }: OpportunityDetailViewProps) {
-  // Separate conversations into interviews and all conversations
-  // Interviews should appear in BOTH sections (as interviews AND as conversations)
-  const { interviews, allConversations } = useMemo(() => {
-    if (!opportunity) return { interviews: [], allConversations: [] };
-    
-    const interviewsList = opportunity.conversations.filter(
-      (conv) => conv.stageName === 'Interviewing'
-    );
-    
-    return {
-      interviews: interviewsList,
-      allConversations: opportunity.conversations, // All conversations, including interviews
-    };
-  }, [opportunity]);
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
@@ -376,9 +383,6 @@ export function OpportunityDetailView({
                         Last message: {formatDate(interview.lastMessageAt)}
                       </Typography>
                     )}
-                    <Typography variant="body2" sx={{ marginTop: 1 }}>
-                      {interview.messages.length} message{interview.messages.length !== 1 ? 's' : ''}
-                    </Typography>
                     {interview.lastMessageSnippet && (
                       <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1, fontStyle: 'italic' }}>
                         &quot;{interview.lastMessageSnippet.slice(0, 100)}{interview.lastMessageSnippet.length > 100 ? '...' : ''}&quot;
@@ -446,9 +450,6 @@ export function OpportunityDetailView({
                           Last message: {formatDate(conv.lastMessageAt)}
                         </Typography>
                       )}
-                      <Typography variant="body2" sx={{ marginTop: 1 }}>
-                        {conv.messages.length} message{conv.messages.length !== 1 ? 's' : ''}
-                      </Typography>
                       {conv.lastMessageSnippet && (
                         <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1, fontStyle: 'italic' }}>
                           &quot;{conv.lastMessageSnippet.slice(0, 100)}{conv.lastMessageSnippet.length > 100 ? '...' : ''}&quot;

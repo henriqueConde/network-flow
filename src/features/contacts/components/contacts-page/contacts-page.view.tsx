@@ -28,6 +28,10 @@ export function ContactsPageView({
   sortDir,
   availableCategories,
   availableStages,
+  strategies,
+  companies,
+  formatDateForInput,
+  onDateChange,
   config,
   onSearchChange,
   onCompanyChange,
@@ -119,6 +123,10 @@ export function ContactsPageView({
         isSubmitting={isSubmitting}
         availableCategories={availableCategories}
         availableStages={availableStages}
+        strategies={strategies}
+        companies={companies}
+        formatDateForInput={formatDateForInput}
+        onDateChange={onDateChange}
         config={config}
         onClose={onCloseDialog}
         onChangeField={onChangeDialogField}

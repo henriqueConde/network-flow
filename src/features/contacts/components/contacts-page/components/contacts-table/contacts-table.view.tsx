@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { formatEnumToTitleCase } from '@/shared/utils/string.utils';
 import type { ContactsTableProps } from './contacts-table.types';
 import { styles } from './contacts-table.styles';
 
@@ -157,7 +158,7 @@ export function ContactsTable({
                     <TableCell>
                       {contact.connectionStatus ? (
                         <Chip 
-                          label={contact.connectionStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} 
+                          label={formatEnumToTitleCase(contact.connectionStatus)} 
                           size="small" 
                           sx={styles.chip()}
                           color={

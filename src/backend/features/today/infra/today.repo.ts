@@ -1,6 +1,5 @@
 import { prisma } from '@/backend/core/db/prisma';
 import { ConversationChannel, ConversationChannelType } from '@/shared/types';
-import { makeTasksRepo } from '@/backend/features/tasks/infra/tasks.repo';
 
 /**
  * Repository for Today page data access.
@@ -190,9 +189,47 @@ export function makeTodayRepo() {
                 take: 20,
             });
 
-            // Get tasks due today
-            const tasksRepo = makeTasksRepo();
-            const todayTasks = await tasksRepo.getTodayTasks(userId);
+            // Get tasks due today (query directly via Prisma to avoid cross-module repo imports)
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+            
+            const todayTasks = await prisma.task.findMany({
+                where: {
+                    userId,
+                    dueAt: {
+                        lt: startOfTomorrow,
+                        not: null,
+                    },
+                    OR: [
+                        { completedAt: null },
+                        { completedAt: { gte: startOfToday } },
+                    ],
+                },
+                include: {
+                    conversation: {
+                        select: {
+                            id: true,
+                            contact: {
+                                select: {
+                                    name: true,
+                                    company: true,
+                                },
+                            },
+                        },
+                    },
+                    opportunity: {
+                        select: {
+                            id: true,
+                            title: true,
+                            contact: {
+                                select: {
+                                    name: true,
+                                    company: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
 
             // Combine and deduplicate by opportunity ID
             const allActions = new Map<string, {

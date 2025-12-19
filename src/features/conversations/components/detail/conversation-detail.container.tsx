@@ -20,8 +20,9 @@ import { useStages } from '@/features/stages';
 import { useCategories } from '@/features/categories';
 import { DeleteMessageDialog } from './components/delete-message-dialog/delete-message-dialog.view';
 import { DELETE_MESSAGE_DIALOG_CONFIG } from './components/delete-message-dialog/delete-message-dialog.config';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDebounce } from '@/shared/hooks';
+import { getContactColor } from '@/shared/utils/color.utils';
 
 export function ConversationDetailContainer() {
   // Navigation
@@ -123,6 +124,28 @@ export function ConversationDetailContainer() {
     });
   };
 
+  // Create contact maps for MessagesCard (derived state - should be in container)
+  const { contactColorMap, contactMap } = useMemo(() => {
+    if (!conversation) {
+      return {
+        contactColorMap: new Map<string, string>(),
+        contactMap: new Map<string, { name: string; company: string | null }>(),
+      };
+    }
+
+    const colorMap = new Map<string, string>();
+    const nameMap = new Map<string, { name: string; company: string | null }>();
+    
+    conversation.contacts.forEach((contact) => {
+      colorMap.set(contact.id, getContactColor(contact.id));
+      nameMap.set(contact.id, { name: contact.name, company: contact.company });
+    });
+
+    return {
+      contactColorMap: colorMap,
+      contactMap: nameMap,
+    };
+  }, [conversation]);
 
   return (
     <>
@@ -157,6 +180,8 @@ export function ConversationDetailContainer() {
       onSubmitAddReply={addReplyDialog.submit}
       availableStages={stages}
       availableCategories={categories}
+      contactColorMap={contactColorMap}
+      contactMap={contactMap}
       aiMessages={messages}
       isAiLoading={isAiLoading}
       aiError={aiError}

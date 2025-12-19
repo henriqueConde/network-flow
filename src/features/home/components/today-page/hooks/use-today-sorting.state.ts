@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import type { TodayAction, OverdueItem } from '../today-page.types';
-import { TODAY_PAGE_CONFIG } from '../today-page.config';
 
 /**
  * Hook for sorting and limiting Today page data.
  * Handles all sorting logic and applies display limits.
+ * Receives config as parameter to maintain separation of concerns.
  */
 export function useTodaySorting(
   actions: TodayAction[],
   overdueItems: OverdueItem[],
+  maxActionsToShow: number,
 ) {
   // Sort actions by completion status (incomplete first), then priority (high > medium > low), then due date
   const sortedActions = useMemo(() => {
@@ -36,8 +37,8 @@ export function useTodaySorting(
 
   // Limit actions to max shown
   const prioritizedActions = useMemo(
-    () => sortedActions.slice(0, TODAY_PAGE_CONFIG.ui.maxActionsToShow),
-    [sortedActions],
+    () => sortedActions.slice(0, maxActionsToShow),
+    [sortedActions, maxActionsToShow],
   );
 
   // Sort overdue items by days overdue (most overdue first)

@@ -12,5 +12,7 @@ export {
 } from './services/tasks.mutations';
 export type { Task } from './services/tasks.service';
 export type { CreateTaskPayload, UpdateTaskPayload } from './services/tasks.service';
+export { TaskListContainer } from './components/task-list/task-list.container';
+export { TaskDetailContainer } from './components/task-detail/task-detail.container';
 
 

@@ -4,6 +4,7 @@ export const APP_HEADER_CONFIG = {
     signOut: 'Sign Out',
     navigation: {
       today: 'Today',
+      tasks: 'Tasks',
       conversations: 'Conversations',
       interviews: 'Interviews',
       opportunities: 'Opportunities',
@@ -21,6 +22,7 @@ export const APP_HEADER_CONFIG = {
   },
   routes: {
     today: '/',
+    tasks: '/tasks',
     conversations: '/conversations',
     interviews: '/interviews',
     opportunities: '/opportunities',

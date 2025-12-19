@@ -31,6 +31,8 @@ export type ConversationDetailContentProps = {
   isSaving: boolean;
   availableStages: Stage[];
   availableCategories: Category[];
+  contactColorMap: Map<string, string>;
+  contactMap: Map<string, { name: string; company: string | null }>;
   config: typeof CONVERSATION_DETAIL_CONFIG;
   onPasteNewMessages: () => void;
   onOpenAddReply: () => void;

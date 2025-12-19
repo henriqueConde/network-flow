@@ -6,8 +6,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useMemo } from 'react';
-import { getContactColor, darkenColor } from '@/shared/utils/color.utils';
+import { darkenColor } from '@/shared/utils/color.utils';
 import type { MessagesCardProps } from './messages-card.types';
 import { styles } from './messages-card.styles';
 
@@ -26,29 +25,14 @@ const formatMessageDateTime = (date: Date | null) => {
 export function MessagesCard({ 
   messages, 
   contacts,
+  contactColorMap,
+  contactMap,
   config, 
   onOpenAddReply, 
   onConfirmMessage,
   onEditMessage,
   onDeleteMessage,
 }: MessagesCardProps) {
-  // Create a map of contact IDs to colors and names
-  const contactColorMap = useMemo(() => {
-    const map = new Map<string, string>();
-    contacts.forEach((contact) => {
-      map.set(contact.id, getContactColor(contact.id));
-    });
-    return map;
-  }, [contacts]);
-
-  // Create a map of contact IDs to contact objects for name lookup
-  const contactMap = useMemo(() => {
-    const map = new Map<string, { name: string; company: string | null }>();
-    contacts.forEach((contact) => {
-      map.set(contact.id, { name: contact.name, company: contact.company });
-    });
-    return map;
-  }, [contacts]);
 
   return (
     <Card sx={styles.card()}>

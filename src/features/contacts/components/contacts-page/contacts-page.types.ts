@@ -22,6 +22,10 @@ export interface ContactsPageViewProps {
   sortDir: 'asc' | 'desc';
   availableCategories: Category[];
   availableStages: Stage[];
+  strategies: Array<{ id: string; title: string; description: string }>;
+  companies: Array<{ id: string; name: string }>;
+  formatDateForInput: (dateStr: string | null | undefined) => string;
+  onDateChange: (field: keyof ContactFormValues, value: string) => void;
   config: typeof CONTACTS_PAGE_CONFIG;
   onSearchChange: (value: string) => void;
   onCompanyChange: (value: string) => void;

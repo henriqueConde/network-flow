@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useOpportunityDetail } from '../../services/opportunities.queries';
 import { useUpdateOpportunity } from '../../services/opportunities.mutations';
@@ -162,6 +162,21 @@ export function OpportunityDetailContainer() {
     createDialog.close();
   };
 
+  // Separate conversations into interviews and all conversations
+  // Interviews should appear in BOTH sections (as interviews AND as conversations)
+  const { interviews, allConversations } = useMemo(() => {
+    if (!opportunity) return { interviews: [], allConversations: [] };
+    
+    const interviewsList = opportunity.conversations.filter(
+      (conv) => conv.stageName === 'Interviewing'
+    );
+    
+    return {
+      interviews: interviewsList,
+      allConversations: opportunity.conversations, // All conversations, including interviews
+    };
+  }, [opportunity]);
+
   return (
     <>
       <OpportunityDetailView
@@ -171,6 +186,8 @@ export function OpportunityDetailContainer() {
         availableCategories={categories}
         availableStages={stages}
         availableChallenges={availableChallenges}
+        interviews={interviews}
+        allConversations={allConversations}
         editValues={edit.values}
         editErrors={edit.errors}
         isEditing={edit.isEditing}

@@ -11,11 +11,16 @@ export type CreateEditContactDialogProps = {
   isSubmitting: boolean;
   availableCategories: Category[];
   availableStages: Stage[];
+  strategies: Array<{ id: string; title: string; description: string }>;
+  companies: Array<{ id: string; name: string }>;
+  formatDateForInput: (dateStr: string | null | undefined) => string;
+  onDateChange: (field: keyof ContactFormValues, value: string) => void;
   config: typeof CONTACTS_PAGE_CONFIG;
   onClose: () => void;
   onChangeField: (field: keyof ContactFormValues, value: ContactFormValues[keyof ContactFormValues]) => void;
   onSubmit: () => void;
 };
+
 
 
 

@@ -74,6 +74,9 @@ export type ConversationDetailViewProps = {
   onContactSearchInputChange?: (value: string) => void;
   availableStages: Stage[];
   availableCategories: Category[];
+  // Contact maps for MessagesCard
+  contactColorMap: Map<string, string>;
+  contactMap: Map<string, { name: string; company: string | null }>;
   // AI Assistant props (passed to Add Reply dialog)
   aiMessages: ChatMessage[];
   isAiLoading: boolean;

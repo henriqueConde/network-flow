@@ -1,13 +1,11 @@
 import { prisma } from '@/backend/core/db/prisma';
-import { makeOpportunitiesRepo } from '@/backend/features/opportunities/infra/opportunities.repo';
+import { moveOpportunityToStage } from '@/backend/features/opportunities';
 
 /**
  * Repository for Pipeline page data access.
  * Handles queries for stages and opportunities grouped by stage.
  */
 export function makePipelineRepo() {
-  const opportunitiesRepo = makeOpportunitiesRepo();
-
   return {
     /**
      * Get all stages with their opportunities for the pipeline board.
@@ -243,8 +241,8 @@ export function makePipelineRepo() {
       opportunityId: string;
       stageId: string | null;
     }) {
-      // Use the opportunities repo to move the opportunity
-      return await opportunitiesRepo.moveOpportunityToStage({
+      // Use the opportunities use-case to move the opportunity
+      return await moveOpportunityToStage({
         userId: input.userId,
         opportunityId: input.opportunityId,
         stageId: input.stageId,

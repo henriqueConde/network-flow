@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Typography, TextField, MenuItem, Chip } from '@mui/material';
+import { formatEnumToTitleCase } from '@/shared/utils/string.utils';
 import type { ConnectionLifecycleCardProps } from './connection-lifecycle-card.types';
 import { styles } from './connection-lifecycle-card.styles';
 
@@ -76,7 +77,7 @@ export function ConnectionLifecycleCard({
           <Typography sx={styles.fieldValue()}>
             {contact.connectionStatus ? (
               <Chip 
-                label={contact.connectionStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} 
+                label={formatEnumToTitleCase(contact.connectionStatus)} 
                 size="small" 
               />
             ) : (

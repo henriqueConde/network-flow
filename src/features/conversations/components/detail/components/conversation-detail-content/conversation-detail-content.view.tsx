@@ -16,6 +16,8 @@ export function ConversationDetailContent({
   isSaving,
   availableStages,
   availableCategories,
+  contactColorMap,
+  contactMap,
   config,
   onPasteNewMessages,
   onOpenAddReply,
@@ -48,6 +50,8 @@ export function ConversationDetailContent({
           <MessagesCard 
             messages={conversation.messages} 
             contacts={conversation.contacts}
+            contactColorMap={contactColorMap}
+            contactMap={contactMap}
             config={config} 
             onOpenAddReply={onOpenAddReply}
             onConfirmMessage={onConfirmMessage}
