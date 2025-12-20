@@ -331,46 +331,6 @@ export function JobBoardLeadSnipingStrategyContent({ config }: JobBoardLeadSnipi
         </Typography>
       </Box>
 
-      {/* How To Track */}
-      <Box sx={styles.section()}>
-        <Typography variant="h5" sx={styles.sectionTitle()}>
-          {copy.sections.howToTrack.title}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.howToTrack.description}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.howToTrack.strategyName}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.howToTrack.type}
-        </Typography>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.howToTrack.forEachLead.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.howToTrack.forEachLead.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.howToTrack.yourAppCanShow.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.howToTrack.yourAppCanShow.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
       {/* How to Track in App */}
       {copy.sections.howToTrackInApp && (
         <Box sx={styles.section()}>

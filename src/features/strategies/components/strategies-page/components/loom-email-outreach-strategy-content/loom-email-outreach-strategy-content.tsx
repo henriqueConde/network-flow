@@ -402,43 +402,6 @@ export function LoomEmailOutreachStrategyContent({ config }: LoomEmailOutreachSt
         </Box>
       </Box>
 
-      {/* How It Fits */}
-      <Box sx={styles.section()}>
-        <Typography variant="h5" sx={styles.sectionTitle()}>
-          {copy.sections.howItFits.title}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.howItFits.description}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.howItFits.strategy}
-        </Typography>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.howItFits.worksBestWith.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.howItFits.worksBestWith.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                • {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.howItFits.pipelineIdea.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.howItFits.pipelineIdea.items.map((item, index) => (
-              <Typography key={index} component="p" sx={styles.listItem()}>
-                {item}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
       {/* How to Track in App */}
       {copy.sections.howToTrackInApp && (
         <Box sx={styles.section()}>

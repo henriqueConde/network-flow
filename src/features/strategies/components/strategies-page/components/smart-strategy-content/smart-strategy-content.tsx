@@ -200,26 +200,6 @@ export function SmartStrategyContent({ config }: SmartStrategyContentProps) {
         </Box>
       </Box>
 
-      {/* Daily Routine */}
-      <Box sx={styles.section()}>
-        <Typography variant="h5" sx={styles.sectionTitle()}>
-          {copy.sections.dailyRoutine.title}
-        </Typography>
-        <Typography variant="body1" sx={styles.sectionContent()}>
-          {copy.sections.dailyRoutine.description}
-        </Typography>
-        <Box sx={styles.subsection()}>
-          <Typography variant="h6" sx={styles.subsectionTitle()}>
-            {copy.sections.dailyRoutine.everyDay.title}
-          </Typography>
-          <Box sx={styles.sectionContent()}>
-            {copy.sections.dailyRoutine.everyDay.items.map((item, index) => (
-              <StrategyItem key={index} item={item} index={index} />
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
       {/* How to Track in App */}
           {copy.sections.howToTrackInApp && (
         <Box sx={styles.section()}>

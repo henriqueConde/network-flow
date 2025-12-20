@@ -24,13 +24,6 @@ export function ProofOfWorkOutreachStrategyContent({ config }: ProofOfWorkOutrea
         <Typography variant="body1" sx={styles.strategySubtitle()}>
           {copy.description}
         </Typography>
-        {copy.exampleResult && typeof copy.exampleResult === 'object' && (
-          <InfoBox 
-            text={copy.exampleResult.text} 
-            type={copy.exampleResult.type}
-            icon={copy.exampleResult.icon}
-          />
-        )}
       </Box>
 
       {/* Intro */}

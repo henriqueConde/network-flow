@@ -240,26 +240,8 @@ And if there's any extra info you need from me, I'll send it right away.`,
                     },
                 },
             },
-            dailyRoutine: {
-                title: '4. Daily routine (1 hour a day)',
-                description: 'You mentioned 1 hour/day. Here\'s a clean breakdown:',
-                everyDay: {
-                    title: 'Every day:',
-                    items: [
-                        '30 min – Warm outreach & follow-ups',
-                        '• Message 20+ people from your existing network.',
-                        '• Follow up with people who:',
-                        '  - Accepted your request but didn\'t reply',
-                        '  - Replied but didn\'t answer your last question',
-                        '30 min – Cold outreach',
-                        '• Pick 3–5 people at your target companies.',
-                        '• Send personalized connection requests (with common ground).',
-                        '• After they accept, send the referral message above.',
-                    ],
-                },
-            },
             howToTrackInApp: {
-                title: '5. How to track this strategy in Network Flow',
+                title: '4. How to track this strategy in Network Flow',
                 icon: 'track_changes',
                 description: 'Network Flow makes it easy to track your SMART strategy outreach. Here\'s how:',
                 step1: {
@@ -633,11 +615,6 @@ export const PROOF_OF_WORK_OUTREACH_STRATEGY_CONFIG = {
         title: 'Proof-Of-Work Outreach',
         subtitle: 'Value-First "Sniper" Outreach',
         description: 'Stand out by fixing real problems or building with the company\'s own product',
-        exampleResult: {
-            text: 'Example result: In ~20 days, this strategy led to 5 interviews and 2 offers (plus more in the pipeline).',
-            type: 'success',
-            icon: 'emoji_events',
-        },
         intro: 'This strategy is about showing, not just telling. Instead of "Hi, I\'d love to work with you 🙏", you:',
         introSteps: [
             'Find a company you genuinely like.',
@@ -1289,31 +1266,8 @@ export const LOOM_EMAIL_OUTREACH_STRATEGY_CONFIG = {
                     },
                 },
             },
-            howItFits: {
-                title: '4. How it fits into your overall system',
-                description: 'You can position it in your app like this:',
-                strategy: 'Strategy: Loom Email Outreach',
-                worksBestWith: {
-                    title: 'Works best with:',
-                    items: [
-                        'SMART strategy (to select the right companies)',
-                        'Recently Funded Startups (as a source of high-priority targets)',
-                        'Proof-of-Work Outreach (bugs/projects) — Loom can showcase that work too',
-                    ],
-                },
-                pipelineIdea: {
-                    title: 'Pipeline idea:',
-                    items: [
-                        'Use SMART → shortlist 20–50 high-potential companies.',
-                        'For top 10–20:',
-                        '• Run Proof-of-Work Outreach (bugs or mini-builds)',
-                        '• Wrap it with Loom Email Outreach (email + video)',
-                        'Track everything inside your app.',
-                    ],
-                },
-            },
             howToTrackInApp: {
-                title: '5. How to track this strategy in Network Flow',
+                title: '4. How to track this strategy in Network Flow',
                 icon: 'track_changes',
                 description: 'Network Flow has built-in email and Loom tracking. Here\'s your workflow:',
                 step1: {
@@ -1596,36 +1550,8 @@ export const JOB_BOARD_LEAD_SNIPING_STRATEGY_CONFIG = {
                 },
                 conclusion: 'That\'s how you turn a job board from "click & pray" into a lead generation engine.',
             },
-            howToTrack: {
-                title: '5. How to explain / track it in your system',
-                description: 'You can define it in your product or docs as:',
-                strategyName: 'Strategy name: Job Board Lead Sniping (LinkedIn)',
-                type: 'Type: Lead discovery / "top of funnel"',
-                forEachLead: {
-                    title: 'For each lead you pull from this strategy, track:',
-                    items: [
-                        'job_title',
-                        'job_url',
-                        'posted_at (approx — from LinkedIn)',
-                        'applicants_when_found (e.g. "0", "<25", "100+")',
-                        'company_name',
-                        'source = LinkedIn Post or LinkedIn Job',
-                        'contacts_found (names/roles of people you identified)',
-                        'outreach_done (Yes/No + which channel: DM, email, Loom, etc.)',
-                        'status (Not contacted / Contacted / In conversation / Interview / Rejected / Offer)',
-                    ],
-                },
-                yourAppCanShow: {
-                    title: 'This way, your app can show:',
-                    items: [
-                        'How many leads came from this strategy',
-                        'How many turned into conversations / interviews',
-                        'Whether this "last-resort" channel is pulling its weight for the user',
-                    ],
-                },
-            },
             howToTrackInApp: {
-                title: '6. How to track this strategy in Network Flow',
+                title: '5. How to track this strategy in Network Flow',
                 icon: 'track_changes',
                 description: 'Capture the job postings you find on LinkedIn and track them through your Contacts, Conversations, and Opportunities.',
                 step1: {
